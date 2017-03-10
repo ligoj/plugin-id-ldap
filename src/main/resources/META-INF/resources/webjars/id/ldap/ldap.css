@@ -1,0 +1,10 @@
+.masonry-container .node.service-id-ldap table.subscriptions th.features {
+	width: 56px;
+}
+.service-id-ldap .features>.details {
+	cursor: default;
+}
+.service-id-ldap .features>.details .label {
+	padding-left: 4px;
+	padding-right: 5px;
+}
