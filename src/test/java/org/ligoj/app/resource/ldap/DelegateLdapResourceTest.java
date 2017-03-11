@@ -110,9 +110,9 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		Assert.assertEquals(3, result.getData().size());
 		Assert.assertEquals(3, result.getRecordsTotal());
 
-		// mlavoine;tree;cn=BPR Affect,ou=tools;false;false;cn=BPR Affect,ou=tools,dc=sample,dc=com
+		// mlavoine;tree;cn=Biz Agency,ou=tools;false;false;cn=Biz Agency,ou=tools,dc=sample,dc=com
 		final DelegateLdapLightVo entity = result.getData().get(0);
-		Assert.assertEquals("cn=bpr affect,ou=tools,dc=sample,dc=com", entity.getName());
+		Assert.assertEquals("cn=biz agency,ou=tools,dc=sample,dc=com", entity.getName());
 		Assert.assertEquals(DelegateLdapType.TREE, entity.getType());
 		Assert.assertNotNull(entity.getCreatedDate());
 		Assert.assertNotNull(entity.getLastModifiedDate());
@@ -128,9 +128,9 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		Assert.assertEquals(DelegateLdapType.COMPANY, result.getData().get(2).getType());
 		Assert.assertEquals("ing", result.getData().get(2).getName());
 
-		// mlavoine;tree;cn=bpr affect,ou=tools,dc=sample,dc=com
+		// mlavoine;tree;cn=biz agency,ou=tools,dc=sample,dc=com
 		Assert.assertEquals(DelegateLdapType.TREE, result.getData().get(0).getType());
-		Assert.assertEquals("cn=bpr affect,ou=tools,dc=sample,dc=com", result.getData().get(0).getName());
+		Assert.assertEquals("cn=biz agency,ou=tools,dc=sample,dc=com", result.getData().get(0).getName());
 		
 
 	}
@@ -430,7 +430,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		initSpringSecurityContext("mlavoine");
 		final DelegateLdapEditionVo vo = new DelegateLdapEditionVo();
 		vo.setId(expected.getId());
-		vo.setName("BPR Affect");
+		vo.setName("Biz Agency");
 		vo.setReceiver("mlavoine");
 		vo.setType(DelegateLdapType.GROUP);
 		resource.update(vo);
@@ -442,7 +442,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		initSpringSecurityContext("mlavoine");
 		final DelegateLdapEditionVo vo = new DelegateLdapEditionVo();
 		vo.setId(expected.getId());
-		vo.setName("BPR Affect");
+		vo.setName("Biz Agency");
 		vo.setReceiver("any");
 		vo.setType(DelegateLdapType.GROUP);
 		resource.update(vo);
@@ -493,7 +493,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		final DelegateLdapEditionVo vo = new DelegateLdapEditionVo();
 		vo.setId(expected.getId());
 		vo.setName("ing");
-		vo.setReceiver("bpr affect");
+		vo.setReceiver("biz agency");
 		vo.setReceiverType(ReceiverType.GROUP);
 		vo.setType(DelegateLdapType.COMPANY);
 		resource.update(vo);

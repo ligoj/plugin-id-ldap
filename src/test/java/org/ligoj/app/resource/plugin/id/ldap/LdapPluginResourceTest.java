@@ -182,15 +182,15 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		initSpringSecurityContext("fdaugan");
 
 		// Create the parent group
-		final Subscription parentSubscription = create("sncf-parent-for-1deletion");
-		createSubGroup(parentSubscription.getProject(), "sncf-parent-for-1deletion", "sncf-parent-for-1deletion-sub");
+		final Subscription parentSubscription = create("sea-parent-for-1deletion");
+		createSubGroup(parentSubscription.getProject(), "sea-parent-for-1deletion", "sea-parent-for-1deletion-sub");
 
 		// Check the subgroups are there
-		Assert.assertEquals(2, resource.findGroupsByName("sncf-parent-for-1deletion").size());
+		Assert.assertEquals(2, resource.findGroupsByName("sea-parent-for-1deletion").size());
 		final Map<String, String> parameters = subscriptionResource.getParameters(parentSubscription.getId());
 		Assert.assertTrue(resource.checkSubscriptionStatus(parameters).getStatus().isUp());
-		Assert.assertEquals(1, getGroup().findAll().get("sncf-parent-for-1deletion").getSubGroups().size());
-		Assert.assertEquals("sncf-parent-for-1deletion-sub", getGroup().findAll().get("sncf-parent-for-1deletion").getSubGroups().iterator().next());
+		Assert.assertEquals(1, getGroup().findAll().get("sea-parent-for-1deletion").getSubGroups().size());
+		Assert.assertEquals("sea-parent-for-1deletion-sub", getGroup().findAll().get("sea-parent-for-1deletion").getSubGroups().iterator().next());
 
 		// Delete the parent group
 		resource.delete(parentSubscription.getId(), true);
@@ -198,10 +198,10 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		em.clear();
 
 		// Check the new status
-		Assert.assertNull(getGroup().findAll().get("sncf-parent-for-1deletion"));
-		Assert.assertNull(getGroup().findAll().get("sncf-parent-for-1deletion-sub"));
+		Assert.assertNull(getGroup().findAll().get("sea-parent-for-1deletion"));
+		Assert.assertNull(getGroup().findAll().get("sea-parent-for-1deletion-sub"));
 		Assert.assertFalse(resource.checkSubscriptionStatus(parameters).getStatus().isUp());
-		Assert.assertEquals(0, resource.findGroupsByName("sncf-parent-for-1deletion").size());
+		Assert.assertEquals(0, resource.findGroupsByName("sea-parent-for-1deletion").size());
 	}
 
 	/**
@@ -213,18 +213,18 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		initSpringSecurityContext("fdaugan");
 
 		// Create the parent group
-		final Subscription parentSubscription = create("sncf-parent-for-2deletion");
-		final Subscription childSubscription = createSubGroup(parentSubscription.getProject(), "sncf-parent-for-2deletion",
-				"sncf-parent-for-2deletion-sub");
+		final Subscription parentSubscription = create("sea-parent-for-2deletion");
+		final Subscription childSubscription = createSubGroup(parentSubscription.getProject(), "sea-parent-for-2deletion",
+				"sea-parent-for-2deletion-sub");
 
 		// Check the sub-group and the parent are there
-		Assert.assertEquals(2, resource.findGroupsByName("sncf-parent-for-2deletion").size());
+		Assert.assertEquals(2, resource.findGroupsByName("sea-parent-for-2deletion").size());
 		final Map<String, String> parentParameters = subscriptionResource.getParameters(parentSubscription.getId());
 		Assert.assertTrue(resource.checkSubscriptionStatus(parentParameters).getStatus().isUp());
 		final Map<String, String> childParameters = subscriptionResource.getParameters(childSubscription.getId());
 		Assert.assertTrue(resource.checkSubscriptionStatus(childParameters).getStatus().isUp());
-		Assert.assertEquals(1, getGroup().findAll().get("sncf-parent-for-2deletion").getSubGroups().size());
-		Assert.assertEquals("sncf-parent-for-2deletion-sub", getGroup().findAll().get("sncf-parent-for-2deletion").getSubGroups().iterator().next());
+		Assert.assertEquals(1, getGroup().findAll().get("sea-parent-for-2deletion").getSubGroups().size());
+		Assert.assertEquals("sea-parent-for-2deletion-sub", getGroup().findAll().get("sea-parent-for-2deletion").getSubGroups().iterator().next());
 
 		// Delete the child group
 		resource.delete(childSubscription.getId(), true);
@@ -234,9 +234,9 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		// Check the new status of the parent
 		Assert.assertTrue(resource.checkSubscriptionStatus(parentParameters).getStatus().isUp());
 		Assert.assertFalse(subscriptionResource.getParameters(parentSubscription.getId()).isEmpty());
-		Assert.assertEquals(1, resource.findGroupsByName("sncf-parent-for-2deletion").size());
-		Assert.assertTrue(getGroup().findAll().get("sncf-parent-for-2deletion").getSubGroups().isEmpty());
-		Assert.assertEquals("sncf-parent-for-2deletion", resource.findGroupsByName("sncf-parent-for-2deletion").get(0).getId());
+		Assert.assertEquals(1, resource.findGroupsByName("sea-parent-for-2deletion").size());
+		Assert.assertTrue(getGroup().findAll().get("sea-parent-for-2deletion").getSubGroups().isEmpty());
+		Assert.assertEquals("sea-parent-for-2deletion", resource.findGroupsByName("sea-parent-for-2deletion").get(0).getId());
 
 		// Check the new status of the deleted child
 		Assert.assertFalse(resource.checkSubscriptionStatus(childParameters).getStatus().isUp());
@@ -286,14 +286,14 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	/**
-	 * Create a group in a existing OU "sncf". Most Simple case. Group matches exactly to the pkey of the project.
+	 * Create a group in a existing OU "sea". Most Simple case. Group matches exactly to the pkey of the project.
 	 * 
 	 * @return the created subscription.
 	 */
 	private Subscription create(final String groupAndProject) throws Exception {
 		// Preconditions
 		Assert.assertNull(getGroup().findById(groupAndProject));
-		Assert.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sncf"));
+		Assert.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sea"));
 
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
@@ -305,7 +305,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 
 		// Add parameters
 		setGroup(subscription2, groupAndProject);
-		setOu(subscription2, "sncf");
+		setOu(subscription2, "sea");
 
 		basicCreate(subscription2);
 
@@ -314,9 +314,9 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertNotNull(groupLdap);
 		Assert.assertEquals(groupAndProject, groupLdap.getName());
 		Assert.assertEquals(groupAndProject, groupLdap.getId());
-		Assert.assertEquals("cn=" + groupAndProject + ",ou=sncf,ou=project,dc=sample,dc=com", groupLdap.getDn());
-		Assert.assertNotNull(projectCustomerLdapRepository.findAllNoCache("ou=project,dc=sample,dc=com").get("sncf"));
-		Assert.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sncf"));
+		Assert.assertEquals("cn=" + groupAndProject + ",ou=sea,ou=project,dc=sample,dc=com", groupLdap.getDn());
+		Assert.assertNotNull(projectCustomerLdapRepository.findAllNoCache("ou=project,dc=sample,dc=com").get("sea"));
+		Assert.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sea"));
 
 		return subscription2;
 	}
@@ -326,7 +326,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 	 */
 	@Test
 	public void create() throws Exception {
-		create("sncf-new-project");
+		create("sea-new-project");
 	}
 
 	/**
@@ -340,13 +340,13 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
 		final Subscription subscription2 = new Subscription();
-		subscription2.setProject(newProject("sncf-octopus"));
+		subscription2.setProject(newProject("sea-octopus"));
 		subscription2.setNode(subscription.getNode());
 		em.persist(subscription2);
 
 		// Add parameters
-		setGroup(subscription2, "sncf-octopus");
-		setOu(subscription2, "sncf");
+		setGroup(subscription2, "sea-octopus");
+		setOu(subscription2, "sea");
 
 		basicCreate(subscription2);
 	}
@@ -357,8 +357,8 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void createSubGroup() throws Exception {
 		// Create the parent group
-		final Project newProject = create("sncf-parent").getProject();
-		createSubGroup(newProject, "sncf-parent", "sncf-parent-client");
+		final Project newProject = create("sea-parent").getProject();
+		createSubGroup(newProject, "sea-parent", "sea-parent-client");
 	}
 
 	/**
@@ -367,13 +367,13 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void createNotCompliantGroupForParent() throws Exception {
 		// Create the parent group
-		final Project newProject = create("sncf-parent2").getProject();
-		createSubGroup(newProject, "sncf-parent2", "sncf-parent2-client");
+		final Project newProject = create("sea-parent2").getProject();
+		createSubGroup(newProject, "sea-parent2", "sea-parent2-client");
 
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher(IdentityResource.PARAMETER_GROUP, "pattern"));
 
-		createSubGroup(newProject, "sncf-parent2-client", "sncf-parent2-dev");
+		createSubGroup(newProject, "sea-parent2-client", "sea-parent2-dev");
 	}
 
 	/**
@@ -386,20 +386,20 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		thrown.expect(MatcherUtil.validationMatcher(IdentityResource.PARAMETER_GROUP, "pattern"));
 
 		// Preconditions
-		Assert.assertNotNull(getGroup().findById("sncf-octopus"));
-		Assert.assertNull(getGroup().findById("sncf-octopusZZ"));
-		Assert.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sncf"));
+		Assert.assertNotNull(getGroup().findById("sea-octopus"));
+		Assert.assertNull(getGroup().findById("sea-octopusZZ"));
+		Assert.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sea"));
 
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
 		final Subscription subscription2 = new Subscription();
-		subscription2.setProject(newProject("sncf-octopus"));
+		subscription2.setProject(newProject("sea-octopus"));
 		subscription2.setNode(subscription.getNode());
 		em.persist(subscription2);
 
 		// Add parameters
-		setGroup(subscription2, "sncf-octopusZZ");
-		setOu(subscription2, "sncf");
+		setGroup(subscription2, "sea-octopusZZ");
+		setOu(subscription2, "sea");
 
 		// Invoke link for an already linked entity, since for now
 		basicCreate(subscription2);
@@ -415,20 +415,20 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		thrown.expect(MatcherUtil.validationMatcher(IdentityResource.PARAMETER_GROUP, "pattern"));
 
 		// Preconditions
-		Assert.assertNotNull(getGroup().findById("sncf-octopus"));
-		Assert.assertNull(getGroup().findById("sncf-octopus-"));
-		Assert.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sncf"));
+		Assert.assertNotNull(getGroup().findById("sea-octopus"));
+		Assert.assertNull(getGroup().findById("sea-octopus-"));
+		Assert.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sea"));
 
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
 		final Subscription subscription2 = new Subscription();
-		subscription2.setProject(newProject("sncf-octopus"));
+		subscription2.setProject(newProject("sea-octopus"));
 		subscription2.setNode(subscription.getNode());
 		em.persist(subscription2);
 
 		// Add parameters
-		setGroup(subscription2, "sncf-octopus-");
-		setOu(subscription2, "sncf");
+		setGroup(subscription2, "sea-octopus-");
+		setOu(subscription2, "sea");
 
 		// Invoke link for an already linked entity, since for now
 		basicCreate(subscription2);
@@ -444,18 +444,18 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		thrown.expect(MatcherUtil.validationMatcher(IdentityResource.PARAMETER_GROUP, "pattern"));
 
 		// Preconditions
-		Assert.assertNull(getGroup().findById("sncf-invalid-ou"));
-		Assert.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sncf"));
+		Assert.assertNull(getGroup().findById("sea-invalid-ou"));
+		Assert.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sea"));
 
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
 		final Subscription subscription2 = new Subscription();
-		subscription2.setProject(newProject("sncf-invalid-ou"));
+		subscription2.setProject(newProject("sea-invalid-ou"));
 		subscription2.setNode(subscription.getNode());
 		em.persist(subscription2);
 
 		// Add parameters
-		setGroup(subscription2, "sncf-invalid-ou");
+		setGroup(subscription2, "sea-invalid-ou");
 		setOu(subscription2, "gfi");
 
 		// Invoke link for an already linked entity, since for now
@@ -471,21 +471,21 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		thrown.expect(MatcherUtil.validationMatcher(IdentityResource.PARAMETER_PARENT_GROUP, "unknown-id"));
 
 		// Preconditions
-		Assert.assertNotNull(getGroup().findById("sncf-octopus"));
-		Assert.assertNull(getGroup().findById("sncf-octopus-client"));
-		Assert.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sncf"));
+		Assert.assertNotNull(getGroup().findById("sea-octopus"));
+		Assert.assertNull(getGroup().findById("sea-octopus-client"));
+		Assert.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sea"));
 
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
 		final Subscription subscription2 = new Subscription();
-		subscription2.setProject(newProject("sncf-orpahn"));
+		subscription2.setProject(newProject("sea-orpahn"));
 		subscription2.setNode(subscription.getNode());
 		em.persist(subscription2);
 
 		// Add parameters
-		setGroup(subscription2, "sncf-orpahn-any");
-		setParentGroup(subscription2, "sncf-orpahn");
-		setOu(subscription2, "sncf");
+		setGroup(subscription2, "sea-orpahn-any");
+		setParentGroup(subscription2, "sea-orpahn");
+		setOu(subscription2, "sea");
 
 		// Invoke link for an already linked entity, since for now
 		basicCreate(subscription2);
@@ -536,7 +536,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		em.clear();
 
 		// Add parameters
-		setGroup(subscription2, "sncf-octopus");
+		setGroup(subscription2, "sea-octopus");
 
 		final CacheCompany company = new CacheCompany();
 		company.setDescription("ou=c,dc=sample,dc=com");
@@ -583,7 +583,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 
 		// Attach the wrong group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
-		setGroup(subscription, "sncf-octopus");
+		setGroup(subscription, "sea-octopus");
 
 		// Invoke link for an already created entity, since for now
 		initSpringSecurityContext("fdaugan");
@@ -834,8 +834,8 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 	public void findCustomersByName() throws Exception {
 		final Collection<INamableBean<String>> customers = resource.findCustomersByName("nc");
 		Assert.assertEquals(1, customers.size());
-		Assert.assertEquals("sncf", customers.iterator().next().getName());
-		Assert.assertEquals("sncf", customers.iterator().next().getId());
+		Assert.assertEquals("sea", customers.iterator().next().getName());
+		Assert.assertEquals("sea", customers.iterator().next().getId());
 	}
 
 	/**
@@ -897,7 +897,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	/**
-	 * Create a group inside another group/ Both are created inside "sncf" OU.
+	 * Create a group inside another group/ Both are created inside "sea" OU.
 	 * 
 	 * @return the created {@link Subscription}.
 	 */
@@ -906,7 +906,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		// Preconditions
 		Assert.assertNotNull(getGroup().findById(parentGroup));
 		Assert.assertNull(getGroup().findById(subGroup));
-		Assert.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sncf"));
+		Assert.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sea"));
 
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
@@ -918,7 +918,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		// Add parameters
 		setGroup(subscription2, subGroup);
 		setParentGroup(subscription2, parentGroup);
-		setOu(subscription2, "sncf");
+		setOu(subscription2, "sea");
 
 		basicCreate(subscription2);
 
@@ -926,7 +926,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		final GroupLdap groupLdap = getGroup().findById(subGroup);
 		Assert.assertNotNull(groupLdap);
 		Assert.assertEquals(subGroup, groupLdap.getName());
-		Assert.assertEquals("cn=" + subGroup + ",cn=" + parentGroup + ",ou=sncf,ou=project,dc=sample,dc=com", groupLdap.getDn());
+		Assert.assertEquals("cn=" + subGroup + ",cn=" + parentGroup + ",ou=sea,ou=project,dc=sample,dc=com", groupLdap.getDn());
 		Assert.assertEquals(subGroup, groupLdap.getId());
 		Assert.assertEquals(1, groupLdap.getGroups().size());
 		Assert.assertTrue(groupLdap.getGroups().contains(parentGroup));

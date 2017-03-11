@@ -44,7 +44,7 @@ import org.ligoj.app.model.ldap.GroupLdap;
  * <li>mmartin;company;any;true;true;cn=any,ou=groups</li>
  * <li>mtuyer;tree;ou=fonction,ou=groups;true;true;ou=fonction,ou=groups</li>
  * <li>mtuyer;company;ing;false;true;ou=ing,ou=external,ou=people</li>
- * <li>mlavoine;tree;cn=BPR Affect,ou=tools;false;false;cn=BPR Affect,ou=tools</li>
+ * <li>mlavoine;tree;cn=Biz Agency,ou=tools;false;false;cn=Biz Agency,ou=tools</li>
  * </ul>
  * LDAP
  * <ul>

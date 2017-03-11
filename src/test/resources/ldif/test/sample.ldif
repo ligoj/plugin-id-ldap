@@ -1,16 +1,11 @@
 dn: dc=sample,dc=com
 dc: sample
-o: Gfi Group
 objectClass: dcObject
 objectClass: organization
 
 dn: ou=groups,dc=sample,dc=com
 ou: groups
 objectClass: organizationalUnit
-
-dn: ou=locations,dc=sample,dc=com
-ou:locations
-objectclass: organizationalUnit
 
 dn: ou=tools,dc=sample,dc=com
 ou: tools
@@ -32,128 +27,8 @@ dn: ou=france,ou=people,dc=sample,dc=com
 ou: france
 objectclass: organizationalUnit
 
-dn: ou=bus,ou=france,ou=people,dc=sample,dc=com
-ou: bus
-objectclass: organizationalUnit
-
-dn: ou=chronotime,ou=france,ou=people,dc=sample,dc=com
-ou: chronotime
-objectclass: organizationalUnit
-
-dn: ou=infogen,ou=france,ou=people,dc=sample,dc=com
-ou: infogen
-objectclass: organizationalUnit
-
-dn: ou=progiciels,ou=france,ou=people,dc=sample,dc=com
-ou: progiciels
-objectclass: organizationalUnit
-
-dn: ou=consulting,ou=france,ou=people,dc=sample,dc=com
-ou: consulting
-objectclass: organizationalUnit
-
-dn: ou=adelior,ou=france,ou=people,dc=sample,dc=com
-ou: adelior
-objectclass: organizationalUnit
-
-dn: ou=cognitis,ou=france,ou=people,dc=sample,dc=com
-ou: cognitis
-objectclass: organizationalUnit
-
-dn: ou=gfi-production,ou=france,ou=people,dc=sample,dc=com
-ou: gfi-production
-objectclass: organizationalUnit
-
 dn: ou=gfi,ou=france,ou=people,dc=sample,dc=com
 ou: gfi
-objectclass: organizationalUnit
-
-dn: ou=benelux,ou=people,dc=sample,dc=com
-ou: benelux
-objectclass: organizationalUnit
-
-dn: ou=gfi-benelux,ou=benelux,ou=people,dc=sample,dc=com
-ou: gfi-benelux
-objectclass: organizationalUnit
-
-dn: ou=gfi-nv,ou=benelux,ou=people,dc=sample,dc=com
-ou: gfi-nv
-objectclass: organizationalUnit
-
-dn: ou=gfi-psf,ou=benelux,ou=people,dc=sample,dc=com
-ou: gfi-psf
-objectclass: organizationalUnit
-
-dn: ou=maroc,ou=people,dc=sample,dc=com
-ou: maroc
-objectclass: organizationalUnit
-
-dn: ou=holding-gfi-maroc,ou=maroc,ou=people,dc=sample,dc=com
-ou: holding-gfi-maroc
-objectclass: organizationalUnit
-
-dn: ou=gfi-maroc,ou=maroc,ou=people,dc=sample,dc=com
-ou: gfi-maroc
-objectclass: organizationalUnit
-
-dn: ou=gfi-maroc-offshore,ou=maroc,ou=people,dc=sample,dc=com
-ou: gfi-maroc-offshore
-objectclass: organizationalUnit
-
-dn: ou=suisse,ou=people,dc=sample,dc=com
-ou:suisse
-objectclass: organizationalUnit
-
-dn: ou=gfi-international,ou=suisse,ou=people,dc=sample,dc=com
-ou:gfi-international
-objectclass: organizationalUnit
-
-dn: ou=espagne,ou=people,dc=sample,dc=com
-ou: espagne
-objectclass: organizationalUnit
-
-dn: ou=gfi-informatica,ou=espagne,ou=people,dc=sample,dc=com
-ou: gfi-informatica
-objectclass: organizationalUnit
-
-dn: ou=gfi-norte,ou=espagne,ou=people,dc=sample,dc=com
-ou: gfi-norte
-objectclass: organizationalUnit
-
-dn: ou=arcitel,ou=espagne,ou=people,dc=sample,dc=com
-ou: arcitel
-objectclass: organizationalUnit
-
-dn: ou=ast,ou=espagne,ou=people,dc=sample,dc=com
-ou: ast
-objectclass: organizationalUnit
-
-dn: ou=gfi-levante,ou=espagne,ou=people,dc=sample,dc=com
-ou: gfi-levante
-objectclass: organizationalUnit
-
-dn: ou=gfi-cataluna,ou=espagne,ou=people,dc=sample,dc=com
-ou: gfi-cataluna
-objectclass: organizationalUnit
-
-dn: ou=savac-consultores,ou=espagne,ou=people,dc=sample,dc=com
-ou: savac-consultores
-objectclass: organizationalUnit
-
-dn: ou=instituto-informatico-rioja,ou=espagne,ou=people,dc=sample,dc=com
-ou: instituto-informatico-rioja
-objectclass: organizationalUnit
-
-dn: ou=gfi-portugal,ou=people,dc=sample,dc=com
-ou: gfi-portugal
-objectclass: organizationalUnit
-
-dn: ou=area,ou=groups,dc=sample,dc=com
-ou : area
-objectclass: organizationalUnit
-
-dn: ou=secteur,ou=groups,dc=sample,dc=com
-ou : secteur
 objectclass: organizationalUnit
 
 dn: ou=fonction,ou=groups,dc=sample,dc=com
@@ -167,16 +42,13 @@ objectclass: organizationalUnit
 dn: cn=Gfi Groupe,ou=groups,dc=sample,dc=com
 cn: Gfi Groupe
 objectclass: groupOfUniqueNames
-owner: uid=vrouaix,ou=gfi,ou=france,ou=people,dc=sample,dc=com
 uniqueMember: cn=Business Solution,ou=groups,dc=sample,dc=com
 uniqueMember: cn=Production,ou=branche,ou=groups,dc=sample,dc=com
-uniqueMember: cn=DSI,ou=fonction,ou=groups,dc=sample,dc=com
 uniqueMember: cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 
 dn: cn=Business Solution,ou=groups,dc=sample,dc=com
 cn: Business Solution
 objectclass: groupOfUniqueNames
-owner: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
 uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
 
 dn: cn=Sub Business Solution,cn=Business Solution,ou=groups,dc=sample,dc=com
@@ -187,188 +59,46 @@ uniqueMember: uid=none
 dn: cn=Production,ou=branche,ou=groups,dc=sample,dc=com
 cn: Production
 objectclass: groupOfUniqueNames
-owner: uid=pmarin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
 uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: cn=Hub Maroc,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
-uniqueMember: cn=Hub Espagne,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
 uniqueMember: cn=Hub France,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
-
-dn: cn=Hub Maroc,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
-cn: Hub Maroc
-objectclass: groupOfUniqueNames
-owner: uid=kmaache,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-
-dn: cn=Hub Espagne,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
-cn: Hub Espagne
-objectclass: groupOfUniqueNames
-owner: uid=userna,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
 
 dn: cn=Hub France,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
 cn: Hub France
 objectclass: groupOfUniqueNames
-uniqueMember: uid=pmarin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: cn=Hub Ouest,cn=Hub France,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
-uniqueMember: cn=Hub Sud-Ouest,cn=Hub France,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
 uniqueMember: cn=Hub Nord,cn=Hub France,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
-uniqueMember: cn=Hub IDF,cn=Hub France,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
-
-dn: cn=Hub Sud-Ouest,cn=Hub France,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
-cn: Hub Sud-Ouest
-objectclass: groupOfUniqueNames
-owner: uid=pgenais,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-
-dn: cn=Hub Ouest,cn=Hub France,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
-cn: Hub Ouest
-objectclass: groupOfUniqueNames
-owner: uid=mevrard,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
 
 dn: cn=Hub Nord,cn=Hub France,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
 cn: Hub Nord
 objectclass: groupOfUniqueNames
-owner: uid=odecocq,ou=gfi,ou=france,ou=people,dc=sample,dc=com
 uniqueMember: uid=fdaugan,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-
-dn: cn=Hub IDF,cn=Hub France,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
-cn: Hub IDF
-objectclass: groupOfUniqueNames
-owner: uid=cbatut,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-
-dn: cn=DSI,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DSI
-objectclass: groupOfUniqueNames
-owner: uid=mbeilin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=mbeilin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: cn=DSI Etude,cn=DSI,ou=fonction,ou=groups,dc=sample,dc=com
-uniqueMember: cn=DSI Infrastructure,cn=DSI,ou=fonction,ou=groups,dc=sample,dc=com
-
-dn: cn=DSI Etude,cn=DSI,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DSI Etude
-objectclass: groupOfUniqueNames
-owner: uid=bbrennetot,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-businessCategory: 456987
-
-dn: cn=DSI Infrastructure,cn=DSI,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DSI Infrastructure
-objectclass: groupOfUniqueNames
-owner: uid=phanquet,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-businessCategory: 123890
 
 dn: cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 cn : DIG
 objectclass: groupOfUniqueNames
-owner: uid=cchauvin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=cchauvin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: cn=DIG ES,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 uniqueMember: cn=DIG Production,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 uniqueMember: cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-uniqueMember: cn=DIG BFA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-uniqueMember: cn=DIG IES,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 uniqueMember: cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-uniqueMember: cn=DIG Ouest,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-uniqueMember: cn=DIG Sud Ouest,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-uniqueMember: cn=DIG TME,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-uniqueMember: cn=DIG Software,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-uniqueMember: cn=DIG IS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-uniqueMember: cn=DIG Nord,cn=DIG IS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-uniqueMember: cn=DIG IDF,cn=DIG IS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-uniqueMember: cn=DIG RHA,cn=DIG IS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-uniqueMember: cn=DIG Test,cn=DIG IS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-
-dn: cn=DIG ES,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DIG ES
-objectclass: groupOfUniqueNames
-owner: uid=nveyrier,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=broken,ou=gfi,ou=france,ou=people,dc=sample,dc=com
+uniqueMember: cn=DIG Test,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 
 dn: cn=DIG Production,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 cn : DIG Production
 objectclass: groupOfUniqueNames
-owner: uid=jlnollet,ou=gfi,ou=france,ou=people,dc=sample,dc=com
 uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
 
 dn: cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 cn : DIG AS
 objectclass: groupOfUniqueNames
-owner: uid=cchauvin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-
-dn: cn=DIG BFA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DIG BFA
-objectclass: groupOfUniqueNames
-owner: uid=jmorsini,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-
-dn: cn=DIG IES,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DIG IES
-objectclass: groupOfUniqueNames
-owner: uid=brenou,ou=gfi,ou=france,ou=people,dc=sample,dc=com
 uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
 
 dn: cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 cn : DIG RHA
 objectclass: groupOfUniqueNames
-owner: uid=gvescovi,ou=gfi,ou=france,ou=people,dc=sample,dc=com
 uniqueMember: uid=gvescovi,ou=gfi,ou=france,ou=people,dc=sample,dc=com
 uniqueMember: uid=fdoe2,ou=ing,ou=semi-broken,ou=external,ou=people,dc=sample,dc=com
 uniqueMember: uid=jlast3,ou=ing,ou=external,ou=people,dc=sample,dc=com
 uniqueMember: uid=jdoe4,ou=ing,ou=external,ou=people,dc=sample,dc=com
 uniqueMember: uid=jdoe5,ou=ing-internal,ou=ing,ou=external,ou=people,dc=sample,dc=com
 uniqueMember: uid=none
-
-dn: cn=DIG Ouest,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DIG Ouest
-objectclass: groupOfUniqueNames
-owner: uid=mleridant,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-
-dn: cn=DIG Sud Ouest,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DIG Sud Ouest
-objectclass: groupOfUniqueNames
-owner: uid=pgenais,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=pgenais,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=jlast3,ou=ing,ou=external,ou=people,dc=sample,dc=com
-uniqueMember: uid=fdoe2,ou=ing,ou=external,ou=people,dc=sample,dc=com
-
-dn: cn=DIG TME,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DIG TME
-objectclass: groupOfUniqueNames
-owner: uid=mschmidt-le-roi,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-
-dn: cn=DIG Software,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DIG Software
-objectclass: groupOfUniqueNames
-owner: uid=bdemarez,ou=progiciels,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-
-dn: cn=DIG IS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DIG IS
-objectclass: organizationalRole
-
-dn: cn=DIG Nord,cn=DIG IS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DIG Nord
-objectclass: groupOfUniqueNames
-owner: uid=jfverger,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-
-dn: cn=DIG IDF,cn=DIG IS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DIG IDF
-objectclass: groupOfUniqueNames
-owner: uid=plelouarn,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=mMARtin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-
-dn: cn=DIG Test,cn=DIG IS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DIG Test
-objectclass: groupOfUniqueNames
-owner: uid=plelouarn,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: uid=wuser,ou=ing,ou=external,ou=people,dc=sample,dc=com
 
 dn: cn=Jira,ou=tools,dc=sample,dc=com
 cn : Jira
@@ -382,24 +112,23 @@ objectclass: groupOfUniqueNames
 uniqueMember: cn=Production,ou=branche,ou=groups,dc=sample,dc=com
 uniqueMember: cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 
-dn: cn=BPR Affect,ou=tools,dc=sample,dc=com
-cn : BPR Affect
+dn: cn=Biz Agency,ou=tools,dc=sample,dc=com
+cn : Biz Agency
 objectclass: groupOfUniqueNames
 uniqueMember: uid=fdoe2,ou=ing,ou=external,ou=people,dc=sample,dc=com
-uniqueMember: cn=BPR Affect Manager,cn=BPR Affect,ou=tools,dc=sample,dc=com
+uniqueMember: cn=Biz Agency Manager,cn=Biz Agency,ou=tools,dc=sample,dc=com
 
-dn: cn=BPR Affect Manager,cn=BPR Affect,ou=tools,dc=sample,dc=com
-cn : BPR Affect Manager
+dn: cn=Biz Agency Manager,cn=Biz Agency,ou=tools,dc=sample,dc=com
+cn : Biz Agency Manager
 objectclass: groupOfUniqueNames
 uniqueMember: uid=broken,ou=gfi,ou=france,ou=people,dc=sample,dc=com
 
-
-dn: ou=sncf,ou=project,dc=sample,dc=com
-ou: sncf
+dn: ou=sea,ou=project,dc=sample,dc=com
+ou: sea
 objectclass: organizationalUnit
 
-dn: cn=sncf-octopus,ou=sncf,ou=project,dc=sample,dc=com
-cn: sncf-octopus
+dn: cn=sea-octopus,ou=sea,ou=project,dc=sample,dc=com
+cn: sea-octopus
 objectclass: groupOfUniqueNames
 uniqueMember: uid=any,ou=gfi,ou=france,ou=people,dc=sample,dc=com
 

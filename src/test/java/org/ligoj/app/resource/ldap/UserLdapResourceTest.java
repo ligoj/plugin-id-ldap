@@ -59,7 +59,7 @@ import net.sf.ehcache.CacheManager;
  * <li>mmartin;company;any;true;true;cn=any,ou=groups</li>
  * <li>mtuyer;tree;ou=fonction,ou=groups;true;true;ou=fonction,ou=groups</li>
  * <li>mtuyer;company;ing;false;true;ou=ing,ou=external,ou=people</li>
- * <li>mlavoine;tree;cn=BPR Affect,ou=tools;false;false;cn=BPR Affect,ou=tools</li>
+ * <li>mlavoine;tree;cn=Biz Agency,ou=tools;false;false;cn=Biz Agency,ou=tools</li>
  * <li>gfi-gstack (group);company;ing;false;false;ou=ing,ou=external,ou=people,dc=sample,dc=com</li>
  * <li>ing (company);group;business solution;false;false;cn=business solution,ou=groups,dc=sample,dc=com</li>
  * </ul>
@@ -211,7 +211,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertTrue(userLdap.isManaged());
 		final List<GroupLdapVo> groups = new ArrayList<>(userLdap.getGroups());
 		Assert.assertEquals(3, groups.size());
-		Assert.assertEquals("BPR Affect", groups.get(0).getName());
+		Assert.assertEquals("Biz Agency", groups.get(0).getName());
 		Assert.assertEquals("DIG RHA", groups.get(1).getName());
 		Assert.assertEquals("DIG Sud Ouest", groups.get(2).getName());
 	}
@@ -234,7 +234,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertEquals("first2.doe2@ing.fr", tableItem.getData().get(0).getMails().get(0));
 		final List<GroupLdapVo> groups = new ArrayList<>(tableItem.getData().get(0).getGroups());
 		Assert.assertEquals(2, groups.size());
-		Assert.assertEquals("BPR Affect", groups.get(0).getName());
+		Assert.assertEquals("Biz Agency", groups.get(0).getName());
 		Assert.assertEquals("DIG RHA", groups.get(1).getName());
 	}
 
@@ -255,7 +255,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertEquals("Doe2", tableItem.get(0).getLastName());
 		Assert.assertEquals("first2.doe2@ing.fr", tableItem.get(0).getMails().get(0));
 		Assert.assertEquals(3, tableItem.get(0).getGroups().size());
-		Assert.assertTrue(tableItem.get(0).getGroups().contains("bpr affect"));
+		Assert.assertTrue(tableItem.get(0).getGroups().contains("biz agency"));
 		Assert.assertTrue(tableItem.get(0).getGroups().contains("dig rha"));
 	}
 
@@ -493,7 +493,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 
 		// Check the groups
 		Assert.assertEquals(1, tableItem.getData().get(0).getGroups().size());
-		Assert.assertEquals("BPR Affect", tableItem.getData().get(0).getGroups().get(0).getName());
+		Assert.assertEquals("Biz Agency", tableItem.getData().get(0).getGroups().get(0).getName());
 		Assert.assertFalse(tableItem.getData().get(0).getGroups().get(0).isManaged());
 	}
 
@@ -967,7 +967,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		user.setCompany("socygan");
 		user.setMail("first0.last0@socygan.fr");
 		final List<String> groups = new ArrayList<>();
-		groups.add("BPR Affect");
+		groups.add("Biz Agency");
 		user.setGroups(groups);
 		initSpringSecurityContext("mlavoine");
 		resource.update(user);
@@ -1154,12 +1154,12 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		final TableItem<UserLdapVo> initialResult = resource.findAll(null, null, "fdoe2", newUriInfoAsc("id"));
 		Assert.assertEquals(1, initialResult.getData().size());
 		Assert.assertEquals(2, initialResult.getData().get(0).getGroups().size());
-		Assert.assertEquals("BPR Affect", initialResult.getData().get(0).getGroups().get(0).getName());
+		Assert.assertEquals("Biz Agency", initialResult.getData().get(0).getGroups().get(0).getName());
 		Assert.assertTrue(initialResult.getData().get(0).getGroups().get(0).isManaged());
 		Assert.assertEquals("DIG RHA", initialResult.getData().get(0).getGroups().get(1).getName());
 		Assert.assertTrue(initialResult.getData().get(0).getGroups().get(1).isManaged());
 
-		// Remove group "BPR Affect"
+		// Remove group "Biz Agency"
 		final UserLdapEdition user = new UserLdapEdition();
 		user.setId("fdoe2");
 		user.setFirstName("First2");

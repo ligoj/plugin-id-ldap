@@ -80,17 +80,17 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test
 	public void findAll2() {
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "sncf-octopus"));
+		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "sea-octopus"));
 		Assert.assertEquals(1, groups.getRecordsTotal());
 
 		final ContainerLdapCountVo group0 = groups.getData().get(0);
-		Assert.assertEquals("sncf-octopus", group0.getName());
+		Assert.assertEquals("sea-octopus", group0.getName());
 		Assert.assertEquals(0, group0.getCount());
 		Assert.assertEquals(0, group0.getCountVisible());
 		Assert.assertTrue(group0.isCanAdmin());
 		Assert.assertTrue(group0.isCanWrite());
 		Assert.assertEquals("Project", group0.getType());
-		Assert.assertEquals("sncf-octopus", group0.getId());
+		Assert.assertEquals("sea-octopus", group0.getId());
 		Assert.assertTrue(group0.isLocked());
 	}
 
@@ -377,7 +377,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test(expected = ValidationJsonException.class)
 	public void deleteLocked() {
-		resource.delete("sncf-octopus");
+		resource.delete("sea-octopus");
 	}
 
 	@Test(expected = ValidationJsonException.class)
@@ -442,9 +442,9 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals(4, managed.getRecordsTotal());
 		Assert.assertEquals(4, managed.getData().size());
 
-		// Brought by a delegate of "cn=bpr affect,ou=tools,dc=sample,dc=com" to company user "mlavoine"
-		Assert.assertTrue(managed.getData().contains("BPR Affect"));
-		Assert.assertTrue(managed.getData().contains("BPR Affect Manager"));
+		// Brought by a delegate of "cn=biz agency,ou=tools,dc=sample,dc=com" to company user "mlavoine"
+		Assert.assertTrue(managed.getData().contains("Biz Agency"));
+		Assert.assertTrue(managed.getData().contains("Biz Agency Manager"));
 
 		// Brought by a delegate of "Business Solution" to company "ing"
 		Assert.assertTrue(managed.getData().contains("Business Solution"));
