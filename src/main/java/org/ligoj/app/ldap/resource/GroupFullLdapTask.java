@@ -1,6 +1,7 @@
 package org.ligoj.app.ldap.resource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -17,7 +18,7 @@ public class GroupFullLdapTask extends AbstractLdapBatchTask<GroupImportEntry> {
 	protected GroupLdapResource resource;
 
 	@Autowired
-	protected ContainerTypeLdapResource containerTypeLdapResource;
+	protected ContainerScopeResource containerTypeLdapResource;
 
 	@Override
 	protected void doBatch(final GroupImportEntry entry) throws Exception {

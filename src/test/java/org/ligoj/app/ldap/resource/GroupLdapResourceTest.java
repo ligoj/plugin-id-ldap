@@ -9,6 +9,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.ligoj.app.api.CompanyLdap;
+import org.ligoj.app.api.GroupLdap;
+import org.ligoj.app.model.ContainerType;
+import org.ligoj.app.plugin.id.model.ContainerScope;
+import org.ligoj.bootstrap.core.json.TableItem;
+import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.filter.AndFilter;
@@ -16,19 +23,6 @@ import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import org.ligoj.bootstrap.core.json.TableItem;
-import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
-import org.ligoj.bootstrap.core.validation.ValidationJsonException;
-import org.ligoj.app.api.CompanyLdap;
-import org.ligoj.app.api.GroupLdap;
-import org.ligoj.app.ldap.model.ContainerType;
-import org.ligoj.app.ldap.model.ContainerTypeLdap;
-import org.ligoj.app.ldap.resource.ContainerLdapCountVo;
-import org.ligoj.app.ldap.resource.ContainerLdapWithTypeVo;
-import org.ligoj.app.ldap.resource.GroupLdapEditionVo;
-import org.ligoj.app.ldap.resource.GroupLdapResource;
-import org.ligoj.app.ldap.resource.UserLdapResource;
 
 /**
  * Test class of {@link GroupLdapResource}
@@ -49,7 +43,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void findAll() {
 		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "d"));
-		Assert.assertEquals(21, groups.getRecordsTotal());
+		Assert.assertEquals(6, groups.getRecordsTotal());
 
 		final ContainerLdapCountVo group0 = groups.getData().get(0);
 		Assert.assertEquals("DIG", group0.getName());
@@ -61,7 +55,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals("dig", group0.getId());
 		Assert.assertFalse(group0.isLocked());
 
-		final ContainerLdapCountVo group10 = groups.getData().get(9);
+		final ContainerLdapCountVo group10 = groups.getData().get(3);
 		Assert.assertEquals("DIG RHA", group10.getName());
 		Assert.assertEquals(4, group10.getCount());
 		Assert.assertEquals(4, group10.getCountVisible());
@@ -72,7 +66,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertFalse(group10.isLocked());
 
 		// No group type case
-		final ContainerLdapCountVo group20 = groups.getData().get(20);
+		final ContainerLdapCountVo group20 = groups.getData().get(4);
 		Assert.assertEquals("Production", group20.getName());
 		Assert.assertEquals(1, group20.getCount());
 		Assert.assertEquals(1, group20.getCountVisible());
@@ -102,7 +96,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void findAllDescNoCriteria() {
 		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoDesc("name"));
-		Assert.assertTrue(groups.getRecordsTotal() > 30);
+		Assert.assertTrue(groups.getRecordsTotal() > 20);
 
 		// No group type case
 		final ContainerLdapCountVo group0 = groups.getData().get(0);
@@ -125,7 +119,9 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	public void findAllFromMembership() {
 		initSpringSecurityContext("mmartin");
 		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "hub"));
-		Assert.assertEquals(7, groups.getRecordsTotal());
+		Assert.assertEquals(2, groups.getRecordsTotal());
+		Assert.assertEquals("Hub France", groups.getData().get(0).getName());
+		Assert.assertEquals("Hub Paris", groups.getData().get(1).getName());
 	}
 
 	/**
@@ -213,7 +209,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test(expected = ValidationJsonException.class)
 	public void createNoRight() {
-		final ContainerTypeLdap typeLdap = containerTypeLdapRepository.findByName("Fonction");
+		final ContainerScope typeLdap = containerScopeRepository.findByName("Fonction");
 		final GroupLdapEditionVo group = new GroupLdapEditionVo();
 		group.setName("New-Ax-1-z:Z 0");
 		group.setType(typeLdap.getId());
@@ -222,20 +218,11 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test(expected = ValidationJsonException.class)
-	public void createLocked() {
-		final ContainerTypeLdap typeLdap = containerTypeLdapRepository.findByName("Project");
-		final GroupLdapEditionVo group = new GroupLdapEditionVo();
-		group.setName("Any");
-		group.setType(typeLdap.getId());
-		resource.create(group);
-	}
-
-	@Test(expected = ValidationJsonException.class)
 	public void createAlreadyExists() {
-		final ContainerTypeLdap typeLdap = containerTypeLdapRepository.findByName("Fonction");
+		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
 		final GroupLdapEditionVo group = new GroupLdapEditionVo();
-		group.setName("DSI");
-		group.setType(typeLdap.getId());
+		group.setName("DIG");
+		group.setType(scope.getId());
 		resource.create(group);
 	}
 
@@ -277,16 +264,16 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		group.setDepartments(Collections.singletonList("SOME"));
 		group.setOwners(Collections.singletonList("fdaugan"));
 		group.setAssistants(Collections.singletonList("wuser"));
-		group.setParent("DSI");
+		group.setParent("DIG");
 
-		createInternal(group, "cn=new-ax-1-z:z 0,cn=dsi,ou=fonction,ou=groups,dc=sample,dc=com");
+		createInternal(group, "cn=new-ax-1-z:z 0,cn=dig,ou=fonction,ou=groups,dc=sample,dc=com");
 
 		// Check the group and its attributes
 		final AndFilter filter = new AndFilter();
 		filter.and(new EqualsFilter("objectclass", "groupOfUniqueNames"));
 		filter.and(new EqualsFilter("cn", "New-Ax-1-z:Z 0"));
 		final DirContextAdapter contextAdapter = getTemplate()
-				.search("cn=DSI,ou=fonction,ou=groups,dc=sample,dc=com", filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).get(0);
+				.search("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).get(0);
 		Assert.assertEquals("uid=wuser,ou=ing,ou=external,ou=people,dc=sample,dc=com", contextAdapter.getObjectAttribute("seeAlso"));
 		Assert.assertEquals("SOME", contextAdapter.getStringAttribute("businessCategory"));
 		Assert.assertEquals("uid=fdaugan,ou=gfi,ou=france,ou=people,dc=sample,dc=com", contextAdapter.getStringAttribute("owner"));
@@ -339,7 +326,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	private void createInternal(final GroupLdapEditionVo group, final String expected) {
-		final ContainerTypeLdap typeLdap = containerTypeLdapRepository.findByName("Fonction");
+		final ContainerScope typeLdap = containerScopeRepository.findByName("Fonction");
 		group.setName("New-Ax-1-z:Z 0");
 		group.setType(typeLdap.getId());
 		resource.create(group);
@@ -381,11 +368,6 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test(expected = ValidationJsonException.class)
-	public void deleteLocked() {
-		resource.delete("sea-octopus");
-	}
-
-	@Test(expected = ValidationJsonException.class)
 	public void deleteNoRight() {
 		initSpringSecurityContext("mmartin");
 		resource.delete("dig rha");
@@ -422,9 +404,11 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	public void getContainersForAdmin() {
 		initSpringSecurityContext("mtuyer");
 		final TableItem<String> managed = resource.getContainersForAdmin(newUriInfo());
-		Assert.assertEquals(17, managed.getRecordsFiltered());
-		Assert.assertEquals(17, managed.getRecordsTotal());
-		Assert.assertEquals(10, managed.getData().size());
+
+		// This user can see 4 groups from the direct admin delegates to him
+		Assert.assertEquals(4, managed.getRecordsFiltered());
+		Assert.assertEquals(4, managed.getRecordsTotal());
+		Assert.assertEquals(4, managed.getData().size());
 	}
 
 	/**
@@ -462,9 +446,9 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		final UriInfo uriInfo = newUriInfo();
 		uriInfo.getQueryParameters().add(DataTableAttributes.PAGE_LENGTH, "100");
 		final TableItem<String> managed = resource.getContainers(uriInfo);
-		Assert.assertEquals(19, managed.getRecordsFiltered());
-		Assert.assertEquals(19, managed.getRecordsTotal());
-		Assert.assertEquals(19, managed.getData().size());
+		Assert.assertEquals(6, managed.getRecordsFiltered());
+		Assert.assertEquals(6, managed.getRecordsTotal());
+		Assert.assertEquals(6, managed.getData().size());
 
 		// Brought by a delegate of "ou=fonction,ou=groups,dc=sample,dc=com" to company user "mtuyer"
 		Assert.assertTrue(managed.getData().contains("DIG AS"));
@@ -495,7 +479,8 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	/**
-	 * One delegation to members of company "ing" to see the group "business solution",
+	 * flast1 is member of company "ing".<br>
+	 * There is a delegation to members of company "ing" to see the group "business solution",
 	 * and its sub group "Sub Business Solution"
 	 */
 	@Test
@@ -506,8 +491,9 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals(2, tableItem.getRecordsFiltered());
 		Assert.assertEquals(2, tableItem.getData().size());
 
-		// Check the unique group "Business Solution"
+		// Check the groups "Business Solution"
 		Assert.assertEquals("Business Solution", tableItem.getData().get(0).getName());
+		Assert.assertEquals("Sub Business Solution", tableItem.getData().get(1).getName());
 
 		// Check the groups
 		Assert.assertEquals(0, tableItem.getData().get(0).getCountVisible());

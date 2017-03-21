@@ -4,13 +4,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.ligoj.app.api.ContainerLdap;
+import org.ligoj.app.api.Normalizer;
+import org.ligoj.app.dao.CacheRepository;
+import org.ligoj.app.iam.ContainerLdapRepository;
+import org.ligoj.app.model.CacheContainer;
+import org.ligoj.app.model.ContainerType;
+import org.ligoj.bootstrap.core.json.InMemoryPagination;
+import org.ligoj.bootstrap.core.resource.BusinessException;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,11 +31,7 @@ import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.LdapTemplate;
 
-import org.ligoj.bootstrap.core.json.InMemoryPagination;
-import org.ligoj.app.api.ContainerLdap;
-import org.ligoj.app.iam.ContainerLdapRepository;
-import org.ligoj.app.ldap.model.ContainerType;
-
+import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,9 +40,11 @@ import lombok.extern.slf4j.Slf4j;
  * 
  * @param <T>
  *            The container type.
+ * @param <C>
+ *            The container cache type.
  */
 @Slf4j
-public abstract class AbstractContainerLdaRepository<T extends ContainerLdap> implements ContainerLdapRepository<T> {
+public abstract class AbstractContainerLdaRepository<T extends ContainerLdap, C extends CacheContainer> implements ContainerLdapRepository<T> {
 
 	protected static final Sort.Order DEFAULT_ORDER = new Sort.Order(Direction.ASC, "name");
 
@@ -55,6 +64,12 @@ public abstract class AbstractContainerLdaRepository<T extends ContainerLdap> im
 	private final String className;
 
 	/**
+	 * Human readable type name.
+	 */
+	@Getter
+	protected final String typeName;
+
+	/**
 	 * Container type.
 	 */
 	private final ContainerType type;
@@ -62,8 +77,15 @@ public abstract class AbstractContainerLdaRepository<T extends ContainerLdap> im
 	protected AbstractContainerLdaRepository(final ContainerType type, final String className) {
 		this.type = type;
 		this.className = className;
-
+		this.typeName = this.type.name().toLowerCase(Locale.ENGLISH);
 	}
+
+	/**
+	 * Return the repository managing the container as cache.
+	 * 
+	 * @return the repository managing the container as cache.
+	 */
+	protected abstract CacheRepository<C> getCacheRepository();
 
 	/**
 	 * Map a container <T> to LDAP.
@@ -146,6 +168,20 @@ public abstract class AbstractContainerLdaRepository<T extends ContainerLdap> im
 	 */
 	private boolean matchPattern(final T group, final String criteria) {
 		return StringUtils.containsIgnoreCase(group.getName(), criteria);
+	}
+
+	@Override
+	public T findById(final String user, final String id) {
+		// Check the container exists and return the in memory object.
+		return Optional.ofNullable(getCacheRepository().findById(user, Normalizer.normalize(id))).map(CacheContainer::getId).map(this::findById)
+				.orElse(null);
+	}
+
+	@Override
+	public T findByIdExpected(final String user, final String id) {
+		// Check the container exists and return the in memory object.
+		return Optional.ofNullable(findById(user, id))
+				.orElseThrow(() -> new ValidationJsonException(typeName, BusinessException.KEY_UNKNOW_ID, "0", "id", "1", id));
 	}
 
 }

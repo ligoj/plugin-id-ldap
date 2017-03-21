@@ -8,14 +8,13 @@ import javax.ws.rs.core.Response;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.ligoj.bootstrap.dao.system.SystemUserSettingRepository;
+import org.ligoj.bootstrap.model.system.SystemUserSetting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.ligoj.app.ldap.resource.RedirectResource;
-import org.ligoj.bootstrap.dao.system.SystemUserSettingRepository;
-import org.ligoj.bootstrap.model.system.SystemUserSetting;
 
 /**
  * Test class of {@link RedirectResource}
@@ -38,7 +37,7 @@ public class RedirectResourceTest extends AbstractLdapTest {
 
 		final Response response = resource.handleRedirect(null);
 		Assert.assertNull(response.getCookies().get(RedirectResource.PREFERRED_COOKIE_HASH));
-		Assert.assertEquals("http://localhost:8081/jira", response.getHeaderString("location"));
+		Assert.assertEquals("http://localhost:8081/external", response.getHeaderString("location"));
 	}
 
 	@Test
@@ -47,7 +46,7 @@ public class RedirectResourceTest extends AbstractLdapTest {
 
 		final Response response = resource.handleRedirect(DEFAULT_USER + "|hash");
 		Assert.assertNull(response.getCookies().get(RedirectResource.PREFERRED_COOKIE_HASH));
-		Assert.assertEquals("http://localhost:8081/jira", response.getHeaderString("location"));
+		Assert.assertEquals("http://localhost:8081/external", response.getHeaderString("location"));
 	}
 
 	@Test
@@ -64,7 +63,7 @@ public class RedirectResourceTest extends AbstractLdapTest {
 
 		final Response response = resource.handleRedirect(DEFAULT_USER + "|hash");
 		Assert.assertNull(response.getCookies().get(RedirectResource.PREFERRED_COOKIE_HASH));
-		Assert.assertEquals("http://localhost:8081/jira", response.getHeaderString("location"));
+		Assert.assertEquals("http://localhost:8081/external", response.getHeaderString("location"));
 	}
 
 	@Test
@@ -154,7 +153,7 @@ public class RedirectResourceTest extends AbstractLdapTest {
 		SecurityContextHolder.clearContext();
 		final Response response = resource.redirectToHome().build();
 		Assert.assertEquals(302, response.getStatus());
-		Assert.assertEquals("http://localhost:8081/jira", response.getHeaderString("location"));
+		Assert.assertEquals("http://localhost:8081/external", response.getHeaderString("location"));
 	}
 
 	/**
@@ -165,7 +164,7 @@ public class RedirectResourceTest extends AbstractLdapTest {
 		initSpringSecurityContext("anonymousUser");
 		final Response response = resource.redirectToHome().build();
 		Assert.assertEquals(302, response.getStatus());
-		Assert.assertEquals("http://localhost:8081/jira", response.getHeaderString("location"));
+		Assert.assertEquals("http://localhost:8081/external", response.getHeaderString("location"));
 	}
 
 	@Test
@@ -173,7 +172,7 @@ public class RedirectResourceTest extends AbstractLdapTest {
 		initSpringSecurityContext("fdaugan");
 		final Response response = resource.redirectToHome().build();
 		Assert.assertEquals(302, response.getStatus());
-		Assert.assertEquals("http://localhost:8081/confluence/display/GFIDELIVERY", response.getHeaderString("location"));
+		Assert.assertEquals("http://localhost:8081/internal", response.getHeaderString("location"));
 	}
 
 	@Test
@@ -181,7 +180,7 @@ public class RedirectResourceTest extends AbstractLdapTest {
 		initSpringSecurityContext("fdoe2");
 		final Response response = resource.redirectToHome().build();
 		Assert.assertEquals(302, response.getStatus());
-		Assert.assertEquals("http://localhost:8081/jira", response.getHeaderString("location"));
+		Assert.assertEquals("http://localhost:8081/external", response.getHeaderString("location"));
 	}
 
 	@Test
@@ -217,7 +216,7 @@ public class RedirectResourceTest extends AbstractLdapTest {
 		em.clear();
 		response = resource.handleRedirect(cookieValue);
 		Assert.assertNull(response.getCookies().get(RedirectResource.PREFERRED_COOKIE_HASH));
-		Assert.assertEquals("http://localhost:8081/jira", response.getHeaderString("location"));
+		Assert.assertEquals("http://localhost:8081/external", response.getHeaderString("location"));
 
 		// Login
 		initSpringSecurityContext(DEFAULT_USER);

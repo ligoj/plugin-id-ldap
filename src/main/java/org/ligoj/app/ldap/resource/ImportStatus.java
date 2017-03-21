@@ -36,10 +36,4 @@ public class ImportStatus {
 	 * Import status. <code>null</code> when not proceeded.
 	 */
 	private Boolean status;
-	
-	/**
-	 * Import status text. <code>null</code> when not proceeded.
-	 */
-	private String statusText;
-
 }

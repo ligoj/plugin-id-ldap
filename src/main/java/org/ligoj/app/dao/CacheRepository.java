@@ -2,12 +2,10 @@ package org.ligoj.app.dao;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
-import org.ligoj.app.dao.ldap.DelegateLdapRepository;
 import org.ligoj.app.model.CacheCompany;
 import org.ligoj.app.model.CacheContainer;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * {@link CacheCompany} repository
@@ -18,9 +16,9 @@ public interface CacheRepository<C extends CacheContainer> {
 	/**
 	 * Partial query, unclosed EXIST and OR for the type of delegate to determine visible delegate.
 	 */
-	String VISIBLE_DELEGATE_PART_EXISTS_TYPE = "EXISTS(SELECT 1 FROM DelegateLdap d WHERE                                                                "
-			+ "      (" + DelegateLdapRepository.MATCH_RESOURCE_DN + " AND " + DelegateLdapRepository.ASSIGNED_DELEGATE + ")                 "
-			+ "  AND (type=org.ligoj.app.model.ldap.DelegateLdapType.TREE               ";
+	String VISIBLE_DELEGATE_PART_EXISTS_TYPE = "EXISTS(SELECT 1 FROM DelegateOrg d WHERE                                                                "
+			+ "      (" + DelegateOrgRepository.MATCH_RESOURCE_DN + " AND " + DelegateOrgRepository.ASSIGNED_DELEGATE + ")                 "
+			+ "  AND (type=org.ligoj.app.model.DelegateType.TREE               ";
 
 	/**
 	 * All visible containers regarding the security, and the criteria.

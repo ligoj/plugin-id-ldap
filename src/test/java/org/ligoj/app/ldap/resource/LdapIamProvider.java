@@ -2,13 +2,12 @@ package org.ligoj.app.ldap.resource;
 
 import javax.cache.annotation.CacheResult;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
-
 import org.ligoj.app.iam.IamConfiguration;
 import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.plugin.id.ldap.resource.LdapPluginResource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Component;
 
 /**
  * LDAP IAM provider.
@@ -20,7 +19,7 @@ public class LdapIamProvider implements IamProvider {
 	protected LdapPluginResource resource;
 
 	@Override
-	public Authentication authenticate(final Authentication authentication) throws Exception {
+	public Authentication authenticate(final Authentication authentication) {
 
 		// Primary authentication
 		return resource.authenticate(authentication, "service:id:ldap:dig", true);

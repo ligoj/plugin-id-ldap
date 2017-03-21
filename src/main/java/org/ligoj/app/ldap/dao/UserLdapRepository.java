@@ -30,6 +30,24 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
+import org.ligoj.app.api.CompanyLdap;
+import org.ligoj.app.api.GroupLdap;
+import org.ligoj.app.api.Normalizer;
+import org.ligoj.app.api.SimpleUser;
+import org.ligoj.app.api.SimpleUserLdap;
+import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.iam.IUserRepository;
+import org.ligoj.app.ldap.LdapUtils;
+import org.ligoj.app.ldap.dao.LdapCacheRepository.LdapData;
+import org.ligoj.app.plugin.id.model.CompanyComparator;
+import org.ligoj.app.plugin.id.model.FirstNameComparator;
+import org.ligoj.app.plugin.id.model.LastNameComparator;
+import org.ligoj.app.plugin.id.model.LoginComparator;
+import org.ligoj.app.plugin.id.model.MailComparator;
+import org.ligoj.bootstrap.core.DateUtils;
+import org.ligoj.bootstrap.core.json.InMemoryPagination;
+import org.ligoj.bootstrap.core.resource.BusinessException;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,21 +60,6 @@ import org.springframework.ldap.core.support.AbstractContextMapper;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.security.authentication.encoding.LdapShaPasswordEncoder;
-import org.ligoj.bootstrap.core.DateUtils;
-import org.ligoj.bootstrap.core.json.InMemoryPagination;
-import org.ligoj.app.api.CompanyLdap;
-import org.ligoj.app.api.GroupLdap;
-import org.ligoj.app.api.SimpleUser;
-import org.ligoj.app.api.SimpleUserLdap;
-import org.ligoj.app.api.UserLdap;
-import org.ligoj.app.iam.IUserRepository;
-import org.ligoj.app.ldap.LdapUtils;
-import org.ligoj.app.ldap.dao.LdapCacheRepository.LdapData;
-import org.ligoj.app.ldap.model.CompanyComparator;
-import org.ligoj.app.ldap.model.FirstNameComparator;
-import org.ligoj.app.ldap.model.LastNameComparator;
-import org.ligoj.app.ldap.model.LoginComparator;
-import org.ligoj.app.ldap.model.MailComparator;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -305,7 +308,7 @@ public class UserLdapRepository implements IUserRepository {
 					log.warn("Broken user UID reference found '" + groupLdap.getDn() + "' --> " + uid);
 				}
 			} else {
-				if (!LdapUtils.normalize(dn).equals(LdapUtils.normalize(user.getDn()))) {
+				if (!Normalizer.normalize(dn).equals(Normalizer.normalize(user.getDn()))) {
 					log.warn("Broken user DN reference found '{}' --> {}, instead of {}", groupLdap.getDn(), dn, user.getDn());
 				}
 				user.getGroups().add(group);
@@ -345,7 +348,7 @@ public class UserLdapRepository implements IUserRepository {
 		context.setAttributeValue("cn", entry.getFirstName() + " " + entry.getLastName());
 		context.setAttributeValue("sn", entry.getLastName());
 		context.setAttributeValue("givenName", entry.getFirstName());
-		context.setAttributeValue(uid, LdapUtils.normalize(entry.getId()));
+		context.setAttributeValue(uid, Normalizer.normalize(entry.getId()));
 		context.setAttributeValues("mail", entry.getMails().toArray(), true);
 
 		// Special and also optional attributes
@@ -361,7 +364,7 @@ public class UserLdapRepository implements IUserRepository {
 			user.setLastName(context.getStringAttribute("sn"));
 			user.setFirstName(context.getStringAttribute("givenName"));
 			user.setNoPassword(context.getObjectAttribute("userPassword") == null);
-			user.setId(LdapUtils.normalize(context.getStringAttribute(uid)));
+			user.setId(Normalizer.normalize(context.getStringAttribute(uid)));
 
 			// Special and also optional attributes
 			Optional.ofNullable(departmentAttribute).ifPresent(a -> user.setDepartment(context.getStringAttribute(a)));
@@ -405,10 +408,10 @@ public class UserLdapRepository implements IUserRepository {
 	 * @return The company identifier from the DN of the user.
 	 */
 	protected String toCompany(final String dn) {
-		final Matcher matcher = companyPattern.matcher(LdapUtils.normalize(dn));
+		final Matcher matcher = companyPattern.matcher(Normalizer.normalize(dn));
 		if (matcher.matches()) {
 			if (matcher.groupCount() > 0) {
-				return LdapUtils.normalize(matcher.group(1));
+				return Normalizer.normalize(matcher.group(1));
 			}
 			// Pattern match, but there is no capturing group
 			return null;
@@ -420,7 +423,7 @@ public class UserLdapRepository implements IUserRepository {
 			return null;
 		}
 		// Constant form
-		return LdapUtils.normalize(companyPattern.pattern());
+		return Normalizer.normalize(companyPattern.pattern());
 	}
 
 	@Override
@@ -759,5 +762,38 @@ public class UserLdapRepository implements IUserRepository {
 	@Override
 	public void setPassword(final UserLdap userLdap, final String password) {
 		set(userLdap, "userPassword", digest(password));
+	}
+
+	/**
+	 * Return a safe {@link UserLdap} instance, even if the user is not in LDAP directory.
+	 * 
+	 * @param login
+	 *            the user login. Must not be <code>null</code>.
+	 * @return a not <code>null</code> {@link UserLdap} instance with at least login attribute.
+	 */
+	@Override
+	public UserLdap toUser(final String login) {
+		if (login == null) {
+			return null;
+		}
+
+		// Non null user name
+		UserLdap result = findById(login);
+		if (result == null) {
+			result = new UserLdap();
+			result.setId(login);
+		}
+		return result;
+	}
+
+	@Override
+	public UserLdap findByIdExpected(final String user, final String id) {
+		// Check the user exists
+		final UserLdap rawUserLdap = IUserRepository.super.findByIdExpected(user, id);
+		if (companyLdapRepository.findById(user, rawUserLdap.getCompany()) == null) {
+			// No available delegation -> no result
+			throw new ValidationJsonException("id", BusinessException.KEY_UNKNOW_ID, "0", "user", "1", user);
+		}
+		return rawUserLdap;
 	}
 }

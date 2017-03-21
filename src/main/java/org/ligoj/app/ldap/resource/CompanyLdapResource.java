@@ -15,23 +15,22 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-
-import org.ligoj.bootstrap.core.json.TableItem;
-import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
-import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.app.api.CompanyLdap;
 import org.ligoj.app.api.ContainerLdap;
 import org.ligoj.app.api.UserLdap;
 import org.ligoj.app.dao.CacheCompanyRepository;
 import org.ligoj.app.ldap.LdapUtils;
 import org.ligoj.app.ldap.dao.CompanyLdapRepository;
-import org.ligoj.app.ldap.model.ContainerType;
-import org.ligoj.app.ldap.model.ContainerTypeLdap;
 import org.ligoj.app.model.CacheCompany;
+import org.ligoj.app.model.ContainerType;
+import org.ligoj.app.plugin.id.model.ContainerScope;
+import org.ligoj.bootstrap.core.json.TableItem;
+import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
 
 /**
  * LDAP resource for companies.
@@ -114,7 +113,7 @@ public class CompanyLdapResource extends AbstractContainerLdapResource<CompanyLd
 	public TableItem<ContainerLdapCountVo> findAll(@Context final UriInfo uriInfo) {
 		final PageRequest pageRequest = paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS);
 
-		final List<ContainerTypeLdap> types = containerTypeLdapResource.findAllDescOrder(ContainerType.COMPANY);
+		final List<ContainerScope> types = containerScopeResource.findAllDescOrder(ContainerType.COMPANY);
 		final Set<CompanyLdap> managedCompanies = getContainers();
 		final Set<String> managedCompaniesAsString = managedCompanies.stream().map(CompanyLdap::getId).collect(Collectors.toSet());
 		final Set<CompanyLdap> managedCompaniesWrite = getContainersForWrite();
@@ -148,12 +147,14 @@ public class CompanyLdapResource extends AbstractContainerLdapResource<CompanyLd
 		final Map<String, UserLdap> ldapUsers = getUser().findAll();
 		if (getRepository().findAll().values().stream().filter(g -> LdapUtils.equalsOrParentOf(container.getDn(), g.getDn()))
 				.anyMatch(c -> ldapUsers.values().stream().map(UserLdap::getCompany).anyMatch(c.getId()::equals))) {
-			throw new ValidationJsonException(typeName, "not-empty-company", "0", typeName, "1", container.getId());
+			// Locked container is inside the container to delete
+			throw new ValidationJsonException(getTypeName(), "not-empty-company", "0", getTypeName(), "1",
+					container.getId());
 		}
 	}
 
 	@Override
-	protected String toDn(final ContainerLdapEditionVo container, final ContainerTypeLdap type) {
+	protected String toDn(final ContainerLdapEditionVo container, final ContainerScope type) {
 		return "ou=" + container.getName() + "," + type.getDn();
 	}
 

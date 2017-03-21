@@ -18,23 +18,23 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
-
-import org.ligoj.bootstrap.core.json.TableItem;
-import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
-import org.ligoj.bootstrap.core.resource.BusinessException;
-import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.app.api.CompanyLdap;
 import org.ligoj.app.api.GroupLdap;
+import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.api.UserLdap;
 import org.ligoj.app.dao.CacheGroupRepository;
 import org.ligoj.app.ldap.LdapUtils;
 import org.ligoj.app.ldap.dao.GroupLdapRepository;
-import org.ligoj.app.ldap.model.ContainerType;
-import org.ligoj.app.ldap.model.ContainerTypeLdap;
 import org.ligoj.app.model.CacheGroup;
+import org.ligoj.app.model.ContainerType;
+import org.ligoj.app.plugin.id.model.ContainerScope;
+import org.ligoj.bootstrap.core.json.TableItem;
+import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
+import org.ligoj.bootstrap.core.resource.BusinessException;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
 
 /**
  * LDAP Group resource.
@@ -78,7 +78,7 @@ public class GroupLdapResource extends AbstractContainerLdapResource<GroupLdap, 
 	 */
 	@GET
 	public TableItem<ContainerLdapCountVo> findAll(@Context final UriInfo uriInfo) {
-		final List<ContainerTypeLdap> types = containerTypeLdapResource.findAllDescOrder(ContainerType.GROUP);
+		final List<ContainerScope> types = containerScopeResource.findAllDescOrder(ContainerType.GROUP);
 		final Map<String, CompanyLdap> companies = organizationResource.getRepository().findAll();
 		final Collection<CompanyLdap> managedCompanies = organizationResource.getContainers();
 		final Set<GroupLdap> managedGroupsWrite = getContainersForWrite();
@@ -115,7 +115,7 @@ public class GroupLdapResource extends AbstractContainerLdapResource<GroupLdap, 
 	}
 
 	@Override
-	protected String toDn(final GroupLdapEditionVo container, final ContainerTypeLdap type) {
+	protected String toDn(final GroupLdapEditionVo container, final ContainerScope type) {
 		String parentDn = type.getDn();
 		container.setParent(StringUtils.trimToNull(container.getParent()));
 		if (container.getParent() != null) {
@@ -144,7 +144,7 @@ public class GroupLdapResource extends AbstractContainerLdapResource<GroupLdap, 
 
 		// Check the group can be updated by the current user
 		if (!getContainersForWrite().contains(container)) {
-			throw new ValidationJsonException(typeName, BusinessException.KEY_UNKNOW_ID, "0", typeName, "1", id);
+			throw new ValidationJsonException(getTypeName(), BusinessException.KEY_UNKNOW_ID, "0", getTypeName(), "1", id);
 		}
 
 		// Perform the update
@@ -157,7 +157,7 @@ public class GroupLdapResource extends AbstractContainerLdapResource<GroupLdap, 
 	}
 
 	@Override
-	protected GroupLdap create(final GroupLdapEditionVo container, final ContainerTypeLdap type, final String newDn) {
+	protected GroupLdap create(final GroupLdapEditionVo container, final ContainerScope type, final String newDn) {
 		// Check the related objects
 		final List<String> assistants = toDn(container.getAssistants());
 		final List<String> owners = toDn(container.getOwners());
@@ -168,7 +168,7 @@ public class GroupLdapResource extends AbstractContainerLdapResource<GroupLdap, 
 		// Nesting management
 		if (container.getParent() != null) {
 			// This group will be added as "uniqueMember" of its parent
-			getRepository().addGroup(groupLdap, LdapUtils.normalize(container.getParent()));
+			getRepository().addGroup(groupLdap, Normalizer.normalize(container.getParent()));
 		}
 
 		// Assistant/Owner/Department management

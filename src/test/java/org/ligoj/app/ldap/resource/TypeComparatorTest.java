@@ -11,12 +11,10 @@ import org.junit.Test;
 import org.ligoj.app.api.GroupLdap;
 import org.ligoj.app.dao.CacheRepository;
 import org.ligoj.app.ldap.dao.GroupLdapRepository;
-import org.ligoj.app.ldap.model.ContainerType;
-import org.ligoj.app.ldap.model.ContainerTypeLdap;
-import org.ligoj.app.ldap.resource.AbstractContainerLdapResource;
-import org.ligoj.app.ldap.resource.GroupLdapEditionVo;
 import org.ligoj.app.ldap.resource.AbstractContainerLdapResource.TypeComparator;
 import org.ligoj.app.model.CacheGroup;
+import org.ligoj.app.model.ContainerType;
+import org.ligoj.app.plugin.id.model.ContainerScope;
 
 /**
  * Test class of {@link TypeComparator}
@@ -38,7 +36,7 @@ public class TypeComparatorTest {
 
 	@Test
 	public void compareNullLeft() {
-		final ContainerTypeLdap containerType = new ContainerTypeLdap();
+		final ContainerScope containerType = new ContainerScope();
 		containerType.setDn("ou=Internal,dc=sample,dc=com");
 		containerType.setName("name1");
 		containerType.setType(ContainerType.GROUP);
@@ -56,7 +54,7 @@ public class TypeComparatorTest {
 
 	@Test
 	public void compareNullRight() {
-		final ContainerTypeLdap containerType = new ContainerTypeLdap();
+		final ContainerScope containerType = new ContainerScope();
 		containerType.setDn("ou=External,dc=sample,dc=com");
 		containerType.setName("name1");
 		containerType.setType(ContainerType.GROUP);
@@ -74,11 +72,11 @@ public class TypeComparatorTest {
 
 	@Test
 	public void compare() {
-		final ContainerTypeLdap containerType1 = new ContainerTypeLdap();
+		final ContainerScope containerType1 = new ContainerScope();
 		containerType1.setDn("ou=External,dc=sample,dc=com");
 		containerType1.setName("name2");
 		containerType1.setType(ContainerType.GROUP);
-		final ContainerTypeLdap containerType2 = new ContainerTypeLdap();
+		final ContainerScope containerType2 = new ContainerScope();
 		containerType2.setDn("ou=Internal,dc=sample,dc=com");
 		containerType2.setName("name1");
 		containerType2.setType(ContainerType.GROUP);
@@ -94,7 +92,7 @@ public class TypeComparatorTest {
 		Assert.assertEquals("NameB", groups.get(2).getName());
 	}
 
-	private Comparator<GroupLdap> newComparator(final List<ContainerTypeLdap> containerTypes) {
+	private Comparator<GroupLdap> newComparator(final List<ContainerScope> containerTypes) {
 		return new AbstractContainerLdapResource<GroupLdap, GroupLdapEditionVo, CacheGroup>(ContainerType.GROUP) {
 
 			@Override
@@ -103,7 +101,7 @@ public class TypeComparatorTest {
 			}
 
 			@Override
-			protected String toDn(final GroupLdapEditionVo container, final ContainerTypeLdap type) {
+			protected String toDn(final GroupLdapEditionVo container, final ContainerScope type) {
 				return null;
 			}
 

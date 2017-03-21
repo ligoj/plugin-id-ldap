@@ -37,17 +37,17 @@ import org.apache.cxf.message.MessageImpl;
 import org.ligoj.app.api.CompanyLdap;
 import org.ligoj.app.api.ContainerLdap;
 import org.ligoj.app.api.GroupLdap;
+import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.api.SimpleUser;
-import org.ligoj.app.api.SimpleUserLdap;
 import org.ligoj.app.api.UserLdap;
-import org.ligoj.app.dao.ldap.DelegateLdapRepository;
+import org.ligoj.app.dao.DelegateOrgRepository;
 import org.ligoj.app.iam.ICompanyRepository;
 import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.ldap.LdapUtils;
 import org.ligoj.app.ldap.dao.GroupLdapRepository;
 import org.ligoj.app.ldap.dao.UserLdapRepository;
-import org.ligoj.app.model.DelegateLdap;
-import org.ligoj.app.model.DelegateLdapType;
+import org.ligoj.app.model.DelegateOrg;
+import org.ligoj.app.model.DelegateType;
 import org.ligoj.app.plugin.id.resource.PasswordResource;
 import org.ligoj.bootstrap.core.json.PaginationJson;
 import org.ligoj.bootstrap.core.json.TableItem;
@@ -55,7 +55,6 @@ import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -72,7 +71,7 @@ import lombok.extern.slf4j.Slf4j;
 @Produces(MediaType.APPLICATION_JSON)
 @Slf4j
 @Transactional
-public class UserLdapResource implements InitializingBean {
+public class UserLdapResource {
 
 	/**
 	 * The primary business key
@@ -87,7 +86,7 @@ public class UserLdapResource implements InitializingBean {
 	protected IamProvider iamProvider;
 
 	@Autowired
-	private DelegateLdapRepository delegateRepository;
+	private DelegateOrgRepository delegateRepository;
 
 	@Autowired
 	private PaginationJson paginationJson;
@@ -115,89 +114,6 @@ public class UserLdapResource implements InitializingBean {
 		ORDERED_COLUMNS.put("lastName", "lastName");
 		ORDERED_COLUMNS.put("mails", "mail");
 		ORDERED_COLUMNS.put(SimpleUser.COMPANY_ALIAS, SimpleUser.COMPANY_ALIAS);
-	}
-
-	/**
-	 * Converter from {@link String} to {@link SimpleUserLdap}
-	 */
-	public static final Function<String, SimpleUserLdap> TO_LDAP_CONVERTER = new StringToUserLdapConverter();
-
-	/**
-	 * Converter from {@link String} to {@link UserLdap}
-	 */
-	public static final Function<String, UserLdap> TO_LDAP_RAW_CONVERTER = new StringToUserLdapRawConverter();
-
-	/**
-	 * Return a safe {@link UserLdap} instance, even if the user is not in LDAP directory. Build a not <code>null</code>
-	 * {@link UserLdap} instance with at least login attribute.
-	 */
-	private abstract static class AbstractUserLdapConverter {
-
-		/**
-		 * Simple copy of {@link IamProvider#repository} for performance
-		 */
-		private static IamProvider iamProvider;
-
-		/**
-		 * Return a safe {@link UserLdap} instance, even if the user is not in LDAP directory.
-		 * 
-		 * @param login
-		 *            the user login. Must not be <code>null</code>.
-		 * @return a not <code>null</code> {@link UserLdap} instance with at least login attribute.
-		 */
-		protected UserLdap toUserDetailSafe(final String login) {
-			if (login == null) {
-				return null;
-			}
-
-			// Non null user name
-			UserLdap result = iamProvider.getConfiguration().getUserRepository().findById(login);
-			if (result == null) {
-				result = new UserLdap();
-				result.setId(login);
-			}
-			return result;
-		}
-
-	}
-
-	/**
-	 * Return a safe {@link UserLdap} instance, even if the user is not in LDAP directory. Build a not <code>null</code>
-	 * {@link UserLdap} instance with at least login attribute.
-	 */
-	private static class StringToUserLdapRawConverter extends AbstractUserLdapConverter implements Function<String, UserLdap> {
-
-		@Override
-		public UserLdap apply(final String login) {
-			return toUserDetailSafe(login);
-		}
-	}
-
-	/**
-	 * Return a safe {@link SimpleUserLdap} instance, even if the user is not in LDAP directory. Build a not
-	 * <code>null</code> {@link SimpleUserLdap} instance with at least login attribute.
-	 */
-	private static class StringToUserLdapConverter extends AbstractUserLdapConverter implements Function<String, SimpleUserLdap> {
-
-		@Override
-		public SimpleUserLdap apply(final String login) {
-			final UserLdap rawUser = toUserDetailSafe(login);
-
-			// Fail safe not existing user
-			if (rawUser == null) {
-				return null;
-			}
-
-			// Convert user
-			final SimpleUserLdap user = new SimpleUserLdap();
-			rawUser.copy(user);
-			return user;
-		}
-	}
-
-	@Override
-	public void afterPropertiesSet() {
-		AbstractUserLdapConverter.iamProvider = iamProvider;
 	}
 
 	/**
@@ -246,7 +162,7 @@ public class UserLdapResource implements InitializingBean {
 		final Map<String, GroupLdap> allGroups = getGroup().findAll();
 
 		// The companies to use
-		final Set<String> filteredCompanies = computeFilteredCompanies(LdapUtils.normalize(company), managedCompanies);
+		final Set<String> filteredCompanies = computeFilteredCompanies(Normalizer.normalize(company), managedCompanies);
 
 		// The groups to use
 		final Collection<GroupLdap> filteredGroups = computeFilteredGroups(group, managedGroups, allGroups);
@@ -329,7 +245,7 @@ public class UserLdapResource implements InitializingBean {
 		if (StringUtils.isBlank(group)) {
 			filteredGroups = null;
 		} else {
-			final GroupLdap filteredGroup = allGroups.get(LdapUtils.normalize(group));
+			final GroupLdap filteredGroup = allGroups.get(Normalizer.normalize(group));
 			// Filter the group, including the children
 			filteredGroups = allGroups.values().stream().filter(groupEntry -> managedGroups.contains(groupEntry) && filteredGroup != null
 					&& LdapUtils.equalsOrParentOf(filteredGroup.getDn(), groupEntry.getDn())).collect(Collectors.toList());
@@ -348,7 +264,7 @@ public class UserLdapResource implements InitializingBean {
 	@GET
 	@Path("{user:" + SimpleUser.USER_PATTERN + "}")
 	public UserLdap findById(@PathParam("user") final String user) {
-		final UserLdap rawUserLdap = getRepository().findByIdExpected(LdapUtils.normalize(user));
+		final UserLdap rawUserLdap = getRepository().findByIdExpected(Normalizer.normalize(user));
 		if (organizationResource.findById(rawUserLdap.getCompany()) == null) {
 			// No available delegation -> no result
 			throw new ValidationJsonException(USER_KEY, BusinessException.KEY_UNKNOW_ID, "0", "user", "1", user);
@@ -376,7 +292,7 @@ public class UserLdapResource implements InitializingBean {
 	@PUT
 	@Path("{user}/group/{group}")
 	public void addUserToGroup(@PathParam("user") final String user, @PathParam("group") final String group) {
-		updateGroupUser(user, LdapUtils.normalize(group), Collection::add);
+		updateGroupUser(user, Normalizer.normalize(group), Collection::add);
 	}
 
 	/**
@@ -390,7 +306,7 @@ public class UserLdapResource implements InitializingBean {
 	@DELETE
 	@Path("{user}/group/{group}")
 	public void removeUser(@PathParam("user") final String user, @PathParam("group") final String group) {
-		updateGroupUser(user, LdapUtils.normalize(group), Collection::remove);
+		updateGroupUser(user, Normalizer.normalize(group), Collection::remove);
 	}
 
 	/**
@@ -406,7 +322,7 @@ public class UserLdapResource implements InitializingBean {
 	private void updateGroupUser(final String user, final String group, final BiFunction<Collection<String>, String, Boolean> updater) {
 
 		// Get all delegates of current user
-		final List<DelegateLdap> delegates = delegateRepository.findAllByUser(securityHelper.getLogin());
+		final List<DelegateOrg> delegates = delegateRepository.findAllByUser(securityHelper.getLogin());
 
 		// Get the implied user
 		final UserLdap userLdap = getRepository().findByIdExpected(user);
@@ -485,16 +401,16 @@ public class UserLdapResource implements InitializingBean {
 		normalize(importEntry);
 
 		// Get all delegates of current user
-		final List<DelegateLdap> delegates = delegateRepository.findAllByUser(principal);
+		final List<DelegateOrg> delegates = delegateRepository.findAllByUser(principal);
 
 		// Get the stored data of the implied user
 		final UserLdap userLdap = getRepository().findById(importEntry.getId());
 
 		// Check the implied company and request changes
-		final String cleanCompany = LdapUtils.normalize(importEntry.getCompany());
+		final String cleanCompany = Normalizer.normalize(importEntry.getCompany());
 		final String companyDn = ContainerLdap.getSafeDn(getCompany().findById(cleanCompany));
 		final boolean hasAttributeChange = hasAttributeChange(importEntry, userLdap);
-		if (!isGrantedAccess(delegates, companyDn, DelegateLdapType.COMPANY, hasAttributeChange)) {
+		if (!isGrantedAccess(delegates, companyDn, DelegateType.COMPANY, hasAttributeChange)) {
 			// No right at all, unknown company, no (write|admin) right on this company, or no delegate on this company
 			// Report this attempt
 			log.warn("Attempt to create/update a user '{}' out of scope, company {}", importEntry.getId(), cleanCompany);
@@ -529,7 +445,7 @@ public class UserLdapResource implements InitializingBean {
 	/**
 	 * Validate assigned groups, and return corresponding group identifiers.
 	 */
-	private List<String> validateAndGroupsCN(final UserLdap userLdap, final UserLdapEdition importEntry, final List<DelegateLdap> delegates,
+	private List<String> validateAndGroupsCN(final UserLdap userLdap, final UserLdapEdition importEntry, final List<DelegateOrg> delegates,
 			final Map<String, GroupLdap> allGroups) {
 
 		// First complete the groups with the implicit ones from department
@@ -544,12 +460,12 @@ public class UserLdapResource implements InitializingBean {
 	/**
 	 * Validate assigned groups, and return corresponding group identifiers.
 	 */
-	private List<String> validateAndGroupsCN(final Collection<String> newGroups, final List<DelegateLdap> delegates,
+	private List<String> validateAndGroupsCN(final Collection<String> newGroups, final List<DelegateOrg> delegates,
 			final Map<String, GroupLdap> allGroups) {
 		final List<String> groupsCn = new ArrayList<>();
 		for (final String group : CollectionUtils.emptyIfNull(newGroups)) {
-			final GroupLdap groupLdap = allGroups.get(LdapUtils.normalize(group));
-			if (groupLdap == null || !isGrantedAccess(delegates, groupLdap.getDn(), DelegateLdapType.GROUP, true)) {
+			final GroupLdap groupLdap = allGroups.get(Normalizer.normalize(group));
+			if (groupLdap == null || !isGrantedAccess(delegates, groupLdap.getDn(), DelegateType.GROUP, true)) {
 				// No right on this group, or unknown LDAP group
 				throw new ValidationJsonException("groups", BusinessException.KEY_UNKNOW_ID, "0", "groups", "1", group);
 			}
@@ -580,14 +496,14 @@ public class UserLdapResource implements InitializingBean {
 	 *            The visible and writable groups identifiers to be set to the LDAP entry.
 	 * @return the merged group identifiers to be set internally.
 	 */
-	private Collection<String> mergeGroups(final List<DelegateLdap> delegates, final UserLdap userLdap, final Map<String, GroupLdap> allGroups,
+	private Collection<String> mergeGroups(final List<DelegateOrg> delegates, final UserLdap userLdap, final Map<String, GroupLdap> allGroups,
 			final Collection<String> groups) {
 		// Compute the groups merged groups
 		final Collection<String> newGroups = new HashSet<>(userLdap.getGroups());
 		newGroups.addAll(groups);
 		for (final String oldGroup : userLdap.getGroups()) {
 			final String oldGroupDn = allGroups.get(oldGroup).getDn();
-			if (!groups.contains(oldGroup) && isGrantedAccess(delegates, oldGroupDn, DelegateLdapType.GROUP, true)) {
+			if (!groups.contains(oldGroup) && isGrantedAccess(delegates, oldGroupDn, DelegateType.GROUP, true)) {
 				// This group is visible, so it has been explicitly removed by the current user
 				newGroups.remove(oldGroup);
 			}
@@ -600,9 +516,9 @@ public class UserLdapResource implements InitializingBean {
 	 */
 	private void normalize(final UserLdapEdition importEntry) {
 		// Normalize the identifiers
-		importEntry.setCompany(LdapUtils.normalize(importEntry.getCompany()));
-		importEntry.setId(StringUtils.trimToNull(LdapUtils.normalize(importEntry.getId())));
-		importEntry.setGroups(new ArrayList<>(LdapUtils.normalize(importEntry.getGroups())));
+		importEntry.setCompany(Normalizer.normalize(importEntry.getCompany()));
+		importEntry.setId(StringUtils.trimToNull(Normalizer.normalize(importEntry.getId())));
+		importEntry.setGroups(new ArrayList<>(Normalizer.normalize(importEntry.getGroups())));
 
 		// Fix the names of user
 		importEntry.setDepartment(StringUtils.trimToNull(importEntry.getDepartment()));
@@ -611,12 +527,12 @@ public class UserLdapResource implements InitializingBean {
 		importEntry.setFirstName(WordUtils.capitalizeFully(StringUtils.trimToNull(importEntry.getFirstName())));
 	}
 
-	private boolean isGrantedAccess(final List<DelegateLdap> delegates, final String dn, final DelegateLdapType type, final boolean requestUpdate) {
+	private boolean isGrantedAccess(final List<DelegateOrg> delegates, final String dn, final DelegateType type, final boolean requestUpdate) {
 		return dn != null && (!requestUpdate || delegates.stream().anyMatch(delegate -> isGrantedAccess(delegate, dn, type, requestUpdate)));
 	}
 
-	protected boolean isGrantedAccess(final DelegateLdap delegate, final String dn, final DelegateLdapType type, final boolean requestUpdate) {
-		return (delegate.getType() == type || delegate.getType() == DelegateLdapType.TREE)
+	protected boolean isGrantedAccess(final DelegateOrg delegate, final String dn, final DelegateType type, final boolean requestUpdate) {
+		return (delegate.getType() == type || delegate.getType() == DelegateType.TREE)
 				&& (!requestUpdate || delegate.isCanAdmin() || delegate.isCanWrite()) && LdapUtils.equalsOrParentOf(delegate.getDn(), dn);
 	}
 
@@ -846,11 +762,11 @@ public class UserLdapResource implements InitializingBean {
 	 */
 	private UserLdap checkDeletionRight(final String user, final String mode) {
 		// Check the user exists
-		final UserLdap userLdap = getRepository().findByIdExpected(LdapUtils.normalize(user));
+		final UserLdap userLdap = getRepository().findByIdExpected(Normalizer.normalize(user));
 
 		// Check the company
-		final String companyDn = ContainerLdap.getSafeDn(getCompany().findById(LdapUtils.normalize(userLdap.getCompany())));
-		final List<Integer> ids = delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateLdapType.COMPANY);
+		final String companyDn = ContainerLdap.getSafeDn(getCompany().findById(Normalizer.normalize(userLdap.getCompany())));
+		final List<Integer> ids = delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.COMPANY);
 		if (ids.isEmpty()) {
 			// Report this attempt to delete a non managed user
 			log.warn("Attempt to {} a user '{}' out of scope", mode, user);
@@ -925,7 +841,7 @@ public class UserLdapResource implements InitializingBean {
 	 * @return the found user or <code>null</code> when not found. Groups are not fetched for this operation.
 	 */
 	public UserLdap findByIdNoCache(final String user) {
-		return getRepository().findByIdNoCache(LdapUtils.normalize(user));
+		return getRepository().findByIdNoCache(Normalizer.normalize(user));
 	}
 
 	/**

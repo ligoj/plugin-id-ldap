@@ -10,9 +10,6 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.springframework.stereotype.Repository;
-
-import org.ligoj.bootstrap.core.DescribedBean;
 import org.ligoj.app.api.CompanyLdap;
 import org.ligoj.app.api.ContainerLdap;
 import org.ligoj.app.api.GroupLdap;
@@ -22,6 +19,8 @@ import org.ligoj.app.model.CacheContainer;
 import org.ligoj.app.model.CacheGroup;
 import org.ligoj.app.model.CacheMembership;
 import org.ligoj.app.model.CacheUser;
+import org.ligoj.bootstrap.core.DescribedBean;
+import org.springframework.stereotype.Repository;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -18,6 +18,12 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.ligoj.app.DefaultVerificationMode;
+import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.model.DelegateOrg;
+import org.ligoj.bootstrap.core.SpringUtils;
+import org.ligoj.bootstrap.core.resource.BusinessException;
+import org.ligoj.bootstrap.resource.system.session.SessionSettings;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.mockito.exceptions.base.MockitoException;
@@ -27,22 +33,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import org.ligoj.bootstrap.core.SpringUtils;
-import org.ligoj.bootstrap.core.resource.BusinessException;
-import org.ligoj.bootstrap.resource.system.session.SessionSettings;
-import org.ligoj.app.DefaultVerificationMode;
-import org.ligoj.app.api.UserLdap;
-import org.ligoj.app.ldap.resource.BatchElement;
-import org.ligoj.app.ldap.resource.BatchTaskVo;
-import org.ligoj.app.ldap.resource.UserAtomicLdapTask;
-import org.ligoj.app.ldap.resource.UserBatchLdapResource;
-import org.ligoj.app.ldap.resource.UserFullLdapTask;
-import org.ligoj.app.ldap.resource.UserImportEntry;
-import org.ligoj.app.ldap.resource.UserLdapEdition;
-import org.ligoj.app.ldap.resource.UserLdapResource;
-import org.ligoj.app.ldap.resource.UserUpdateEntry;
-import org.ligoj.app.model.DelegateLdap;
 
 /**
  * Test of {@link UserBatchLdapResource}
@@ -93,7 +83,7 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 
 	@Before
 	public void prepareData() throws IOException {
-		persistEntities("csv/app-test", new Class[] { DelegateLdap.class }, StandardCharsets.UTF_8.name());
+		persistEntities("csv/app-test", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
 	}
 
 	@Test

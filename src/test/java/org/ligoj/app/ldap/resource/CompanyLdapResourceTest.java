@@ -7,23 +7,19 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.ligoj.app.MatcherUtil;
+import org.ligoj.app.api.CompanyLdap;
+import org.ligoj.app.api.GroupLdap;
+import org.ligoj.app.model.ContainerType;
+import org.ligoj.app.plugin.id.dao.ContainerScopeRepository;
+import org.ligoj.app.plugin.id.model.ContainerScope;
+import org.ligoj.bootstrap.core.json.TableItem;
+import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import org.ligoj.bootstrap.core.json.TableItem;
-import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
-import org.ligoj.bootstrap.core.validation.ValidationJsonException;
-import org.ligoj.app.MatcherUtil;
-import org.ligoj.app.api.CompanyLdap;
-import org.ligoj.app.api.GroupLdap;
-import org.ligoj.app.ldap.dao.ContainerTypeLdapRepository;
-import org.ligoj.app.ldap.model.ContainerType;
-import org.ligoj.app.ldap.model.ContainerTypeLdap;
-import org.ligoj.app.ldap.resource.CompanyLdapResource;
-import org.ligoj.app.ldap.resource.ContainerLdapCountVo;
-import org.ligoj.app.ldap.resource.ContainerLdapEditionVo;
 
 /**
  * Test of {@link CompanyLdapResource}<br>
@@ -68,7 +64,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	private CompanyLdapResource resource;
 
 	@Autowired
-	private ContainerTypeLdapRepository containerTypeLdapRepository;
+	private ContainerScopeRepository containerTypeLdapRepository;
 
 	/**
 	 * Check managed companies is filtered against available groups.
@@ -76,10 +72,10 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void getContainers() {
 		final TableItem<String> managed = resource.getContainers(newUriInfo());
-		Assert.assertEquals(37, managed.getRecordsFiltered());
-		Assert.assertEquals(37, managed.getRecordsTotal());
-		Assert.assertEquals(10, managed.getData().size());
-		Assert.assertEquals("adelior", managed.getData().get(0));
+		Assert.assertEquals(9, managed.getRecordsFiltered());
+		Assert.assertEquals(9, managed.getRecordsTotal());
+		Assert.assertEquals(9, managed.getData().size());
+		Assert.assertEquals("external", managed.getData().get(0));
 	}
 
 	/**
@@ -88,10 +84,10 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void getContainersForWrite() {
 		final TableItem<String> managed = resource.getContainersForWrite(newUriInfo());
-		Assert.assertEquals(37, managed.getRecordsFiltered());
-		Assert.assertEquals(37, managed.getRecordsTotal());
-		Assert.assertEquals(10, managed.getData().size());
-		Assert.assertEquals("adelior", managed.getData().get(0));
+		Assert.assertEquals(9, managed.getRecordsFiltered());
+		Assert.assertEquals(9, managed.getRecordsTotal());
+		Assert.assertEquals(9, managed.getData().size());
+		Assert.assertEquals("external", managed.getData().get(0));
 	}
 
 	/**
@@ -149,7 +145,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test
 	public void findByIdExpected() {
-		Assert.assertEquals("ou=adelior,ou=france,ou=people,dc=sample,dc=com", resource.findByIdExpected("adelior").getDn());
+		Assert.assertEquals("ou=ing,ou=external,ou=people,dc=sample,dc=com", resource.findByIdExpected("ing").getDn());
 	}
 
 	@Test
@@ -178,7 +174,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test(expected = ValidationJsonException.class)
 	public void createNoRight() {
-		final ContainerTypeLdap typeLdap = containerTypeLdapRepository.findByName("France");
+		final ContainerScope typeLdap = containerTypeLdapRepository.findByName("France");
 		final ContainerLdapEditionVo group = new ContainerLdapEditionVo();
 		group.setName("New-Ax-1-z:Z 0");
 		group.setType(typeLdap.getId());
@@ -192,16 +188,6 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		thrown.expect(MatcherUtil.validationMatcher("company", "unknown-id"));
 		initSpringSecurityContext("mmartin");
 		resource.delete("gfi");
-	}
-
-	/**
-	 * Container type is locked.
-	 */
-	@Test
-	public void deleteLockedType() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("company", "unknown-id"));
-		resource.delete("any-any");
 	}
 
 	/**
@@ -236,26 +222,17 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test(expected = ValidationJsonException.class)
-	public void createLocked() {
-		final ContainerTypeLdap typeLdap = containerTypeLdapRepository.findByName("Root");
-		final ContainerLdapEditionVo group = new ContainerLdapEditionVo();
-		group.setName("Any");
-		group.setType(typeLdap.getId());
-		resource.create(group);
-	}
-
-	@Test(expected = ValidationJsonException.class)
 	public void createAlreadyExists() {
-		final ContainerTypeLdap typeLdap = containerTypeLdapRepository.findByName("France");
+		final ContainerScope typeLdap = containerTypeLdapRepository.findByName("France");
 		final ContainerLdapEditionVo group = new ContainerLdapEditionVo();
-		group.setName("gfi-production");
+		group.setName("orange");
 		group.setType(typeLdap.getId());
 		resource.create(group);
 	}
 
 	@Test(expected = ValidationJsonException.class)
 	public void createInvalidType() {
-		final ContainerTypeLdap typeLdap = containerTypeLdapRepository.findByName("Fonction");
+		final ContainerScope typeLdap = containerTypeLdapRepository.findByName("Fonction");
 		final ContainerLdapEditionVo company = new ContainerLdapEditionVo();
 		company.setName("New-Ax-1-z:Z 0");
 		company.setType(typeLdap.getId());
@@ -274,7 +251,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	private void createInternal() {
-		final ContainerTypeLdap typeLdap = containerTypeLdapRepository.findByName("France");
+		final ContainerScope typeLdap = containerTypeLdapRepository.findByName("France");
 		final ContainerLdapEditionVo company = new ContainerLdapEditionVo();
 		company.setName("New-Ax-1-z:Z 0");
 		company.setType(typeLdap.getId());
@@ -368,28 +345,30 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test
 	public void findAll() {
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "gfi"));
-		Assert.assertEquals(14, groups.getRecordsTotal());
+		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "g"));
+		Assert.assertEquals(5, groups.getRecordsTotal());
 		final ContainerLdapCountVo group0 = groups.getData().get(0);
 		Assert.assertEquals("gfi", group0.getName());
 		Assert.assertEquals(7, group0.getCount());
 		Assert.assertEquals(7, group0.getCountVisible());
 		Assert.assertTrue(group0.isCanAdmin());
 		Assert.assertTrue(group0.isCanWrite());
+		Assert.assertFalse(group0.isLocked());
 		Assert.assertEquals("France", group0.getType());
 		Assert.assertEquals("gfi", group0.getId());
 		Assert.assertEquals(ContainerType.COMPANY, group0.getContainerType());
 
 		// No group type case
-		final ContainerLdapCountVo group20 = groups.getData().get(1);
-		Assert.assertEquals("gfi-benelux", group20.getName());
-		Assert.assertEquals(0, group20.getCount());
-		Assert.assertEquals(0, group20.getCountVisible());
-		Assert.assertTrue(group20.isCanAdmin());
-		Assert.assertTrue(group20.isCanWrite());
-		Assert.assertEquals("Root", group20.getType());
-		Assert.assertEquals("gfi-benelux", group20.getId());
-		Assert.assertEquals(ContainerType.COMPANY, group20.getContainerType());
+		final ContainerLdapCountVo group2 = groups.getData().get(2);
+		Assert.assertEquals("ing-internal", group2.getName());
+		Assert.assertEquals(1, group2.getCount());
+		Assert.assertEquals(1, group2.getCountVisible());
+		Assert.assertTrue(group2.isCanAdmin());
+		Assert.assertTrue(group2.isCanWrite());
+		Assert.assertTrue(group2.isLocked());
+		Assert.assertEquals("Root", group2.getType());
+		Assert.assertEquals("ing-internal", group2.getId());
+		Assert.assertEquals(ContainerType.COMPANY, group2.getContainerType());
 	}
 
 	@Test

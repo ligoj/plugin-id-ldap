@@ -1,6 +1,6 @@
 package org.ligoj.app.ldap.resource;
 
-import org.ligoj.app.ldap.model.ContainerType;
+import org.ligoj.app.model.ContainerType;
 
 import lombok.Getter;
 import lombok.Setter;

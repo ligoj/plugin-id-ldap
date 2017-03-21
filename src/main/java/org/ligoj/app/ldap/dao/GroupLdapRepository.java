@@ -15,19 +15,22 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.ligoj.app.api.GroupLdap;
+import org.ligoj.app.api.LdapElement;
+import org.ligoj.app.api.Normalizer;
+import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.dao.CacheGroupRepository;
+import org.ligoj.app.iam.IGroupRepository;
+import org.ligoj.app.ldap.LdapUtils;
+import org.ligoj.app.ldap.dao.LdapCacheRepository.LdapData;
+import org.ligoj.app.model.CacheGroup;
+import org.ligoj.app.model.ContainerType;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
-
-import org.ligoj.bootstrap.core.validation.ValidationJsonException;
-import org.ligoj.app.api.GroupLdap;
-import org.ligoj.app.api.LdapElement;
-import org.ligoj.app.api.UserLdap;
-import org.ligoj.app.iam.IGroupRepository;
-import org.ligoj.app.ldap.LdapUtils;
-import org.ligoj.app.ldap.dao.LdapCacheRepository.LdapData;
-import org.ligoj.app.ldap.model.ContainerType;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
  * Group LDAP repository
  */
 @Slf4j
-public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLdap> implements IGroupRepository {
+public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLdap, CacheGroup> implements IGroupRepository {
 
 	/**
 	 * Default DN member for new group. This is required for some LDAP implementation where "uniqueMember" attribute is
@@ -53,6 +56,14 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 	private static final String DEPARTMENT_ATTRIBUTE = "businessCategory";
 	private static final String GROUP_OF_UNIQUE_NAMES = "groupOfUniqueNames";
 	private static final String UNIQUE_MEMBER = "uniqueMember";
+
+	@Autowired
+	private CacheGroupRepository cacheGroupRepository;
+
+	@Override
+	public CacheGroupRepository getCacheRepository() {
+		return cacheGroupRepository;
+	}
 
 	/**
 	 * Default constructor for a container of type {@link ContainerType#GROUP}
@@ -90,7 +101,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 		for (final DirContextAdapter groupRaw : template.search(groupsBaseDn, new EqualsFilter("objectClass", GROUP_OF_UNIQUE_NAMES).encode(),
 				(Object ctx) -> (DirContextAdapter) ctx)) {
 			final Set<String> members = new HashSet<>();
-			final String dn = LdapUtils.normalize(groupRaw.getDn().toString());
+			final String dn = Normalizer.normalize(groupRaw.getDn().toString());
 			final String name = groupRaw.getStringAttribute("cn");
 			final HashSet<String> subGroups = new HashSet<>();
 			for (final String memberDN : ArrayUtils.nullToEmpty(groupRaw.getStringAttributes(UNIQUE_MEMBER))) {
@@ -121,7 +132,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 			final Map<String, GroupLdap> dnToGroups) {
 		for (final GroupLdap group : groups.values()) {
 			for (final String subGroupDn : subGroupsDn.get(group.getId())) {
-				final GroupLdap subGroup = dnToGroups.get(LdapUtils.normalize(subGroupDn));
+				final GroupLdap subGroup = dnToGroups.get(Normalizer.normalize(subGroupDn));
 				if (subGroup == null) {
 					// The unique member previously found does not match to an existing group, report it
 					log.warn("Broken group reference found '" + group.getDn() + "' --> " + subGroupDn);
@@ -291,7 +302,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 	 */
 	private GroupLdap removeMember(final LdapElement uniqueMember, final String group) {
 		final GroupLdap groupLdap = findById(group);
-		if (groupLdap.getMembers().contains(uniqueMember.getId())) {
+		if (groupLdap.getMembers().contains(uniqueMember.getId()) || groupLdap.getSubGroups().contains(uniqueMember.getId())) {
 			// Not useless LDAP operation, avoid LDAP duplicate deletion
 			final ModificationItem[] mods = new ModificationItem[1];
 			mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute(UNIQUE_MEMBER, uniqueMember.getDn()));
@@ -322,7 +333,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 
 	@Override
 	protected GroupLdap newContainer(final String dn, final String cn) {
-		return new GroupLdap(LdapUtils.normalize(dn), cn, new HashSet<>());
+		return new GroupLdap(Normalizer.normalize(dn), cn, new HashSet<>());
 	}
 
 	/**
@@ -361,6 +372,6 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 		filter.and(new EqualsFilter("objectclass", GROUP_OF_UNIQUE_NAMES));
 		filter.and(new EqualsFilter(DEPARTMENT_ATTRIBUTE, department));
 		return template.search(groupsBaseDn, filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).stream().findFirst()
-				.map(c -> c.getStringAttribute("cn")).map(LdapUtils::normalize).map(this::findById).orElse(null);
+				.map(c -> c.getStringAttribute("cn")).map(Normalizer::normalize).map(this::findById).orElse(null);
 	}
 }

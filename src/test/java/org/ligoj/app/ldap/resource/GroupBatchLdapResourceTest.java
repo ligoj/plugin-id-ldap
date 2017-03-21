@@ -14,6 +14,13 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.ligoj.app.DefaultVerificationMode;
+import org.ligoj.app.model.ContainerType;
+import org.ligoj.app.model.DelegateOrg;
+import org.ligoj.app.plugin.id.model.ContainerScope;
+import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
+import org.ligoj.bootstrap.core.SpringUtils;
+import org.ligoj.bootstrap.resource.system.session.SessionSettings;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.mockito.exceptions.base.MockitoException;
@@ -23,21 +30,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import org.ligoj.bootstrap.core.SpringUtils;
-import org.ligoj.bootstrap.resource.system.session.SessionSettings;
-import org.ligoj.app.DefaultVerificationMode;
-import org.ligoj.app.ldap.model.ContainerType;
-import org.ligoj.app.ldap.model.ContainerTypeLdap;
-import org.ligoj.app.ldap.resource.BatchElement;
-import org.ligoj.app.ldap.resource.BatchTaskVo;
-import org.ligoj.app.ldap.resource.ContainerTypeLdapResource;
-import org.ligoj.app.ldap.resource.GroupBatchLdapResource;
-import org.ligoj.app.ldap.resource.GroupFullLdapTask;
-import org.ligoj.app.ldap.resource.GroupImportEntry;
-import org.ligoj.app.ldap.resource.GroupLdapEditionVo;
-import org.ligoj.app.ldap.resource.GroupLdapResource;
-import org.ligoj.app.model.DelegateLdap;
 
 /**
  * Test of {@link GroupBatchLdapResource}
@@ -63,7 +55,7 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 		final GroupFullLdapTask mockTask = new GroupFullLdapTask();
 		mockTask.resource = mockLdapResource;
 		mockTask.securityHelper = securityHelper;
-		mockTask.containerTypeLdapResource = Mockito.mock(ContainerTypeLdapResource.class);
+		mockTask.containerTypeLdapResource = Mockito.mock(ContainerScopeResource.class);
 		Mockito.when(applicationContext.getBean(SessionSettings.class)).thenReturn(new SessionSettings());
 		Mockito.when(applicationContext.getBean((Class<?>) ArgumentMatchers.any(Class.class))).thenAnswer((Answer<Object>) invocation -> {
 			final Class<?> requiredType = (Class<Object>) invocation.getArguments()[0];
@@ -73,7 +65,7 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 			return GroupBatchLdapResourceTest.super.applicationContext.getBean(requiredType);
 		});
 
-		final ContainerTypeLdap container = new ContainerTypeLdap();
+		final ContainerScope container = new ContainerScope();
 		container.setId(1);
 		container.setName("Fonction");
 		container.setType(ContainerType.GROUP);
@@ -87,7 +79,7 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 
 	@Before
 	public void prepareData() throws IOException {
-		persistEntities("csv/app-test", new Class[] { DelegateLdap.class }, StandardCharsets.UTF_8.name());
+		persistEntities("csv/app-test", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
 	}
 
 	@Test

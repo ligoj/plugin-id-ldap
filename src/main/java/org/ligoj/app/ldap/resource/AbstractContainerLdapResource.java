@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -21,11 +20,20 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-
+import org.ligoj.app.api.ContainerLdap;
+import org.ligoj.app.api.Normalizer;
+import org.ligoj.app.dao.CacheRepository;
+import org.ligoj.app.dao.DelegateOrgRepository;
+import org.ligoj.app.iam.ContainerLdapRepository;
+import org.ligoj.app.iam.IamProvider;
+import org.ligoj.app.ldap.LdapUtils;
+import org.ligoj.app.ldap.dao.CompanyLdapRepository;
+import org.ligoj.app.ldap.dao.GroupLdapRepository;
+import org.ligoj.app.ldap.dao.UserLdapRepository;
+import org.ligoj.app.model.CacheContainer;
+import org.ligoj.app.model.ContainerType;
+import org.ligoj.app.plugin.id.model.ContainerScope;
+import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
 import org.ligoj.bootstrap.core.NamedBean;
 import org.ligoj.bootstrap.core.json.PaginationJson;
 import org.ligoj.bootstrap.core.json.TableItem;
@@ -34,34 +42,29 @@ import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.resource.OnNullReturn404;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
-import org.ligoj.app.api.ContainerLdap;
-import org.ligoj.app.dao.CacheRepository;
-import org.ligoj.app.dao.ldap.DelegateLdapRepository;
-import org.ligoj.app.iam.ContainerLdapRepository;
-import org.ligoj.app.iam.IamProvider;
-import org.ligoj.app.ldap.LdapUtils;
-import org.ligoj.app.ldap.dao.CompanyLdapRepository;
-import org.ligoj.app.ldap.dao.GroupLdapRepository;
-import org.ligoj.app.ldap.dao.UserLdapRepository;
-import org.ligoj.app.ldap.model.ContainerType;
-import org.ligoj.app.ldap.model.ContainerTypeLdap;
-import org.ligoj.app.model.CacheContainer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Basic container operations.
- * @param <T> The container type.
- * @param <V> The container edition bean type.
- * @param <C> The container cache type.
  * 
+ * @param <T>
+ *            The container type.
+ * @param <V>
+ *            The container edition bean type.
+ * @param <C>
+ *            The container cache type.
  */
 @Slf4j
 public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V extends ContainerLdapEditionVo, C extends CacheContainer> {
 
 	@Autowired
-	protected ContainerTypeLdapResource containerTypeLdapResource;
+	protected ContainerScopeResource containerScopeResource;
 
 	/**
 	 * The container type manager by this instance.
@@ -69,7 +72,7 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	protected final ContainerType type;
 
 	@Autowired
-	protected DelegateLdapRepository delegateRepository;
+	protected DelegateOrgRepository delegateRepository;
 
 	/**
 	 * IAM provider.
@@ -82,11 +85,6 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 
 	@Autowired
 	protected SecurityHelper securityHelper;
-
-	/**
-	 * Human readable type name.
-	 */
-	protected final String typeName;
 
 	protected static final String TYPE_ATTRIBUTE = "type";
 
@@ -101,7 +99,6 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 
 	protected AbstractContainerLdapResource(final ContainerType type) {
 		this.type = type;
-		this.typeName = this.type.name().toLowerCase(Locale.ENGLISH);
 	}
 
 	/**
@@ -121,7 +118,7 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	/**
 	 * Return the DN from the container and the computed type.
 	 */
-	protected abstract String toDn(V container, ContainerTypeLdap type);
+	protected abstract String toDn(V container, ContainerScope type);
 
 	/**
 	 * Simple transformer, securing sensible date. DN is not forwarded.
@@ -129,11 +126,11 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	protected ContainerLdapWithTypeVo toVo(final T rawGroupLdap) {
 		// Find the closest type
 		final ContainerLdapWithTypeVo securedUserLdap = new ContainerLdapWithTypeVo();
-		final List<ContainerTypeLdap> types = containerTypeLdapResource.findAllDescOrder(type);
-		final ContainerTypeLdap type = toType(types, rawGroupLdap);
+		final List<ContainerScope> scopes = containerScopeResource.findAllDescOrder(type);
+		final ContainerScope scope = toScope(scopes, rawGroupLdap);
 		NamedBean.copy(rawGroupLdap, securedUserLdap);
-		if (type != null) {
-			securedUserLdap.setType(type.getName());
+		if (scope != null) {
+			securedUserLdap.setType(scope.getName());
 		}
 		return securedUserLdap;
 	}
@@ -179,37 +176,34 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	 */
 	public T createInternal(final V container) {
 
-		// Check the unlocked type exists
-		final ContainerTypeLdap type = containerTypeLdapResource.findById(container.getType());
-		if (type.isLocked()) {
-			throw new ValidationJsonException(TYPE_ATTRIBUTE, "locked");
-		}
+		// Check the unlocked scope exists
+		final ContainerScope scope = containerScopeResource.findById(container.getType());
 
 		// Check the type matches with this class' container type
-		if (this.type != type.getType()) {
-			throw new ValidationJsonException(TYPE_ATTRIBUTE, "container-type-match", TYPE_ATTRIBUTE, this.type, "provided", type.getType());
+		if (this.type != scope.getType()) {
+			throw new ValidationJsonException(TYPE_ATTRIBUTE, "container-type-match", TYPE_ATTRIBUTE, this.type, "provided", scope.getType());
 		}
 
 		// Build the new DN, keeping the case
-		final String newDn = toDn(container, type);
+		final String newDn = toDn(container, scope);
 
 		// Check the container can be created by the current user. Used DN will be FQN to match the delegates
-		if (!delegateRepository.isAdmin(securityHelper.getLogin(), LdapUtils.normalize(newDn), this.type.getDelegateType())) {
+		if (!delegateRepository.isAdmin(securityHelper.getLogin(), Normalizer.normalize(newDn), this.type.getDelegateType())) {
 			// Not managed container, report this attempt and act as if this container already exists
-			log.warn("Attempt to create a {} '{}' out of scope", type, container.getName());
-			throw new ValidationJsonException("name", "already-exist", "0", typeName, "1", container.getName());
+			log.warn("Attempt to create a {} '{}' out of scope", scope, container.getName());
+			throw new ValidationJsonException("name", "already-exist", "0", getTypeName(), "1", container.getName());
 		}
 
 		// Check the group does not exists
-		if (getRepository().findById(LdapUtils.normalize(container.getName())) != null) {
-			throw new ValidationJsonException("name", "already-exist", "0", typeName, "1", container.getName());
+		if (getRepository().findById(Normalizer.normalize(container.getName())) != null) {
+			throw new ValidationJsonException("name", "already-exist", "0", getTypeName(), "1", container.getName());
 		}
 
 		// Create the new group
-		return create(container, type, newDn);
+		return create(container, scope, newDn);
 	}
 
-	protected T create(final V container, final ContainerTypeLdap type, final String newDn) {
+	protected T create(final V container, final ContainerScope type, final String newDn) {
 		log.info("Creating a {}@{}-{} '{}'", this.type, type.getName(), type.getId(), container.getName());
 		return getRepository().create(newDn, container.getName());
 	}
@@ -287,7 +281,7 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	 */
 	public T findByIdExpected(final String id) {
 		return Optional.ofNullable(findById(id))
-				.orElseThrow(() -> new ValidationJsonException(typeName, BusinessException.KEY_UNKNOW_ID, "0", typeName, "1", id));
+				.orElseThrow(() -> new ValidationJsonException(getTypeName(), BusinessException.KEY_UNKNOW_ID, "0", getTypeName(), "1", id));
 	}
 
 	/**
@@ -299,9 +293,7 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	 *         the current user
 	 */
 	public T findById(final String id) {
-		// Check the container exists and return the in memory object.
-		return Optional.ofNullable(getCacheRepository().findById(securityHelper.getLogin(), LdapUtils.normalize(id))).map(CacheContainer::getId)
-				.map(getRepository()::findById).orElse(null);
+		return getRepository().findById(securityHelper.getLogin(), id);
 	}
 
 	/**
@@ -313,64 +305,34 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	protected void checkForDeletion(final ContainerLdap container) {
 
 		// Check the container can be deleted by the current user. Used DN will be FQN to match the delegates
-		if (!delegateRepository.isAdmin(securityHelper.getLogin(), LdapUtils.normalize(container.getDn()), this.type.getDelegateType())) {
+		if (!delegateRepository.isAdmin(securityHelper.getLogin(), Normalizer.normalize(container.getDn()), this.type.getDelegateType())) {
 			// Not managed container, report this attempt and act as if this company did not exist
 			log.warn("Attempt to delete a {} '{}' out of scope", type, container.getName());
-			throw new ValidationJsonException(typeName, BusinessException.KEY_UNKNOW_ID, "0", typeName, "1", container.getId());
+			throw new ValidationJsonException(getTypeName(), BusinessException.KEY_UNKNOW_ID, "0", getTypeName(), "1", container.getId());
 		}
 
 		// Check this container is not locked
 		if (container.isLocked()) {
 			throw new ValidationJsonException("company", "locked", "0", container.getName());
 		}
-
-		// Check the associated type is not locked
-		final List<ContainerTypeLdap> types = containerTypeLdapResource.findAllDescOrder(ContainerType.GROUP);
-		final ContainerTypeLdap type = toType(types, container);
-		if (type != null && type.isLocked()) {
-			throw new ValidationJsonException(typeName, "locked", "0", TYPE_ATTRIBUTE, "1", type.getName());
-		}
 	}
 
 	/**
-	 * Return the closest {@link ContainerTypeLdap} name associated to the given group. Order of types is important
+	 * Return the closest {@link ContainerScope} name associated to the given container. Order of scopes is important
 	 * since the first matching item from this list is returned.
 	 * 
-	 * @param types
-	 *            LDAP types.
-	 * @param group
-	 *            the group to check.
-	 * @return The closest {@link ContainerTypeLdap} or <code>null</code> if not found.
+	 * @param scopes
+	 *            The available scopes.
+	 * @param container
+	 *            The containers to check.
+	 * @return The closest {@link ContainerScope} or <code>null</code> if not found.
 	 */
-	public ContainerTypeLdap toType(final List<ContainerTypeLdap> types, final ContainerLdap group) {
-		return toType(types, group.getDn());
+	public ContainerScope toScope(final List<ContainerScope> scopes, final ContainerLdap container) {
+		return scopes.stream().filter(s -> LdapUtils.equalsOrParentOf(s.getDn(), container.getDn())).findFirst().orElse(null);
 	}
 
 	/**
-	 * Return the closest {@link ContainerTypeLdap} name associated to the given group. Order of types is important
-	 * since
-	 * the first matching item from this list is returned.
-	 * 
-	 * @param types
-	 *            LDAP types.
-	 * @param dn
-	 *            the DN of the group to check.
-	 * @return The closest {@link ContainerTypeLdap} or <code>null</code> if not found.
-	 */
-	public ContainerTypeLdap toType(final List<ContainerTypeLdap> types, final String dn) {
-		for (final ContainerTypeLdap type : types) {
-			if (LdapUtils.normalize(dn).endsWith("," + LdapUtils.normalize(type.getDn()))) {
-				// This type matches
-				return type;
-			}
-		}
-
-		// No category found
-		return null;
-	}
-
-	/**
-	 * Order {@link ContainerTypeLdap} by group type.
+	 * Order {@link ContainerScope} by group type.
 	 */
 	@AllArgsConstructor
 	public class TypeComparator implements Comparator<T> {
@@ -378,15 +340,15 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 		/**
 		 * group types
 		 */
-		private List<ContainerTypeLdap> types;
+		private List<ContainerScope> types;
 
 		@Override
 		public int compare(final T group1, final T group2) {
 			final int result;
 
 			// First compare the type
-			final ContainerTypeLdap type1 = toType(types, group1);
-			final ContainerTypeLdap type2 = toType(types, group2);
+			final ContainerScope type1 = toScope(types, group1);
+			final ContainerScope type2 = toScope(types, group2);
 			if (Objects.equals(type1, type2)) {
 				result = 0;
 			} else if (type1 == null) {
@@ -419,7 +381,7 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	 * @return A secured container with right and lock information the current user has.
 	 */
 	protected ContainerLdapCountVo newContainerLdapCountVo(final ContainerLdap rawContainer, final Set<T> managedWrite, final Set<T> managedAdmin,
-			final List<ContainerTypeLdap> types) {
+			final List<ContainerScope> types) {
 		final ContainerLdapCountVo securedUserLdap = new ContainerLdapCountVo();
 		NamedBean.copy(rawContainer, securedUserLdap);
 		securedUserLdap.setCanWrite(managedWrite.contains(rawContainer));
@@ -427,7 +389,7 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 		securedUserLdap.setContainerType(type);
 
 		// Find the closest type
-		final ContainerTypeLdap type = toType(types, rawContainer);
+		final ContainerScope type = toScope(types, rawContainer);
 		if (type != null) {
 			securedUserLdap.setType(type.getName());
 			securedUserLdap.setLocked(type.isLocked());
@@ -525,5 +487,9 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	 */
 	protected Page<T> toInternal(final Page<C> cacheItems) {
 		return new PageImpl<>(new ArrayList<>(toInternal(cacheItems.getContent())), null, cacheItems.getTotalElements());
+	}
+
+	protected String getTypeName() {
+		return getRepository().getTypeName();
 	}
 }

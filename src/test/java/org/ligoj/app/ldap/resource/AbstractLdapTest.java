@@ -4,15 +4,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.Before;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ldap.core.LdapTemplate;
-
-import org.ligoj.bootstrap.AbstractJpaTest;
-import org.ligoj.bootstrap.model.system.SystemAuthorization;
-import org.ligoj.bootstrap.model.system.SystemAuthorization.AuthorizationType;
-import org.ligoj.bootstrap.model.system.SystemRole;
-import org.ligoj.bootstrap.model.system.SystemRoleAssignment;
-import org.ligoj.bootstrap.model.system.SystemUser;
 import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.ldap.dao.CompanyLdapRepository;
 import org.ligoj.app.ldap.dao.GroupLdapRepository;
@@ -22,6 +13,14 @@ import org.ligoj.app.model.Parameter;
 import org.ligoj.app.model.ParameterValue;
 import org.ligoj.app.model.Project;
 import org.ligoj.app.model.Subscription;
+import org.ligoj.bootstrap.AbstractJpaTest;
+import org.ligoj.bootstrap.model.system.SystemAuthorization;
+import org.ligoj.bootstrap.model.system.SystemAuthorization.AuthorizationType;
+import org.ligoj.bootstrap.model.system.SystemRole;
+import org.ligoj.bootstrap.model.system.SystemRoleAssignment;
+import org.ligoj.bootstrap.model.system.SystemUser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ldap.core.LdapTemplate;
 
 /**
  * Test for LDAP resources.

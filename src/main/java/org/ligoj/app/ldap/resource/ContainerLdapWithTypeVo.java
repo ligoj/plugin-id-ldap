@@ -1,6 +1,7 @@
 package org.ligoj.app.ldap.resource;
 
 import org.ligoj.bootstrap.core.NamedBean;
+
 import lombok.Getter;
 import lombok.Setter;
 

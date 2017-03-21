@@ -7,12 +7,12 @@ import java.util.function.BiConsumer;
 import javax.validation.ValidationException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.dao.DelegateOrgRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.ligoj.app.api.UserLdap;
-import org.ligoj.app.dao.ldap.DelegateLdapRepository;
 
 //http://docs.spring.io/spring/docs/3.2.x/spring-framework-reference/html/scheduling.html
 /**
@@ -26,7 +26,7 @@ public class UserAtomicLdapTask extends AbstractLdapBatchTask<UserUpdateEntry> {
 	protected UserLdapResource resource;
 
 	@Autowired
-	protected DelegateLdapRepository repository;
+	protected DelegateOrgRepository repository;
 
 	/**
 	 * Accepted update action types.

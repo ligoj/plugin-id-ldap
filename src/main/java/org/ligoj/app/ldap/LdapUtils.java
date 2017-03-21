@@ -1,15 +1,11 @@
 package org.ligoj.app.ldap;
 
 import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Locale;
-import java.util.Set;
-import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.ligoj.app.api.Normalizer;
 
 /**
  * LDAP utilities.
@@ -28,7 +24,7 @@ public final class LdapUtils {
 	 * @return the RDN of given DN.
 	 */
 	public static String toRdn(@NotNull final String dn) {
-		return normalize(StringUtils.split(dn, "=,")[1]);
+		return Normalizer.normalize(StringUtils.split(dn, "=,")[1]);
 	}
 
 	/**
@@ -39,7 +35,7 @@ public final class LdapUtils {
 	 * @return the normalized RDN of the parent of given DN.
 	 */
 	public static String toParentRdn(@NotNull final String dn) {
-		return normalize(StringUtils.split(dn, "=,")[3]);
+		return Normalizer.normalize(StringUtils.split(dn, "=,")[3]);
 	}
 
 	/**
@@ -72,41 +68,6 @@ public final class LdapUtils {
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * Normalize a collection of string. Order is respected (LinkedHashSet) but not by function contract (Set).
-	 * 
-	 * @param items
-	 *            The human readable strings
-	 * @return the normalized items.
-	 */
-	public static Set<String> normalize(final Collection<String> items) {
-		return normalize(CollectionUtils.emptyIfNull(items).stream());
-	}
-
-	/**
-	 * Normalize a collection of string. Order is respected (LinkedHashSet) but not by function contract (Set).
-	 * 
-	 * @param items
-	 *            The human readable strings
-	 * @return the normalized items.
-	 */
-	public static Set<String> normalize(final Stream<String> items) {
-		final Set<String> result = new LinkedHashSet<>();
-		items.map(LdapUtils::normalize).forEach(result::add);
-		return result;
-	}
-
-	/**
-	 * Normalize and trim a string.
-	 * 
-	 * @param item
-	 *            The human readable string. A DN or any LDAP attribute.
-	 * @return the normalized and trimmed item.
-	 */
-	public static String normalize(@NotNull final String item) {
-		return StringUtils.trimToEmpty(item).toLowerCase(Locale.ENGLISH);
 	}
 
 }

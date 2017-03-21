@@ -15,6 +15,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.ligoj.app.MatcherUtil;
+import org.ligoj.app.api.SimpleUserLdap;
+import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.iam.IamProvider;
+import org.ligoj.app.ldap.dao.GroupLdapRepository;
+import org.ligoj.app.ldap.dao.UserLdapRepository;
+import org.ligoj.app.model.DelegateOrg;
+import org.ligoj.app.model.DelegateType;
+import org.ligoj.bootstrap.core.json.TableItem;
+import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
+import org.ligoj.bootstrap.core.resource.BusinessException;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
@@ -23,22 +35,6 @@ import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import org.ligoj.bootstrap.core.json.TableItem;
-import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
-import org.ligoj.bootstrap.core.resource.BusinessException;
-import org.ligoj.bootstrap.core.validation.ValidationJsonException;
-import org.ligoj.app.MatcherUtil;
-import org.ligoj.app.api.SimpleUserLdap;
-import org.ligoj.app.api.UserLdap;
-import org.ligoj.app.ldap.dao.GroupLdapRepository;
-import org.ligoj.app.ldap.dao.UserLdapRepository;
-import org.ligoj.app.ldap.resource.GroupLdapVo;
-import org.ligoj.app.ldap.resource.UserLdapEdition;
-import org.ligoj.app.ldap.resource.UserLdapResource;
-import org.ligoj.app.ldap.resource.UserLdapVo;
-import org.ligoj.app.model.DelegateLdap;
-import org.ligoj.app.model.DelegateLdapType;
 
 import net.sf.ehcache.CacheManager;
 
@@ -124,7 +120,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 
 	@Before
 	public void prepareData() throws IOException {
-		persistEntities("csv/app-test", new Class[] { DelegateLdap.class }, StandardCharsets.UTF_8.name());
+		persistEntities("csv/app-test", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
 		CacheManager.getInstance().getCache("ldap").removeAll();
 
 		// Force the cache to be created
@@ -178,7 +174,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertEquals("gfi", userLdap.getCompany());
 		Assert.assertEquals("fabrice.daugan@sample.com", userLdap.getMails().get(0));
 		Assert.assertEquals(1, userLdap.getGroups().size());
-		Assert.assertEquals("Hub Nord", userLdap.getGroups().iterator().next());
+		Assert.assertEquals("Hub Paris", userLdap.getGroups().iterator().next());
 	}
 
 	@Test(expected = ValidationJsonException.class)
@@ -193,7 +189,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 	}
 
 	/**
-	 * Show users inside the company "ing" (or sub company), and member of group "dig rha", and matching to criteria
+	 * Show users inside the company "ing" (or sub company), and members of group "dig rha", and matching to criteria
 	 * "iRsT"
 	 */
 	@Test
@@ -215,10 +211,9 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertEquals("first2.doe2@ing.fr", userLdap.getMails().get(0));
 		Assert.assertTrue(userLdap.isManaged());
 		final List<GroupLdapVo> groups = new ArrayList<>(userLdap.getGroups());
-		Assert.assertEquals(3, groups.size());
+		Assert.assertEquals(2, groups.size());
 		Assert.assertEquals("Biz Agency", groups.get(0).getName());
 		Assert.assertEquals("DIG RHA", groups.get(1).getName());
-		Assert.assertEquals("DIG Sud Ouest", groups.get(2).getName());
 	}
 
 	@Test
@@ -259,7 +254,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertEquals("First2", tableItem.get(0).getFirstName());
 		Assert.assertEquals("Doe2", tableItem.get(0).getLastName());
 		Assert.assertEquals("first2.doe2@ing.fr", tableItem.get(0).getMails().get(0));
-		Assert.assertEquals(3, tableItem.get(0).getGroups().size());
+		Assert.assertEquals(2, tableItem.get(0).getGroups().size());
 		Assert.assertTrue(tableItem.get(0).getGroups().contains("biz agency"));
 		Assert.assertTrue(tableItem.get(0).getGroups().contains("dig rha"));
 	}
@@ -275,20 +270,20 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 
 		initSpringSecurityContext("fdaugan");
 		final TableItem<UserLdapVo> tableItem = resource.findAll(null, null, "e", uriInfo);
-		Assert.assertEquals(12, tableItem.getRecordsTotal());
-		Assert.assertEquals(12, tableItem.getRecordsFiltered());
+		Assert.assertEquals(13, tableItem.getRecordsTotal());
+		Assert.assertEquals(13, tableItem.getRecordsFiltered());
 		Assert.assertEquals(5, tableItem.getData().size());
 
 		// Check the users
 
 		// My company
-		// [SimpleUser(id=hdurant), SimpleUser(id=jdoe5), SimpleUser(id=fdoe2), SimpleUser(id=fdauganb),
-		// SimpleUser(id=fdaugana)]
-		Assert.assertEquals("hdurant", tableItem.getData().get(0).getId());
-		Assert.assertEquals("fdoe2", tableItem.getData().get(2).getId());
+		// [SimpleUser(id=jdoe4), SimpleUser(id=hdurant), SimpleUser(id=fdoe2), SimpleUser(id=fdauganb)]
+		Assert.assertEquals("jdoe4", tableItem.getData().get(0).getId());
+		Assert.assertEquals("hdurant", tableItem.getData().get(1).getId());
+		Assert.assertEquals("fdoe2", tableItem.getData().get(3).getId());
 
 		// Not my company, brought by delegation
-		Assert.assertEquals("jdoe5", tableItem.getData().get(1).getId()); //
+		Assert.assertEquals("jdoe5", tableItem.getData().get(2).getId()); //
 	}
 
 	@Test
@@ -391,13 +386,14 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 	}
 
 	/**
-	 * Whatever the managed company, if the current user sees a group, can search any user even in a different company
+	 * Whatever the managed company, if the current user sees a group, then he can search any user even in a different
+	 * company
 	 * this user can manage. <br>
 	 */
 	@Test
 	public void findAllForMySubGroup() {
 		initSpringSecurityContext("mmartin");
-		final TableItem<UserLdapVo> tableItem = resource.findAll(null, "dig sud ouest", "fdoe2", newUriInfoAsc("id"));
+		final TableItem<UserLdapVo> tableItem = resource.findAll(null, "biz agency", "fdoe2", newUriInfoAsc("id"));
 		Assert.assertEquals(1, tableItem.getRecordsTotal());
 		Assert.assertEquals(1, tableItem.getRecordsFiltered());
 		Assert.assertEquals(1, tableItem.getData().size());
@@ -407,11 +403,12 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertTrue(tableItem.getData().get(0).isManaged());
 
 		// Check the groups
+		// "Biz Agency" is visible since "mmartin" is in the parent group "
 		Assert.assertEquals(2, tableItem.getData().get(0).getGroups().size());
-		Assert.assertEquals("DIG RHA", tableItem.getData().get(0).getGroups().get(0).getName());
-		Assert.assertFalse(tableItem.getData().get(0).getGroups().get(0).isManaged());
-		Assert.assertEquals("DIG Sud Ouest", tableItem.getData().get(0).getGroups().get(1).getName());
-		Assert.assertTrue(tableItem.getData().get(0).getGroups().get(1).isManaged());
+		Assert.assertEquals("Biz Agency", tableItem.getData().get(0).getGroups().get(0).getName());
+		Assert.assertTrue(tableItem.getData().get(0).getGroups().get(0).isManaged());
+		Assert.assertEquals("DIG RHA", tableItem.getData().get(0).getGroups().get(1).getName());
+		Assert.assertFalse(tableItem.getData().get(0).getGroups().get(1).isManaged());
 	}
 
 	@Test
@@ -458,7 +455,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 
 	@Test
 	public void findAllMemberDifferentCase() {
-		final TableItem<UserLdapVo> tableItem = resource.findAll("GfI", "DIG IDF", "mmarTIN", newUriInfoAsc("lastName"));
+		final TableItem<UserLdapVo> tableItem = resource.findAll("GfI", "ProductioN", "mmarTIN", newUriInfoAsc("lastName"));
 		Assert.assertEquals(1, tableItem.getRecordsTotal());
 		Assert.assertEquals(1, tableItem.getRecordsFiltered());
 		Assert.assertEquals(1, tableItem.getData().size());
@@ -531,10 +528,13 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		// Check the result, using a fresh new cache
 		CacheManager.getInstance().getCache("ldap").removeAll();
 		checkResult(resource.findAll(null, null, "flasta", newUriInfoAsc("id")));
+
+		// Restore the state, delete this new user
+		resource.delete("flasta");
 	}
 
 	@Test
-	public void zcreateUserAlreadyExists() {
+	public void createUserAlreadyExists() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("id", "already-exist"));
 		final UserLdapEdition user = new UserLdapEdition();
@@ -663,8 +663,11 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertNull(userLdap2.getLocalId());
 	}
 
+	/**
+	 * Update everything : attributes and mails
+	 */
 	@Test
-	public void zupdateUser() {
+	public void update() {
 		final UserLdapEdition user = new UserLdapEdition();
 		user.setId("flast1");
 		user.setFirstName("FirstA");
@@ -689,10 +692,19 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertEquals("flasta@ing.com", userLdap.getMails().get(0));
 		Assert.assertEquals(1, userLdap.getGroups().size());
 		Assert.assertEquals("DIG RHA", userLdap.getGroups().get(0).getName());
+
+		// Rollback attributes
+		user.setId("flast1");
+		user.setFirstName("First1");
+		user.setLastName("Last1");
+		user.setCompany("ing");
+		user.setMail("first1.last1@ing.fr");
+		user.setGroups(null);
+		resource.update(user);
 	}
 
 	@Test
-	public void zupdateUserChangeAttibutesOnly() {
+	public void updateFirstName() {
 		// First name change only
 		final UserLdapEdition user = new UserLdapEdition();
 		user.setId("jlast3");
@@ -715,40 +727,84 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertEquals("ing", userLdap.getCompany());
 		Assert.assertEquals("john3.last3@ing.com", userLdap.getMails().get(0));
 		Assert.assertEquals(0, userLdap.getGroups().size());
+		rollbackUser();
+	}
 
+	@Test
+	public void updateLastName() {
 		// Last name change only
+		final UserLdapEdition user = new UserLdapEdition();
+		user.setId("jlast3");
+		user.setFirstName("John31");
 		user.setLastName("Last31");
+		user.setCompany("ing");
+		user.setMail("john3.last3@ing.com");
+		user.setGroups(null);
 		user.setGroups(null);
 		resource.update(user);
-		tableItem = resource.findAll(null, null, "jlast3", newUriInfoAsc("id"));
+		TableItem<UserLdapVo> tableItem = resource.findAll(null, null, "jlast3", newUriInfoAsc("id"));
 		Assert.assertEquals(1, tableItem.getRecordsTotal());
 		Assert.assertEquals(1, tableItem.getRecordsFiltered());
 		Assert.assertEquals(1, tableItem.getData().size());
 
-		userLdap = tableItem.getData().get(0);
+		UserLdapVo userLdap = tableItem.getData().get(0);
 		Assert.assertEquals("jlast3", userLdap.getId());
 		Assert.assertEquals("John31", userLdap.getFirstName());
 		Assert.assertEquals("Last31", userLdap.getLastName());
 		Assert.assertEquals("ing", userLdap.getCompany());
 		Assert.assertEquals("john3.last3@ing.com", userLdap.getMails().get(0));
 		Assert.assertEquals(0, userLdap.getGroups().size());
+		rollbackUser();
+	}
 
+	@Test
+	public void updateMail() {
 		// Mail change only
+		final UserLdapEdition user = new UserLdapEdition();
+		user.setId("jlast3");
+		user.setFirstName("John31");
+		user.setLastName("Last31");
+		user.setCompany("ing");
 		user.setMail("john31.last31@ing.com");
 		user.setGroups(null);
 		resource.update(user);
-		tableItem = resource.findAll(null, null, "jlast3", newUriInfoAsc("id"));
+		TableItem<UserLdapVo> tableItem = resource.findAll(null, null, "jlast3", newUriInfoAsc("id"));
 		Assert.assertEquals(1, tableItem.getRecordsTotal());
 		Assert.assertEquals(1, tableItem.getRecordsFiltered());
 		Assert.assertEquals(1, tableItem.getData().size());
 
-		userLdap = tableItem.getData().get(0);
+		UserLdapVo userLdap = tableItem.getData().get(0);
 		user.setGroups(null);
 		Assert.assertEquals("jlast3", userLdap.getId());
 		Assert.assertEquals("John31", userLdap.getFirstName());
 		Assert.assertEquals("Last31", userLdap.getLastName());
 		Assert.assertEquals("ing", userLdap.getCompany());
 		Assert.assertEquals("john31.last31@ing.com", userLdap.getMails().get(0));
+		Assert.assertEquals(0, userLdap.getGroups().size());
+		rollbackUser();
+	}
+
+	private void rollbackUser() {
+		final UserLdapEdition user = new UserLdapEdition();
+		user.setId("jlast3");
+		user.setFirstName("John3");
+		user.setLastName("Last3");
+		user.setCompany("ing");
+		user.setMail("john3.last3@ing.com");
+		user.setGroups(null);
+		initSpringSecurityContext("assist");
+		resource.update(user);
+		TableItem<UserLdapVo> tableItem = resource.findAll(null, null, "jlast3", newUriInfoAsc("id"));
+		Assert.assertEquals(1, tableItem.getRecordsTotal());
+		Assert.assertEquals(1, tableItem.getRecordsFiltered());
+		Assert.assertEquals(1, tableItem.getData().size());
+
+		UserLdapVo userLdap = tableItem.getData().get(0);
+		Assert.assertEquals("jlast3", userLdap.getId());
+		Assert.assertEquals("John3", userLdap.getFirstName());
+		Assert.assertEquals("Last3", userLdap.getLastName());
+		Assert.assertEquals("ing", userLdap.getCompany());
+		Assert.assertEquals("john3.last3@ing.com", userLdap.getMails().get(0));
 		Assert.assertEquals(0, userLdap.getGroups().size());
 	}
 
@@ -804,7 +860,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		user.setFirstName("First0"); // Unchanged
 		user.setLastName("Last0"); // Unchanged
 		user.setCompany("socygan"); // Unchanged
-		user.setDepartment("456987"); // Previous is null -> "DSI Etude" (not visible)
+		user.setDepartment("456987"); // Previous is null -> "DIG AS" (not visible)
 		user.setMail("first0.last0@socygan.fr"); // Unchanged
 		final List<String> groups = new ArrayList<>();
 		user.setGroups(groups);
@@ -820,7 +876,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		user.setFirstName("First0"); // Unchanged
 		user.setLastName("Last0"); // Unchanged
 		user.setCompany("socygan"); // Unchanged
-		user.setDepartment("456987"); // Previous is null -> "DSI Etude"
+		user.setDepartment("456987"); // Previous is null -> "DIG AS"
 		user.setMail("first0.last0@socygan.fr"); // Unchanged
 		final List<String> groups = new ArrayList<>();
 		user.setGroups(groups);
@@ -831,12 +887,12 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertEquals("456987", resource.findAll(null, null, "flast0", newUriInfo()).getData().get(0).getDepartment());
 		Assert.assertEquals("456987", getUser().findByIdNoCache("flast0").getDepartment());
 		Assert.assertEquals("456987", getUser().findById("flast0").getDepartment());
-		Assert.assertTrue(getUser().findById("flast0").getGroups().contains("dsi etude"));
+		Assert.assertTrue(getUser().findById("flast0").getGroups().contains("dig as"));
 		Assert.assertTrue(getGroup().findByDepartment("456987").getMembers().contains("flast0"));
-		Assert.assertEquals("DSI Etude", getGroup().findByDepartment("456987").getName());
-		Assert.assertTrue(getGroup().findById("dsi etude").getMembers().contains("flast0"));
+		Assert.assertEquals("DIG AS", getGroup().findByDepartment("456987").getName());
+		Assert.assertTrue(getGroup().findById("dig as").getMembers().contains("flast0"));
 
-		user.setDepartment(null); // Previous is "DSI Etude"
+		user.setDepartment(null); // Previous is "DIG AS"
 		resource.update(user);
 
 		// Check the old DN and department everywhere
@@ -844,10 +900,10 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertNull(resource.findAll(null, null, "flast0", newUriInfo()).getData().get(0).getDepartment());
 		Assert.assertNull(getUser().findByIdNoCache("flast0").getDepartment());
 		Assert.assertNull(getUser().findById("flast0").getDepartment());
-		Assert.assertFalse(getUser().findById("flast0").getGroups().contains("dsi etude"));
+		Assert.assertFalse(getUser().findById("flast0").getGroups().contains("dig as"));
 		Assert.assertFalse(getGroup().findByDepartment("456987").getMembers().contains("flast0"));
-		Assert.assertEquals("DSI Etude", getGroup().findByDepartment("456987").getName());
-		Assert.assertFalse(getGroup().findById("dsi etude").getMembers().contains("flast0"));
+		Assert.assertEquals("DIG AS", getGroup().findByDepartment("456987").getName());
+		Assert.assertFalse(getGroup().findById("dig as").getMembers().contains("flast0"));
 	}
 
 	@Test
@@ -916,7 +972,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void zupdateUserNoChange() {
+	public void updateUserNoChange() {
 		final UserLdapEdition user = new UserLdapEdition();
 		user.setId("jlast3");
 		user.setFirstName("John3");
@@ -962,7 +1018,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void zupdateUserReadOnly() {
+	public void updateUserReadOnly() {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher("groups", BusinessException.KEY_UNKNOW_ID));
 		final UserLdapEdition user = new UserLdapEdition();
@@ -1202,22 +1258,28 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 	 * Add a group to user having already some groups but not visible from the current user.
 	 */
 	@Test
-	public void zupdateUserAddGroup() {
-		// Pre condition, check the user "wuser", has not yet the group "DIG RHA" we want to add by "fdaugan"
+	public void updateUserAddGroup() {
+		// Pre condition, check the user "wuser", has not yet the group "DIG RHA" we want to be added by "fdaugan"
 		initSpringSecurityContext("fdaugan");
 		final TableItem<UserLdapVo> initialResultsFromUpdater = resource.findAll(null, null, "wuser", newUriInfoAsc("id"));
 		Assert.assertEquals(1, initialResultsFromUpdater.getRecordsTotal());
-		Assert.assertTrue(initialResultsFromUpdater.getData().get(0).getGroups().isEmpty());
+		Assert.assertEquals(1, initialResultsFromUpdater.getData().get(0).getGroups().size());
+		Assert.assertEquals("Biz Agency Manager", initialResultsFromUpdater.getData().get(0).getGroups().get(0).getName());
 
-		// Pre condition, check the user "wuser", has another group, but not visible "DIG Test" by "fdaugan" but visible
-		// by "mtuyer"
+		// Pre condition, check the user "wuser", has no group visible by "assist"
+		initSpringSecurityContext("assist");
+		final TableItem<UserLdapVo> assisteResult = resource.findAll(null, null, "wuser", newUriInfoAsc("id"));
+		Assert.assertEquals(1, assisteResult.getRecordsTotal());
+		Assert.assertEquals(0, assisteResult.getData().get(0).getGroups().size());
+
+		// Pre condition, check the user "wuser", "Biz Agency Manager" is not visible by "mtuyer"
 		initSpringSecurityContext("mtuyer");
 		final TableItem<UserLdapVo> usersFromOtherGroupManager = resource.findAll(null, null, "wuser", newUriInfoAsc("id"));
 		Assert.assertEquals(1, usersFromOtherGroupManager.getRecordsTotal());
-		Assert.assertEquals(1, usersFromOtherGroupManager.getData().get(0).getGroups().size());
-		Assert.assertEquals("DIG Test", usersFromOtherGroupManager.getData().get(0).getGroups().get(0).getName());
+		Assert.assertEquals(0, usersFromOtherGroupManager.getData().get(0).getGroups().size());
 
 		// Add a new valid group "DIG RHA" to "wuser" by "fdaugan"
+		initSpringSecurityContext("fdaugan");
 		final UserLdapEdition user = new UserLdapEdition();
 		user.setId("wuser");
 		user.setFirstName("William");
@@ -1226,8 +1288,8 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		user.setMail("wuser.wuser@ing.fr");
 		final List<String> groups = new ArrayList<>();
 		groups.add("DIG RHA");
+		groups.add("Biz Agency Manager");
 		user.setGroups(groups);
-		initSpringSecurityContext("fdaugan");
 		resource.update(user);
 
 		// Check the group "DIG RHA" is added and
@@ -1235,16 +1297,38 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertEquals(1, tableItem.getRecordsTotal());
 		Assert.assertEquals(1, tableItem.getRecordsFiltered());
 		Assert.assertEquals(1, tableItem.getData().size());
-		Assert.assertEquals(1, tableItem.getData().get(0).getGroups().size());
-		Assert.assertEquals("DIG RHA", tableItem.getData().get(0).getGroups().get(0).getName());
+		Assert.assertEquals(2, tableItem.getData().get(0).getGroups().size());
+		Assert.assertEquals("Biz Agency Manager", tableItem.getData().get(0).getGroups().get(0).getName());
+		Assert.assertEquals("DIG RHA", tableItem.getData().get(0).getGroups().get(1).getName());
 
-		// Check the user "wuser", still has the group "DIG Test" visible by "mtuyer"
+		// Check the user "wuser", still has no group visible by "assist"
+		initSpringSecurityContext("assist");
+		final TableItem<UserLdapVo> assisteResult2 = resource.findAll(null, null, "wuser", newUriInfoAsc("id"));
+		Assert.assertEquals(1, assisteResult2.getRecordsTotal());
+		Assert.assertEquals(0, assisteResult2.getData().get(0).getGroups().size());
+
+		// Check the user "wuser", still has the group "DIG RHA" visible by "mtuyer"
 		initSpringSecurityContext("mtuyer");
 		final TableItem<UserLdapVo> usersFromOtherGroupManager2 = resource.findAll(null, null, "wuser", newUriInfoAsc("id"));
 		Assert.assertEquals(1, usersFromOtherGroupManager2.getRecordsTotal());
-		Assert.assertEquals(2, usersFromOtherGroupManager2.getData().get(0).getGroups().size());
 		Assert.assertEquals("DIG RHA", usersFromOtherGroupManager2.getData().get(0).getGroups().get(0).getName());
-		Assert.assertEquals("DIG Test", usersFromOtherGroupManager2.getData().get(0).getGroups().get(1).getName());
+
+		// Restore the old state
+		initSpringSecurityContext("fdaugan");
+		final UserLdapEdition user2 = new UserLdapEdition();
+		user2.setId("wuser");
+		user2.setFirstName("William");
+		user2.setLastName("User");
+		user2.setCompany("ing");
+		user2.setMail("wuser.wuser@ing.fr");
+		final List<String> groups2 = new ArrayList<>();
+		groups2.add("Biz Agency Manager");
+		user.setGroups(groups2);
+		resource.update(user);
+		final TableItem<UserLdapVo> initialResultsFromUpdater2 = resource.findAll(null, null, "wuser", newUriInfoAsc("id"));
+		Assert.assertEquals(1, initialResultsFromUpdater2.getRecordsTotal());
+		Assert.assertEquals(1, initialResultsFromUpdater2.getData().get(0).getGroups().size());
+		Assert.assertEquals("Biz Agency Manager", initialResultsFromUpdater2.getData().get(0).getGroups().get(0).getName());
 	}
 
 	@Test
@@ -1408,6 +1492,18 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		for (final String memberDN : stringAttributes) {
 			Assert.assertFalse(memberDN.startsWith("uid=jdoe5"));
 		}
+
+		// Restore the state, create back the user
+		initSpringSecurityContext(DEFAULT_USER);
+		final UserLdapEdition user = new UserLdapEdition();
+		user.setId("jdoe5");
+		user.setFirstName("First5");
+		user.setLastName("Last5");
+		user.setCompany("ing-internal");
+		final List<String> groups2 = new ArrayList<>();
+		groups2.add("DIG RHA");
+		user.setGroups(groups2);
+		resource.create(user);
 	}
 
 	/**
@@ -1416,12 +1512,12 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 	@Test
 	public void addUserToGroup() {
 		// Pre condition
-		Assert.assertTrue(resource.findById("wuser").getGroups().contains("DIG Test"));
+		Assert.assertTrue(resource.findById("wuser").getGroups().contains("Biz Agency Manager"));
 
-		resource.addUserToGroup("wuser", "dig test");
+		resource.addUserToGroup("wuser", "biz agency manager");
 
 		// Post condition -> no change
-		Assert.assertTrue(resource.findById("wuser").getGroups().contains("DIG Test"));
+		Assert.assertTrue(resource.findById("wuser").getGroups().contains("Biz Agency Manager"));
 	}
 
 	/**
@@ -1453,7 +1549,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertEquals(1, resource.findAll(null, null, "wuser", newUriInfo()).getData().size());
 
 		Assert.assertNotNull(getUser().findByIdNoCache("wuser"));
-		Assert.assertTrue(getGroup().findAll().get("dig test").getMembers().contains("wuser"));
+		Assert.assertTrue(getGroup().findAll().get("biz agency manager").getMembers().contains("wuser"));
 
 		resource.delete("wuser");
 	}
@@ -1482,54 +1578,54 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 
 	@Test
 	public void isGrantedNotSameType() {
-		final DelegateLdap delegate = new DelegateLdap();
-		delegate.setType(DelegateLdapType.GROUP);
-		Assert.assertFalse(resource.isGrantedAccess(delegate, null, DelegateLdapType.COMPANY, true));
+		final DelegateOrg delegate = new DelegateOrg();
+		delegate.setType(DelegateType.GROUP);
+		Assert.assertFalse(resource.isGrantedAccess(delegate, null, DelegateType.COMPANY, true));
 	}
 
 	@Test
 	public void isGrantedSameTypeNoRight() {
-		final DelegateLdap delegate = new DelegateLdap();
-		delegate.setType(DelegateLdapType.GROUP);
-		Assert.assertFalse(resource.isGrantedAccess(delegate, null, DelegateLdapType.GROUP, true));
+		final DelegateOrg delegate = new DelegateOrg();
+		delegate.setType(DelegateType.GROUP);
+		Assert.assertFalse(resource.isGrantedAccess(delegate, null, DelegateType.GROUP, true));
 	}
 
 	@Test
 	public void isGrantedSameTypeNotSameDn() {
-		final DelegateLdap delegate = new DelegateLdap();
-		delegate.setType(DelegateLdapType.GROUP);
-		Assert.assertFalse(resource.isGrantedAccess(delegate, null, DelegateLdapType.GROUP, false));
+		final DelegateOrg delegate = new DelegateOrg();
+		delegate.setType(DelegateType.GROUP);
+		Assert.assertFalse(resource.isGrantedAccess(delegate, null, DelegateType.GROUP, false));
 	}
 
 	@Test
 	public void isGranted() {
-		final DelegateLdap delegate = new DelegateLdap();
-		delegate.setType(DelegateLdapType.GROUP);
+		final DelegateOrg delegate = new DelegateOrg();
+		delegate.setType(DelegateType.GROUP);
 		delegate.setDn("rightdn");
-		Assert.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateLdapType.GROUP, false));
+		Assert.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateType.GROUP, false));
 	}
 
 	@Test
 	public void isGrantedAsAdmin() {
-		final DelegateLdap delegate = new DelegateLdap();
-		delegate.setType(DelegateLdapType.GROUP);
+		final DelegateOrg delegate = new DelegateOrg();
+		delegate.setType(DelegateType.GROUP);
 		delegate.setCanAdmin(true);
 		delegate.setDn("rightdn");
-		Assert.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateLdapType.GROUP, true));
+		Assert.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateType.GROUP, true));
 	}
 
 	@Test
 	public void isGrantedAsWriter() {
-		final DelegateLdap delegate = new DelegateLdap();
-		delegate.setType(DelegateLdapType.GROUP);
+		final DelegateOrg delegate = new DelegateOrg();
+		delegate.setType(DelegateType.GROUP);
 		delegate.setCanWrite(true);
 		delegate.setDn("rightdn");
-		Assert.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateLdapType.GROUP, true));
+		Assert.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateType.GROUP, true));
 	}
 
 	@Test
 	public void convertUserRaw() {
-		final UserLdap userLdap = UserLdapResource.TO_LDAP_RAW_CONVERTER.apply("jdoe5");
+		final UserLdap userLdap = getUser().toUser("jdoe5");
 		checkRawUser(userLdap);
 		Assert.assertNotNull(userLdap.getGroups());
 		Assert.assertEquals(1, userLdap.getGroups().size());
@@ -1537,7 +1633,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 
 	@Test
 	public void convertUserNotExist() {
-		final UserLdap userLdap = UserLdapResource.TO_LDAP_RAW_CONVERTER.apply("any");
+		final UserLdap userLdap = getUser().toUser("any");
 		Assert.assertNotNull(userLdap);
 		Assert.assertEquals("any", userLdap.getId());
 		Assert.assertNull(userLdap.getCompany());
@@ -1545,17 +1641,6 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertNull(userLdap.getFirstName());
 		Assert.assertNull(userLdap.getLastName());
 		Assert.assertNull(userLdap.getMails());
-	}
-
-	@Test
-	public void convertUserNull() {
-		Assert.assertNull(UserLdapResource.TO_LDAP_CONVERTER.apply(null));
-	}
-
-	@Test
-	public void convertUser() {
-		final SimpleUserLdap userLdap = UserLdapResource.TO_LDAP_CONVERTER.apply("jdoe5");
-		checkRawUser(userLdap);
 	}
 
 	private void checkRawUser(final SimpleUserLdap userLdap) {
@@ -1594,4 +1679,9 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertEquals(0, tableItem.getRecordsFiltered());
 	}
 
+	@Test
+	public void setIamProviderForTest() {
+		// There for test by other plugin/application
+		new UserLdapResource().setIamProvider(Mockito.mock(IamProvider.class));
+	}
 }

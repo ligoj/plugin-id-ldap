@@ -10,18 +10,19 @@ import lombok.ToString;
  * LDAP import bean
  */
 @Getter
-@Setter
 @ToString(of = "id")
 public class BatchTaskVo<B extends BatchElement> {
 
 	/**
 	 * Transaction identifier.
 	 */
+	@Setter
 	private long id;
 
 	/**
 	 * Entries to persist.
 	 */
+	@Setter
 	private List<B> entries;
 
 	/**
@@ -32,6 +33,7 @@ public class BatchTaskVo<B extends BatchElement> {
 	/**
 	 * User principal requesting the import.
 	 */
+	@Setter
 	private String principal;
 
 }

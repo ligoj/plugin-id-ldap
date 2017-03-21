@@ -3,9 +3,9 @@ package org.ligoj.app.plugin.id.ldap.resource;
 import java.util.Collection;
 import java.util.Map;
 
-import org.ligoj.bootstrap.core.IDescribableBean;
 import org.ligoj.app.api.Activity;
 import org.ligoj.app.api.UserLdap;
+import org.ligoj.bootstrap.core.IDescribableBean;
 
 import lombok.Getter;
 import lombok.Setter;

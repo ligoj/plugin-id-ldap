@@ -6,12 +6,11 @@ import java.nio.charset.StandardCharsets;
 import javax.ws.rs.core.UriInfo;
 
 import org.junit.Before;
-import org.springframework.beans.factory.annotation.Autowired;
-
+import org.ligoj.app.model.DelegateOrg;
+import org.ligoj.app.plugin.id.dao.ContainerScopeRepository;
+import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
-import org.ligoj.app.ldap.dao.ContainerTypeLdapRepository;
-import org.ligoj.app.ldap.model.ContainerTypeLdap;
-import org.ligoj.app.model.DelegateLdap;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import net.sf.ehcache.CacheManager;
 
@@ -21,7 +20,7 @@ import net.sf.ehcache.CacheManager;
 public abstract class AbstractContainerLdapResourceTest extends AbstractLdapTest {
 
 	@Autowired
-	protected ContainerTypeLdapRepository containerTypeLdapRepository;
+	protected ContainerScopeRepository containerScopeRepository;
 
 	protected UriInfo newUriInfoAsc(final String orderedProperty) {
 		return newUriInfo(orderedProperty, "asc");
@@ -54,8 +53,8 @@ public abstract class AbstractContainerLdapResourceTest extends AbstractLdapTest
 
 	@Before
 	public void prepareData() throws IOException {
-		persistEntities("csv/app-test", new Class[] { DelegateLdap.class, ContainerTypeLdap.class }, StandardCharsets.UTF_8.name());
-		CacheManager.getInstance().getCache("container-types").removeAll();
+		persistEntities("csv/app-test", new Class[] { DelegateOrg.class, ContainerScope.class }, StandardCharsets.UTF_8.name());
+		CacheManager.getInstance().getCache("container-scopes").removeAll();
 		CacheManager.getInstance().getCache("ldap").removeAll();
 		CacheManager.getInstance().getCache("ldap-user-repository").removeAll();
 

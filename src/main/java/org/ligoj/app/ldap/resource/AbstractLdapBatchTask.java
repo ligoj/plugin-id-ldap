@@ -11,9 +11,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.provider.ServerProviderFactory;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.PhaseInterceptorChain;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.ligoj.app.ldap.LdapUtils;
+import org.ligoj.app.api.Normalizer;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -111,7 +111,7 @@ public abstract class AbstractLdapBatchTask<B extends BatchElement> implements R
 	 * @return A collection from the raw string.
 	 */
 	protected List<String> toList(final String rawValue) {
-		return Pattern.compile(",").splitAsStream(StringUtils.trimToEmpty(rawValue)).map(LdapUtils::normalize).filter(StringUtils::isNotBlank)
+		return Pattern.compile(",").splitAsStream(StringUtils.trimToEmpty(rawValue)).map(Normalizer::normalize).filter(StringUtils::isNotBlank)
 				.collect(Collectors.toList());
 	}
 

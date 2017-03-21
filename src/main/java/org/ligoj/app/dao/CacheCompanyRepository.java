@@ -2,11 +2,11 @@ package org.ligoj.app.dao;
 
 import java.util.List;
 
+import org.ligoj.app.model.CacheCompany;
+import org.ligoj.bootstrap.core.dao.RestRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
-import org.ligoj.app.model.CacheCompany;
-import org.ligoj.bootstrap.core.dao.RestRepository;
 
 /**
  * {@link CacheCompany} repository
@@ -15,7 +15,7 @@ public interface CacheCompanyRepository extends RestRepository<CacheCompany, Str
 	/**
 	 * Partial query, unclosed EXIST of delegate to determine visible delegate for company.
 	 */
-	String VISIBLE_DELEGATE_PART_EXISTS = VISIBLE_DELEGATE_PART_EXISTS_TYPE + " OR type=org.ligoj.app.model.ldap.DelegateLdapType.COMPANY)";
+	String VISIBLE_DELEGATE_PART_EXISTS = VISIBLE_DELEGATE_PART_EXISTS_TYPE + " OR type=org.ligoj.app.model.DelegateType.COMPANY)";
 
 	/**
 	 * Query to determine the delegate is visible or not.

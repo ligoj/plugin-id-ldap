@@ -7,20 +7,24 @@ import java.util.stream.Collectors;
 
 import javax.naming.ldap.LdapName;
 
-import org.springframework.ldap.core.DirContextAdapter;
-import org.springframework.ldap.core.DirContextOperations;
 import org.ligoj.app.api.CompanyLdap;
+import org.ligoj.app.api.Normalizer;
+import org.ligoj.app.dao.CacheCompanyRepository;
 import org.ligoj.app.iam.ICompanyRepository;
 import org.ligoj.app.ldap.LdapUtils;
 import org.ligoj.app.ldap.dao.LdapCacheRepository.LdapData;
-import org.ligoj.app.ldap.model.ContainerType;
+import org.ligoj.app.model.CacheCompany;
+import org.ligoj.app.model.ContainerType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ldap.core.DirContextAdapter;
+import org.springframework.ldap.core.DirContextOperations;
 
 import lombok.Setter;
 
 /**
  * Company LDAP repository
  */
-public class CompanyLdapRepository extends AbstractContainerLdaRepository<CompanyLdap> implements ICompanyRepository {
+public class CompanyLdapRepository extends AbstractContainerLdaRepository<CompanyLdap, CacheCompany> implements ICompanyRepository {
 
 	private static final String ORGANIZATIONAL_UNIT = "organizationalUnit";
 
@@ -35,6 +39,14 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 	 */
 	@Setter
 	private String quarantineBaseDn;
+
+	@Autowired
+	private CacheCompanyRepository cacheCompanyRepository;
+
+	@Override
+	public CacheCompanyRepository getCacheRepository() {
+		return cacheCompanyRepository;
+	}
 
 	/**
 	 * Default constructor for a container of type {@link ContainerType#COMPANY}
@@ -118,7 +130,7 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 
 	@Override
 	protected CompanyLdap newContainer(final String dn, final String name) {
-		return new CompanyLdap(LdapUtils.normalize(dn), name);
+		return new CompanyLdap(Normalizer.normalize(dn), name);
 	}
 
 	/**

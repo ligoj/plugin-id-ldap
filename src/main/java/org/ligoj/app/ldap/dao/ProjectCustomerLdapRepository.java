@@ -6,14 +6,13 @@ import java.util.Map;
 import javax.cache.annotation.CacheKey;
 import javax.cache.annotation.CacheResult;
 
+import org.ligoj.app.iam.IamProvider;
+import org.ligoj.app.ldap.LdapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.stereotype.Component;
-
-import org.ligoj.app.iam.IamProvider;
-import org.ligoj.app.ldap.LdapUtils;
 
 import lombok.extern.slf4j.Slf4j;
 

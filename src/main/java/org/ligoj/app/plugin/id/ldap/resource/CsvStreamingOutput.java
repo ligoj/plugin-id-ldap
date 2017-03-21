@@ -11,10 +11,9 @@ import java.util.Map;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.lang3.time.FastDateFormat;
-
-import org.ligoj.bootstrap.core.IDescribableBean;
 import org.ligoj.app.api.Activity;
 import org.ligoj.app.api.UserLdap;
+import org.ligoj.bootstrap.core.IDescribableBean;
 
 /**
  * CSV output writer for user activities.

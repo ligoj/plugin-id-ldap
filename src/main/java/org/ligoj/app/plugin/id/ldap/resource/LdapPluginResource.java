@@ -27,6 +27,40 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
+import org.ligoj.app.api.Activity;
+import org.ligoj.app.api.GroupLdap;
+import org.ligoj.app.api.Normalizer;
+import org.ligoj.app.api.ServicePlugin;
+import org.ligoj.app.api.SubscriptionStatusWithData;
+import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.iam.IamConfiguration;
+import org.ligoj.app.iam.IamConfigurationProvider;
+import org.ligoj.app.iam.IamProvider;
+import org.ligoj.app.ldap.dao.CompanyLdapRepository;
+import org.ligoj.app.ldap.dao.GroupLdapRepository;
+import org.ligoj.app.ldap.dao.ProjectCustomerLdapRepository;
+import org.ligoj.app.ldap.dao.UserLdapRepository;
+import org.ligoj.app.ldap.resource.CompanyLdapResource;
+import org.ligoj.app.ldap.resource.ContainerLdapWithTypeVo;
+import org.ligoj.app.ldap.resource.GroupLdapResource;
+import org.ligoj.app.ldap.resource.UserLdapEdition;
+import org.ligoj.app.ldap.resource.UserLdapResource;
+import org.ligoj.app.model.ContainerType;
+import org.ligoj.app.model.Node;
+import org.ligoj.app.model.Subscription;
+import org.ligoj.app.plugin.id.model.ContainerScope;
+import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
+import org.ligoj.app.plugin.id.resource.IdentityResource;
+import org.ligoj.app.plugin.id.resource.IdentityServicePlugin;
+import org.ligoj.app.resource.ActivitiesProvider;
+import org.ligoj.app.resource.ServicePluginLocator;
+import org.ligoj.app.resource.plugin.AbstractToolPluginResource;
+import org.ligoj.bootstrap.core.IDescribableBean;
+import org.ligoj.bootstrap.core.INamableBean;
+import org.ligoj.bootstrap.core.NamedBean;
+import org.ligoj.bootstrap.core.SpringUtils;
+import org.ligoj.bootstrap.core.resource.BusinessException;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
@@ -35,41 +69,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import org.ligoj.bootstrap.core.IDescribableBean;
-import org.ligoj.bootstrap.core.INamableBean;
-import org.ligoj.bootstrap.core.NamedBean;
-import org.ligoj.bootstrap.core.SpringUtils;
-import org.ligoj.bootstrap.core.resource.BusinessException;
-import org.ligoj.bootstrap.core.validation.ValidationJsonException;
-import org.ligoj.app.api.Activity;
-import org.ligoj.app.api.GroupLdap;
-import org.ligoj.app.api.ServicePlugin;
-import org.ligoj.app.api.SubscriptionStatusWithData;
-import org.ligoj.app.api.UserLdap;
-import org.ligoj.app.iam.IamConfiguration;
-import org.ligoj.app.iam.IamConfigurationProvider;
-import org.ligoj.app.iam.IamProvider;
-import org.ligoj.app.ldap.LdapUtils;
-import org.ligoj.app.ldap.dao.CompanyLdapRepository;
-import org.ligoj.app.ldap.dao.GroupLdapRepository;
-import org.ligoj.app.ldap.dao.ProjectCustomerLdapRepository;
-import org.ligoj.app.ldap.dao.UserLdapRepository;
-import org.ligoj.app.ldap.model.ContainerType;
-import org.ligoj.app.ldap.model.ContainerTypeLdap;
-import org.ligoj.app.ldap.resource.CompanyLdapResource;
-import org.ligoj.app.ldap.resource.ContainerLdapWithTypeVo;
-import org.ligoj.app.ldap.resource.ContainerTypeLdapResource;
-import org.ligoj.app.ldap.resource.GroupLdapResource;
-import org.ligoj.app.ldap.resource.UserLdapEdition;
-import org.ligoj.app.ldap.resource.UserLdapResource;
-import org.ligoj.app.model.Node;
-import org.ligoj.app.model.Subscription;
-import org.ligoj.app.plugin.id.resource.IdentityResource;
-import org.ligoj.app.plugin.id.resource.IdentityServicePlugin;
-import org.ligoj.app.resource.ActivitiesProvider;
-import org.ligoj.app.resource.ServicePluginLocator;
-import org.ligoj.app.resource.plugin.AbstractToolPluginResource;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -192,7 +191,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	protected GroupLdapResource groupLdapResource;
 
 	@Autowired
-	private ContainerTypeLdapResource groupTypeLdapResource;
+	private ContainerScopeResource groupTypeLdapResource;
 
 	@Autowired
 	private IamProvider iamProvider;
@@ -385,7 +384,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	 * Validate the group against its direct parent (a normalized OU) and return its DN.
 	 */
 	private String validateAndCreateParentOu(final String group, final String ou, final String pkey) {
-		final ContainerTypeLdap groupTypeLdap = groupTypeLdapResource.findByName(ContainerTypeLdap.TYPE_PROJECT);
+		final ContainerScope groupTypeLdap = groupTypeLdapResource.findByName(ContainerScope.TYPE_PROJECT);
 
 		// Build the complete normalized DN from the OU and new Group
 		final String ouDn = "ou=" + ou + "," + groupTypeLdap.getDn();
@@ -579,7 +578,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 		}
 
 		// Check the group has type TYPE_PROJECT
-		if (!ContainerTypeLdap.TYPE_PROJECT.equals(groupLdap.getType())) {
+		if (!ContainerScope.TYPE_PROJECT.equals(groupLdap.getType())) {
 			// Invalid type
 			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, "group-type", group);
 		}
@@ -597,21 +596,21 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	 * @param criteria
 	 *            the search criteria.
 	 * @return LDAP Groups matching the criteria.
-	 * @see ContainerTypeLdap#TYPE_PROJECT
+	 * @see ContainerScope#TYPE_PROJECT
 	 */
 	@GET
 	@Path("group/{node}/{criteria}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public List<INamableBean<String>> findGroupsByName(@PathParam("criteria") final String criteria) throws Exception {
 		final List<INamableBean<String>> result = new ArrayList<>();
-		final String criteriaClean = LdapUtils.normalize(criteria);
+		final String criteriaClean = Normalizer.normalize(criteria);
 		final Set<GroupLdap> managedGroups = groupLdapResource.getContainers();
-		final List<ContainerTypeLdap> types = groupTypeLdapResource.findAllDescOrder(ContainerType.GROUP);
+		final List<ContainerScope> types = groupTypeLdapResource.findAllDescOrder(ContainerType.GROUP);
 		for (final GroupLdap group : managedGroups) {
-			final ContainerTypeLdap type = groupLdapResource.toType(types, group);
+			final ContainerScope scope = groupLdapResource.toScope(types, group);
 
 			// Check type and criteria
-			if (type != null && ContainerTypeLdap.TYPE_PROJECT.equals(type.getName()) && group.getId().contains(criteriaClean)) {
+			if (scope != null && ContainerScope.TYPE_PROJECT.equals(scope.getName()) && group.getId().contains(criteriaClean)) {
 				// Return the nice name
 				final INamableBean<String> bean = new NamedBean<>();
 				NamedBean.copy(group, bean);
@@ -629,15 +628,15 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	 * @param criteria
 	 *            the search criteria.
 	 * @return LDAP Customers matching the criteria.
-	 * @see ContainerTypeLdap#TYPE_PROJECT
+	 * @see ContainerScope#TYPE_PROJECT
 	 */
 	@GET
 	@Path("customer/{node}/{criteria}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Collection<INamableBean<String>> findCustomersByName(@PathParam("criteria") final String criteria) throws Exception {
 		final Set<INamableBean<String>> result = new TreeSet<>();
-		final String criteriaClean = LdapUtils.normalize(criteria);
-		final ContainerTypeLdap findByName = groupTypeLdapResource.findByName(ContainerTypeLdap.TYPE_PROJECT);
+		final String criteriaClean = Normalizer.normalize(criteria);
+		final ContainerScope findByName = groupTypeLdapResource.findByName(ContainerScope.TYPE_PROJECT);
 		final Collection<String> allCustomers = projectCustomerLdapRepository.findAll(findByName.getDn()).keySet();
 
 		// Check type and criteria
@@ -708,7 +707,6 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 		configuration.setUserRepository(repository);
 		configuration.setCompanyRepository(newCompanyLdapRepository(node, repository.getTemplate()));
 		configuration.setGroupRepository(newGroupLdapRepository(node, repository.getTemplate()));
-		configuration.setToUser(UserLdapResource.TO_LDAP_CONVERTER);
 		repository.setCompanyLdapRepository((CompanyLdapRepository) configuration.getCompanyRepository());
 		repository.setGroupLdapRepository((GroupLdapRepository) configuration.getGroupRepository());
 		return configuration;
@@ -852,6 +850,6 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	}
 
 	private String normalize(final String string) {
-		return StringUtils.trimToEmpty(LdapUtils.normalize(string).replace("[^\\w\\d]", " ").replace("  ", " "));
+		return StringUtils.trimToEmpty(Normalizer.normalize(string).replace("[^\\w\\d]", " ").replace("  ", " "));
 	}
 }

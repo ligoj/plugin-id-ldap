@@ -14,17 +14,12 @@ import org.apache.cxf.message.Message;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
-
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-
-import org.ligoj.app.ldap.resource.BatchTaskVo;
-import org.ligoj.app.ldap.resource.UserFullLdapTask;
-import org.ligoj.app.ldap.resource.UserImportEntry;
-import org.ligoj.app.ldap.resource.UserLdapResource;
 import org.ligoj.bootstrap.AbstractSecurityTest;
 import org.ligoj.bootstrap.core.resource.mapper.FailSafeExceptionMapper;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
+import org.mockito.Mockito;
+
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 
 /**
  * Test of {@link UserFullLdapTask}

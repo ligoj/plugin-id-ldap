@@ -2,13 +2,10 @@ package org.ligoj.app.ldap;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.ligoj.app.ldap.LdapUtils;
 
 /**
  * Test class of {@link LdapUtils}
@@ -62,29 +59,6 @@ public class LdapUtilsTest {
 		Assert.assertEquals("d", LdapUtils.toParentRdn("a=b,c=d"));
 		Assert.assertEquals("d", LdapUtils.toParentRdn(" a = b , c = D "));
 		Assert.assertEquals("d", LdapUtils.toParentRdn("a=b,c=d,e=f"));
-	}
-
-	@Test
-	public void normalizeSet() {
-		final List<String> strings = new ArrayList<>();
-		strings.add("c");
-		strings.add("C");
-		strings.add(" c ");
-		final Set<String> result = LdapUtils.normalize(strings);
-		Assert.assertEquals(1, result.size());
-		Assert.assertTrue(result.contains("c"));
-	}
-
-	@Test
-	public void normalizeSetNull() {
-		final Set<String> result = LdapUtils.normalize((Collection<String>) null);
-		Assert.assertEquals(0, result.size());
-	}
-
-	@Test
-	public void normalize() {
-		Assert.assertEquals("c", LdapUtils.normalize(" C "));
-		Assert.assertEquals("c", LdapUtils.normalize("c"));
 	}
 
 }

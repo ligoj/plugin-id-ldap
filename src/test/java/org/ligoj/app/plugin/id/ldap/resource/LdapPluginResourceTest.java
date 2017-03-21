@@ -627,7 +627,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void findGroupsByName() throws Exception {
 		final List<INamableBean<String>> jobs = resource.findGroupsByName("StAck");
-		Assert.assertEquals(1, jobs.size());
+		Assert.assertTrue(jobs.size() >= 1);
 		Assert.assertEquals("gfi-gStack", jobs.get(0).getName());
 		Assert.assertEquals("gfi-gstack", jobs.get(0).getId());
 	}

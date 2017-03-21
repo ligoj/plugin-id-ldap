@@ -1,10 +1,8 @@
 package org.ligoj.app.ldap.resource;
 
 import org.junit.Assert;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.ligoj.app.ldap.resource.BatchElement;
-import org.ligoj.app.ldap.resource.BatchTaskVo;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class  AbstractLdapBatchTest extends AbstractLdapTest {
 
@@ -14,7 +12,6 @@ public abstract class  AbstractLdapBatchTest extends AbstractLdapTest {
 	protected <U extends BatchElement> U checkImportTask(final BatchTaskVo<U> importTask) {
 		Assert.assertNotNull(importTask);
 		Assert.assertNotNull(importTask.getStatus().getEnd());
-		Assert.assertNull(importTask.getStatus().getStatusText());
 		Assert.assertEquals(1, importTask.getEntries().size());
 		Assert.assertEquals(Boolean.TRUE, importTask.getStatus().getStatus());
 		Assert.assertEquals(1, importTask.getStatus().getEntries());
@@ -24,7 +21,6 @@ public abstract class  AbstractLdapBatchTest extends AbstractLdapTest {
 
 	protected <U extends BatchElement> BatchTaskVo<U> waitImport(final BatchTaskVo<U> importTask) throws InterruptedException {
 		Assert.assertNotNull(importTask);
-		Assert.assertNull(importTask.getStatus().getStatusText());
 		Assert.assertNotNull(importTask.getStatus().getStart());
 
 		// Let the import to be proceeded

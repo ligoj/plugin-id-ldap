@@ -5,13 +5,13 @@ import java.util.Map;
 
 import javax.cache.annotation.CacheResult;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.ligoj.app.api.CompanyLdap;
 import org.ligoj.app.api.GroupLdap;
+import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.api.UserLdap;
 import org.ligoj.app.iam.IamProvider;
-import org.ligoj.app.ldap.LdapUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -174,7 +174,7 @@ public class LdapCacheRepository {
 		ldapCacheDao.delete(user);
 
 		// Remove it-self from in-memory cache
-		users.remove(LdapUtils.normalize(user.getId()));
+		users.remove(Normalizer.normalize(user.getId()));
 	}
 
 	/**

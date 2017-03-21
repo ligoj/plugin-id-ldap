@@ -8,17 +8,12 @@ import javax.validation.ValidationException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
-import org.mockito.exceptions.base.MockitoException;
-
-import org.ligoj.bootstrap.AbstractSecurityTest;
-import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.ligoj.app.DefaultVerificationMode;
 import org.ligoj.app.api.UserLdap;
-import org.ligoj.app.ldap.resource.UserAtomicLdapTask;
-import org.ligoj.app.ldap.resource.UserLdapEdition;
-import org.ligoj.app.ldap.resource.UserLdapResource;
-import org.ligoj.app.ldap.resource.UserUpdateEntry;
+import org.ligoj.bootstrap.AbstractSecurityTest;
+import org.ligoj.bootstrap.core.security.SecurityHelper;
+import org.mockito.Mockito;
+import org.mockito.exceptions.base.MockitoException;
 
 /**
  * Test of {@link UserAtomicLdapTask}
@@ -93,6 +88,9 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 
 	@Test
 	public void doBatchLocalId() throws Exception {
+		// Only for coverage
+		UserBatchUpdateType.valueOf(UserBatchUpdateType.values()[0].name());
+		
 		final UserUpdateEntry entry = new UserUpdateEntry();
 		entry.setOperation("localid");
 		entry.setValue("value");

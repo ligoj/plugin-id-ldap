@@ -2,6 +2,5 @@
 <ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd">
 	<cache name="ldap" maxEntriesLocalHeap="1"></cache>
 	<cache name="ldap-user-repository" maxEntriesLocalHeap="100"></cache>
-	<cache name="container-types" maxEntriesLocalHeap="1"></cache>
 	<cache name="customers" maxEntriesLocalHeap="10000"></cache>
 </ehcache>
