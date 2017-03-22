@@ -19,14 +19,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import org.ligoj.bootstrap.AbstractJpaTest;
-import org.ligoj.app.api.CompanyLdap;
-import org.ligoj.app.api.GroupLdap;
-import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.api.CompanyOrg;
+import org.ligoj.app.api.GroupOrg;
+import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.model.CacheCompany;
+import org.ligoj.app.iam.model.CacheGroup;
+import org.ligoj.app.iam.model.CacheMembership;
+import org.ligoj.app.iam.model.CacheUser;
 import org.ligoj.app.ldap.dao.LdapCacheDao;
-import org.ligoj.app.model.CacheCompany;
-import org.ligoj.app.model.CacheGroup;
-import org.ligoj.app.model.CacheMembership;
-import org.ligoj.app.model.CacheUser;
 
 /**
  * Test class of {@link LdapCacheDao}
@@ -75,21 +75,21 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 
 	@Test
 	public void getLdapData() {
-		final Map<String, CompanyLdap> companies = new HashMap<>();
-		companies.put("company", new CompanyLdap("dnc", "Company"));
-		final Map<String, GroupLdap> groups = new HashMap<>();
+		final Map<String, CompanyOrg> companies = new HashMap<>();
+		companies.put("company", new CompanyOrg("dnc", "Company"));
+		final Map<String, GroupOrg> groups = new HashMap<>();
 		final Set<String> members = new HashSet<>();
 		members.add("u");
-		final GroupLdap groupLdap = new GroupLdap("dng", "Group", members);
+		final GroupOrg groupLdap = new GroupOrg("dng", "Group", members);
 		groups.put("group", groupLdap);
-		final UserLdap user = newUser();
-		final UserLdap user2 = new UserLdap();
+		final UserOrg user = newUser();
+		final UserOrg user2 = new UserOrg();
 		user2.setId("u2");
 		user2.setFirstName("f");
 		user2.setLastName("l");
 		user2.setCompany("company");
 		user2.setGroups(Collections.EMPTY_LIST);
-		final Map<String, UserLdap> users = new HashMap<>();
+		final Map<String, UserOrg> users = new HashMap<>();
 		users.put("u", user);
 		users.put("u2", user2);
 
@@ -125,8 +125,8 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 		Assert.assertEquals("u", memberships.get(0).getUser().getId());
 	}
 
-	private UserLdap newUser() {
-		final UserLdap user = new UserLdap();
+	private UserOrg newUser() {
+		final UserOrg user = new UserOrg();
 		user.setId("u");
 		user.setFirstName("f");
 		user.setLastName("l");
@@ -182,7 +182,7 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 	@Test
 	public void updateUser() {
 		Assert.assertEquals(1, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0").getResultList().size());
-		final UserLdap newUser = newUser();
+		final UserOrg newUser = newUser();
 		newUser.setId("u0");
 		newUser.setFirstName("F");
 		newUser.setLastName("L");
@@ -206,8 +206,8 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 		Assert.assertEquals("u0", memberships.get(0).getUser().getId());
 	}
 
-	private UserLdap newUser(final String login) {
-		final UserLdap user = new UserLdap();
+	private UserOrg newUser(final String login) {
+		final UserOrg user = new UserOrg();
 		user.setId(login);
 		return user;
 	}
@@ -215,7 +215,7 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 	@Test
 	public void removeUserFromGroup() {
 		Assert.assertEquals(1, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0").getResultList().size());
-		dao.removeUserFromGroup(newUser("u0"), new GroupLdap("dng", "Group", null));
+		dao.removeUserFromGroup(newUser("u0"), new GroupOrg("dng", "Group", null));
 		Assert.assertEquals(0, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0").getResultList().size());
 	}
 
@@ -223,7 +223,7 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 	public void removeGroupFromGroup() {
 		Assert.assertEquals(1, em.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid").setParameter("id", "group")
 				.setParameter("sid", "another-group").getResultList().size());
-		dao.removeGroupFromGroup(new GroupLdap("dng2", "Another-Group", null), new GroupLdap("dng", "Group", null));
+		dao.removeGroupFromGroup(new GroupOrg("dng2", "Another-Group", null), new GroupOrg("dng", "Group", null));
 		Assert.assertEquals(0, em.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid").setParameter("id", "group")
 				.setParameter("sid", "another-group").getResultList().size());
 	}
@@ -232,14 +232,14 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 	public void addUserToGroup() {
 		em.createQuery("DELETE FROM CacheMembership").executeUpdate();
 		Assert.assertEquals(0, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0").getResultList().size());
-		dao.addUserToGroup(newUser("u0"), new GroupLdap("dng", "Group", null));
+		dao.addUserToGroup(newUser("u0"), new GroupOrg("dng", "Group", null));
 		Assert.assertEquals(1, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0").getResultList().size());
 	}
 
 	@Test
 	public void createGroup() {
 		Assert.assertEquals(0, em.createQuery("FROM CacheGroup WHERE id = :id").setParameter("id", "namesg-other").getResultList().size());
-		dao.create(new GroupLdap("dng3", "NameSG-other", null));
+		dao.create(new GroupOrg("dng3", "NameSG-other", null));
 		final CacheGroup group = em.find(CacheGroup.class, "namesg-other");
 		Assert.assertNotNull(group);
 		Assert.assertEquals("namesg-other", group.getId());
@@ -249,10 +249,10 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 
 	@Test
 	public void addGroupToGroup() {
-		dao.create(new GroupLdap("dng3", "NameSG-other", null));
+		dao.create(new GroupOrg("dng3", "NameSG-other", null));
 		Assert.assertEquals(0, em.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid").setParameter("id", "group")
 				.setParameter("sid", "namesg-other").getResultList().size());
-		dao.addGroupToGroup(new GroupLdap("dng3", "NameSG-other", null), new GroupLdap("dng", "Group", null));
+		dao.addGroupToGroup(new GroupOrg("dng3", "NameSG-other", null), new GroupOrg("dng", "Group", null));
 
 		final List<CacheMembership> memberships = em.createQuery("FROM CacheMembership WHERE group.id = :id AND subGroup.id = :sid")
 				.setParameter("id", "group").setParameter("sid", "namesg-other").getResultList();
@@ -265,7 +265,7 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 	@Test
 	public void deleteUser() {
 		Assert.assertEquals(1, em.createQuery("FROM CacheMembership WHERE user.id = :id").setParameter("id", "u0").getResultList().size());
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setId("u0");
 
 		dao.delete(user);
@@ -279,7 +279,7 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 	@Test
 	public void deleteGroup() {
 		Assert.assertEquals(2, em.createQuery("FROM CacheMembership WHERE group.id = :id").setParameter("id", "group").getResultList().size());
-		final GroupLdap groupLdap = new GroupLdap("dng", "Group", null);
+		final GroupOrg groupLdap = new GroupOrg("dng", "Group", null);
 
 		dao.delete(groupLdap);
 

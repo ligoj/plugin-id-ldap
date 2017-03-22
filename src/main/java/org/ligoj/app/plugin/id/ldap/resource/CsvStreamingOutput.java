@@ -12,7 +12,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.ligoj.app.api.Activity;
-import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.api.UserOrg;
 import org.ligoj.bootstrap.core.IDescribableBean;
 
 /**
@@ -77,7 +77,7 @@ public class CsvStreamingOutput implements StreamingOutput {
 	 * Write activities data. Ends with new line.
 	 */
 	protected void writeData(final Writer writer, final Format df) throws IOException {
-		for (final UserLdap user : computations.getUsers()) {
+		for (final UserOrg user : computations.getUsers()) {
 			// Write user data
 			writeUserData(writer, user);
 
@@ -94,7 +94,7 @@ public class CsvStreamingOutput implements StreamingOutput {
 	/**
 	 * Write user data
 	 */
-	private void writeUserData(final Writer writer, final UserLdap user) throws IOException {
+	private void writeUserData(final Writer writer, final UserOrg user) throws IOException {
 		writer.write(user.getId());
 		writer.write(";");
 		writer.write(user.getFirstName());

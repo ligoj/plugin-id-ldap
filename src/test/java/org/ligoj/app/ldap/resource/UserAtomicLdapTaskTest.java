@@ -9,7 +9,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.ligoj.app.DefaultVerificationMode;
-import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.api.UserOrg;
 import org.ligoj.bootstrap.AbstractSecurityTest;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.mockito.Mockito;
@@ -29,7 +29,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 		task.securityHelper = new SecurityHelper();
 		initSpringSecurityContext(DEFAULT_USER);
 
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setCompany("untouched");
 		user.setDepartment("untouched");
 		user.setFirstName("untouched");

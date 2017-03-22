@@ -7,13 +7,13 @@ import java.util.stream.Collectors;
 
 import javax.naming.ldap.LdapName;
 
-import org.ligoj.app.api.CompanyLdap;
+import org.ligoj.app.api.CompanyOrg;
 import org.ligoj.app.api.Normalizer;
-import org.ligoj.app.dao.CacheCompanyRepository;
 import org.ligoj.app.iam.ICompanyRepository;
+import org.ligoj.app.iam.dao.CacheCompanyRepository;
+import org.ligoj.app.iam.model.CacheCompany;
 import org.ligoj.app.ldap.LdapUtils;
 import org.ligoj.app.ldap.dao.LdapCacheRepository.LdapData;
-import org.ligoj.app.model.CacheCompany;
 import org.ligoj.app.model.ContainerType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
@@ -24,7 +24,7 @@ import lombok.Setter;
 /**
  * Company LDAP repository
  */
-public class CompanyLdapRepository extends AbstractContainerLdaRepository<CompanyLdap, CacheCompany> implements ICompanyRepository {
+public class CompanyLdapRepository extends AbstractContainerLdaRepository<CompanyOrg, CacheCompany> implements ICompanyRepository {
 
 	private static final String ORGANIZATIONAL_UNIT = "organizationalUnit";
 
@@ -63,8 +63,8 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public Map<String, CompanyLdap> findAll() {
-		return (Map<String, CompanyLdap>) ldapCacheRepository.getLdapData().get(LdapData.COMPANY);
+	public Map<String, CompanyOrg> findAll() {
+		return (Map<String, CompanyOrg>) ldapCacheRepository.getLdapData().get(LdapData.COMPANY);
 	}
 
 	/**
@@ -73,16 +73,16 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 	 * 
 	 * @return the companies. Key is the normalized name.
 	 */
-	public Map<String, CompanyLdap> findAllNoCache() {
-		final Map<String, CompanyLdap> companiesNameToDn = new HashMap<>();
+	public Map<String, CompanyOrg> findAllNoCache() {
+		final Map<String, CompanyOrg> companiesNameToDn = new HashMap<>();
 		for (final DirContextAdapter company : template.search(companyBaseDn, "objectClass=" + ORGANIZATIONAL_UNIT,
 				(Object ctx) -> (DirContextAdapter) ctx)) {
-			final CompanyLdap companyLdap = new CompanyLdap(company.getDn().toString(), company.getStringAttributes("ou")[0]);
+			final CompanyOrg companyLdap = new CompanyOrg(company.getDn().toString(), company.getStringAttributes("ou")[0]);
 			companiesNameToDn.put(companyLdap.getId(), companyLdap);
 		}
 
 		// Also add/replace the quarantine zone
-		final CompanyLdap quarantine = new CompanyLdap(quarantineBaseDn, getQuarantineCompany());
+		final CompanyOrg quarantine = new CompanyOrg(quarantineBaseDn, getQuarantineCompany());
 		quarantine.setLocked(true);
 		companiesNameToDn.put(quarantine.getId(), quarantine);
 
@@ -93,19 +93,19 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 	}
 
 	/**
-	 * Build the {@link LdapName} instance from the DN. This also requires a valid DN for the given {@link CompanyLdap}
+	 * Build the {@link LdapName} instance from the DN. This also requires a valid DN for the given {@link CompanyOrg}
 	 */
-	private void buildLdapName(final CompanyLdap company) {
+	private void buildLdapName(final CompanyOrg company) {
 		company.setLdapName(org.springframework.ldap.support.LdapUtils.newLdapName(company.getDn()));
 	}
 
 	/**
-	 * Build the company hierarchy from the given {@link CompanyLdap}
+	 * Build the company hierarchy from the given {@link CompanyOrg}
 	 */
-	private void buildHierarchy(final Map<String, CompanyLdap> companies, final CompanyLdap company) {
+	private void buildHierarchy(final Map<String, CompanyOrg> companies, final CompanyOrg company) {
 		// Collect all parents and sorted from parent to the leaf
 		company.setCompanyTree(companies.values().stream().filter(c -> LdapUtils.equalsOrParentOf(c.getDn(), company.getDn()))
-				.sorted(Comparator.comparing(CompanyLdap::getLdapName)).collect(Collectors.toList()));
+				.sorted(Comparator.comparing(CompanyOrg::getLdapName)).collect(Collectors.toList()));
 	}
 
 	/**
@@ -118,8 +118,8 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 	}
 
 	@Override
-	public CompanyLdap create(final String dn, final String cn) {
-		final CompanyLdap company = super.create(dn, cn);
+	public CompanyOrg create(final String dn, final String cn) {
+		final CompanyOrg company = super.create(dn, cn);
 
 		// Also, update the cache
 		ldapCacheRepository.create(company);
@@ -129,15 +129,15 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 	}
 
 	@Override
-	protected CompanyLdap newContainer(final String dn, final String name) {
-		return new CompanyLdap(Normalizer.normalize(dn), name);
+	protected CompanyOrg newContainer(final String dn, final String name) {
+		return new CompanyOrg(Normalizer.normalize(dn), name);
 	}
 
 	/**
-	 * Map {@link CompanyLdap} to LDAP
+	 * Map {@link CompanyOrg} to LDAP
 	 */
 	@Override
-	protected void mapToContext(final CompanyLdap entry, final DirContextOperations context) {
+	protected void mapToContext(final CompanyOrg entry, final DirContextOperations context) {
 		context.setAttributeValue("ou", entry.getName());
 	}
 
@@ -147,13 +147,13 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 	 * @param company
 	 *            The company to remove.
 	 */
-	private void removeFromJavaCache(final CompanyLdap company) {
+	private void removeFromJavaCache(final CompanyOrg company) {
 		// Update the raw cache
 		findAll().remove(company.getId());
 	}
 
 	@Override
-	public void delete(final CompanyLdap container) {
+	public void delete(final CompanyOrg container) {
 
 		/*
 		 * Remove from the managed companies, all companies within (sub LDAP DN) this company. This operation is needed

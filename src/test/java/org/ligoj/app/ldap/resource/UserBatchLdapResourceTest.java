@@ -19,8 +19,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.ligoj.app.DefaultVerificationMode;
-import org.ligoj.app.api.UserLdap;
-import org.ligoj.app.model.DelegateOrg;
+import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.bootstrap.core.SpringUtils;
 import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.resource.system.session.SessionSettings;
@@ -120,7 +120,7 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 	public void atomic() throws IOException, InterruptedException {
 		initSpringSecurityContext(DEFAULT_USER);
 
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setCompany("untouched");
 		user.setDepartment("untouched");
 		user.setFirstName("untouched");

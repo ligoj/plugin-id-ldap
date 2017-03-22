@@ -18,14 +18,14 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.ligoj.app.api.CompanyLdap;
-import org.ligoj.app.api.GroupLdap;
+import org.ligoj.app.api.CompanyOrg;
+import org.ligoj.app.api.GroupOrg;
 import org.ligoj.app.api.Normalizer;
-import org.ligoj.app.api.UserLdap;
-import org.ligoj.app.dao.CacheGroupRepository;
+import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.dao.CacheGroupRepository;
+import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.ldap.LdapUtils;
 import org.ligoj.app.ldap.dao.GroupLdapRepository;
-import org.ligoj.app.model.CacheGroup;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.bootstrap.core.json.TableItem;
@@ -43,7 +43,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Produces(MediaType.APPLICATION_JSON)
 @Transactional
-public class GroupLdapResource extends AbstractContainerLdapResource<GroupLdap, GroupLdapEditionVo, CacheGroup> {
+public class GroupLdapResource extends AbstractContainerLdapResource<GroupOrg, GroupLdapEditionVo, CacheGroup> {
 
 	/**
 	 * Attribute name used as filter and path.
@@ -79,14 +79,14 @@ public class GroupLdapResource extends AbstractContainerLdapResource<GroupLdap, 
 	@GET
 	public TableItem<ContainerLdapCountVo> findAll(@Context final UriInfo uriInfo) {
 		final List<ContainerScope> types = containerScopeResource.findAllDescOrder(ContainerType.GROUP);
-		final Map<String, CompanyLdap> companies = organizationResource.getRepository().findAll();
-		final Collection<CompanyLdap> managedCompanies = organizationResource.getContainers();
-		final Set<GroupLdap> managedGroupsWrite = getContainersForWrite();
-		final Set<GroupLdap> managedGroupsAdmin = getContainersForAdmin();
-		final Map<String, UserLdap> ldapUsers = getUser().findAll();
+		final Map<String, CompanyOrg> companies = organizationResource.getRepository().findAll();
+		final Collection<CompanyOrg> managedCompanies = organizationResource.getContainers();
+		final Set<GroupOrg> managedGroupsWrite = getContainersForWrite();
+		final Set<GroupOrg> managedGroupsAdmin = getContainersForAdmin();
+		final Map<String, UserOrg> ldapUsers = getUser().findAll();
 
 		// Search the groups
-		final Page<GroupLdap> findAll = getContainers(DataTableAttributes.getSearch(uriInfo),
+		final Page<GroupOrg> findAll = getContainers(DataTableAttributes.getSearch(uriInfo),
 				paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS));
 
 		// Apply pagination and secure the users data
@@ -95,8 +95,8 @@ public class GroupLdapResource extends AbstractContainerLdapResource<GroupLdap, 
 			securedUserLdap.setCount(rawGroupLdap.getMembers().size());
 			// [jdoe4, jdoe5, fdoe2, jlast3] // companies.get(ldapUsers.get("jdoe4").getCompany()).getCompanyTree()
 			// Computed the visible members
-			securedUserLdap.setCountVisible((int) rawGroupLdap.getMembers().stream().map(ldapUsers::get).map(UserLdap::getCompany).map(companies::get)
-					.map(CompanyLdap::getCompanyTree).filter(c -> CollectionUtils.containsAny(managedCompanies, c)).count());
+			securedUserLdap.setCountVisible((int) rawGroupLdap.getMembers().stream().map(ldapUsers::get).map(UserOrg::getCompany).map(companies::get)
+					.map(CompanyOrg::getCompanyTree).filter(c -> CollectionUtils.containsAny(managedCompanies, c)).count());
 			return securedUserLdap;
 		});
 	}
@@ -120,7 +120,7 @@ public class GroupLdapResource extends AbstractContainerLdapResource<GroupLdap, 
 		container.setParent(StringUtils.trimToNull(container.getParent()));
 		if (container.getParent() != null) {
 			// Check the parent is also inside the type, a new DN will be built
-			final GroupLdap parent = findByIdExpected(container.getParent());
+			final GroupOrg parent = findByIdExpected(container.getParent());
 			if (!LdapUtils.equalsOrParentOf(type.getDn(), parent.getDn())) {
 				throw new ValidationJsonException("parent", "container-parent-type-match", TYPE_ATTRIBUTE, this.type, "provided", type.getType());
 			}
@@ -140,7 +140,7 @@ public class GroupLdapResource extends AbstractContainerLdapResource<GroupLdap, 
 	@Path("empty/{id}")
 	public void empty(@PathParam("id") final String id) {
 		// Check the group exists
-		final GroupLdap container = findByIdExpected(id);
+		final GroupOrg container = findByIdExpected(id);
 
 		// Check the group can be updated by the current user
 		if (!getContainersForWrite().contains(container)) {
@@ -157,13 +157,13 @@ public class GroupLdapResource extends AbstractContainerLdapResource<GroupLdap, 
 	}
 
 	@Override
-	protected GroupLdap create(final GroupLdapEditionVo container, final ContainerScope type, final String newDn) {
+	protected GroupOrg create(final GroupLdapEditionVo container, final ContainerScope type, final String newDn) {
 		// Check the related objects
 		final List<String> assistants = toDn(container.getAssistants());
 		final List<String> owners = toDn(container.getOwners());
 
 		// Create the group
-		final GroupLdap groupLdap = super.create(container, type, newDn);
+		final GroupOrg groupLdap = super.create(container, type, newDn);
 
 		// Nesting management
 		if (container.getParent() != null) {
@@ -187,6 +187,6 @@ public class GroupLdapResource extends AbstractContainerLdapResource<GroupLdap, 
 	 * @return The corresponding DN.
 	 */
 	private List<String> toDn(final List<String> uids) {
-		return CollectionUtils.emptyIfNull(uids).stream().map(getUser()::findByIdExpected).map(UserLdap::getDn).collect(Collectors.toList());
+		return CollectionUtils.emptyIfNull(uids).stream().map(getUser()::findByIdExpected).map(UserOrg::getDn).collect(Collectors.toList());
 	}
 }

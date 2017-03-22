@@ -19,7 +19,7 @@ import org.junit.Test;
 import org.ligoj.bootstrap.core.DescribedBean;
 import org.ligoj.bootstrap.core.IDescribableBean;
 import org.ligoj.app.api.Activity;
-import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.plugin.id.ldap.resource.ActivitiesComputations;
 import org.ligoj.app.plugin.id.ldap.resource.CsvStreamingOutput;
 
@@ -54,14 +54,14 @@ public class CsvStreamingOutputTest {
 		computations.setActivities(activities);
 
 		// Users
-		final Collection<UserLdap> users = new ArrayList<>();
-		final UserLdap user = new UserLdap();
+		final Collection<UserOrg> users = new ArrayList<>();
+		final UserOrg user = new UserOrg();
 		user.setFirstName("F0");
 		user.setLastName("L0");
 		user.setId("U0");
 		user.setMails(new ArrayList<>());
 		users.add(user);
-		final UserLdap user2 = new UserLdap();
+		final UserOrg user2 = new UserOrg();
 		user2.setFirstName("F1");
 		user2.setLastName("L1");
 		user2.setId("U1");

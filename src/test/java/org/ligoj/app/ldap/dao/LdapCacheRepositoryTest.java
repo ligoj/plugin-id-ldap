@@ -10,9 +10,9 @@ import org.springframework.context.ApplicationContext;
 
 import org.ligoj.bootstrap.AbstractDataGeneratorTest;
 import org.ligoj.bootstrap.core.SpringUtils;
-import org.ligoj.app.api.CompanyLdap;
-import org.ligoj.app.api.GroupLdap;
-import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.api.CompanyOrg;
+import org.ligoj.app.api.GroupOrg;
+import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.IamConfiguration;
 import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.ldap.dao.CompanyLdapRepository;
@@ -32,13 +32,13 @@ public class LdapCacheRepositoryTest extends AbstractDataGeneratorTest {
 	private GroupLdapRepository groupRepository;
 	private UserLdapRepository userRepository;
 	private IamProvider iamProvider;
-	private UserLdap user;
-	private UserLdap user2;
-	private GroupLdap groupLdap;
-	private GroupLdap groupLdap2;
-	private Map<String, GroupLdap> groups;
-	private Map<String, CompanyLdap> companies;
-	private Map<String, UserLdap> users;
+	private UserOrg user;
+	private UserOrg user2;
+	private GroupOrg groupLdap;
+	private GroupOrg groupLdap2;
+	private Map<String, GroupOrg> groups;
+	private Map<String, CompanyOrg> companies;
+	private Map<String, UserOrg> users;
 	private LdapCacheRepository repository;
 
 	@Before
@@ -56,15 +56,15 @@ public class LdapCacheRepositoryTest extends AbstractDataGeneratorTest {
 		Mockito.when(iamProvider.getConfiguration()).thenReturn(iamConfiguration);
 
 		companies = new HashMap<>();
-		companies.put("company", new CompanyLdap("dnc", "Company"));
+		companies.put("company", new CompanyOrg("dnc", "Company"));
 		groups = new HashMap<>();
 		final Set<String> members = new HashSet<>();
 		members.add("u");
-		groupLdap = new GroupLdap("dn", "Group", members);
+		groupLdap = new GroupOrg("dn", "Group", members);
 		groups.put("group", groupLdap);
-		groupLdap2 = new GroupLdap("dn2", "Group2", new HashSet<>());
+		groupLdap2 = new GroupOrg("dn2", "Group2", new HashSet<>());
 		groups.put("group2", groupLdap2);
-		user = new UserLdap();
+		user = new UserOrg();
 		user.setId("u");
 		user.setFirstName("f");
 		user.setLastName("l");
@@ -73,7 +73,7 @@ public class LdapCacheRepositoryTest extends AbstractDataGeneratorTest {
 		userGroups.add("group");
 		user.setGroups(userGroups);
 		user.setMails(Collections.singletonList("mail"));
-		user2 = new UserLdap();
+		user2 = new UserOrg();
 		user2.setId("u2");
 		user2.setFirstName("f");
 		user2.setLastName("l");
@@ -104,18 +104,18 @@ public class LdapCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 		final Map<LdapData, Map<String, ?>> ldapData = repository.getLdapData();
 
-		Assert.assertEquals("Company", ((CompanyLdap) ldapData.get(LdapData.COMPANY).get("company")).getName());
-		Assert.assertEquals("dnc", ((CompanyLdap) ldapData.get(LdapData.COMPANY).get("company")).getDn());
-		final GroupLdap groupLdap = (GroupLdap) ldapData.get(LdapData.GROUP).get("group");
+		Assert.assertEquals("Company", ((CompanyOrg) ldapData.get(LdapData.COMPANY).get("company")).getName());
+		Assert.assertEquals("dnc", ((CompanyOrg) ldapData.get(LdapData.COMPANY).get("company")).getDn());
+		final GroupOrg groupLdap = (GroupOrg) ldapData.get(LdapData.GROUP).get("group");
 		Assert.assertEquals("dn", groupLdap.getDn());
 		Assert.assertEquals("group", groupLdap.getId());
 		Assert.assertEquals("Group", groupLdap.getName());
-		final UserLdap user = (UserLdap) ldapData.get(LdapData.USER).get("u");
+		final UserOrg user = (UserOrg) ldapData.get(LdapData.USER).get("u");
 		Assert.assertEquals("u", user.getId());
 		Assert.assertEquals("f", user.getFirstName());
 		Assert.assertEquals("l", user.getLastName());
 		Assert.assertEquals("company", user.getCompany());
-		final UserLdap user2 = (UserLdap) ldapData.get(LdapData.USER).get("u2");
+		final UserOrg user2 = (UserOrg) ldapData.get(LdapData.USER).get("u2");
 		Assert.assertEquals("u2", user2.getId());
 		Assert.assertEquals("f", user2.getFirstName());
 		Assert.assertEquals("l", user2.getLastName());
@@ -145,8 +145,8 @@ public class LdapCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 	@Test
 	public void addGroupToGroup() {
-		final GroupLdap parent = groupLdap2;
-		final GroupLdap child = groupLdap;
+		final GroupOrg parent = groupLdap2;
+		final GroupOrg child = groupLdap;
 
 		// Check the initial status
 		Assert.assertEquals(0, child.getSubGroups().size());
@@ -167,8 +167,8 @@ public class LdapCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 	@Test
 	public void removeGroupFromGroup() {
-		final GroupLdap parent = groupLdap2;
-		final GroupLdap child = groupLdap;
+		final GroupOrg parent = groupLdap2;
+		final GroupOrg child = groupLdap;
 		parent.getSubGroups().add(child.getId());
 		child.getGroups().add(parent.getId());
 
@@ -189,7 +189,7 @@ public class LdapCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 	@Test
 	public void createGroup() {
-		final GroupLdap newGroupLdap = new GroupLdap("dn3", "G3", new HashSet<>());
+		final GroupOrg newGroupLdap = new GroupOrg("dn3", "G3", new HashSet<>());
 
 		repository.create(newGroupLdap);
 
@@ -199,7 +199,7 @@ public class LdapCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 	@Test
 	public void createCompany() {
-		final CompanyLdap newCompanyLdap = new CompanyLdap("dn3", "C3");
+		final CompanyOrg newCompanyLdap = new CompanyOrg("dn3", "C3");
 
 		repository.create(newCompanyLdap);
 
@@ -209,7 +209,7 @@ public class LdapCacheRepositoryTest extends AbstractDataGeneratorTest {
 
 	@Test
 	public void createUser() {
-		final UserLdap newUser = new UserLdap();
+		final UserOrg newUser = new UserOrg();
 		newUser.setId("u3");
 		newUser.setFirstName("f");
 		newUser.setLastName("l");

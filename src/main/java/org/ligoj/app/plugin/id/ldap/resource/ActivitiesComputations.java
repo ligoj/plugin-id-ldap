@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.ligoj.app.api.Activity;
-import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.api.UserOrg;
 import org.ligoj.bootstrap.core.IDescribableBean;
 
 import lombok.Getter;
@@ -20,7 +20,7 @@ public class ActivitiesComputations {
 	/**
 	 * User identifiers
 	 */
-	private Collection<UserLdap> users;
+	private Collection<UserOrg> users;
 
 	/**
 	 * Unique related nodes

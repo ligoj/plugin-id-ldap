@@ -15,15 +15,15 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.ligoj.app.api.GroupLdap;
-import org.ligoj.app.api.LdapElement;
+import org.ligoj.app.api.GroupOrg;
+import org.ligoj.app.api.ResourceOrg;
 import org.ligoj.app.api.Normalizer;
-import org.ligoj.app.api.UserLdap;
-import org.ligoj.app.dao.CacheGroupRepository;
+import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.IGroupRepository;
+import org.ligoj.app.iam.dao.CacheGroupRepository;
+import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.ldap.LdapUtils;
 import org.ligoj.app.ldap.dao.LdapCacheRepository.LdapData;
-import org.ligoj.app.model.CacheGroup;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
  * Group LDAP repository
  */
 @Slf4j
-public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLdap, CacheGroup> implements IGroupRepository {
+public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg, CacheGroup> implements IGroupRepository {
 
 	/**
 	 * Default DN member for new group. This is required for some LDAP implementation where "uniqueMember" attribute is
@@ -81,8 +81,8 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public Map<String, GroupLdap> findAll() {
-		return (Map<String, GroupLdap>) ldapCacheRepository.getLdapData().get(LdapData.GROUP);
+	public Map<String, GroupOrg> findAll() {
+		return (Map<String, GroupOrg>) ldapCacheRepository.getLdapData().get(LdapData.GROUP);
 	}
 
 	/**
@@ -92,10 +92,10 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 	 * @return the groups. Key is the normalized name, Value is the corresponding LDAP group containing real CN, DN and
 	 *         normalized UID members.
 	 */
-	public Map<String, GroupLdap> findAllNoCache() {
-		final Map<String, GroupLdap> groups = new HashMap<>();
+	public Map<String, GroupOrg> findAllNoCache() {
+		final Map<String, GroupOrg> groups = new HashMap<>();
 		final Map<String, Set<String>> subGroupsDn = new HashMap<>();
-		final Map<String, GroupLdap> dnToGroups = new HashMap<>();
+		final Map<String, GroupOrg> dnToGroups = new HashMap<>();
 
 		// First pass, collect the groups and dirty relationships
 		for (final DirContextAdapter groupRaw : template.search(groupsBaseDn, new EqualsFilter("objectClass", GROUP_OF_UNIQUE_NAMES).encode(),
@@ -113,7 +113,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 					subGroups.add(memberDN);
 				}
 			}
-			final GroupLdap group = new GroupLdap(dn, name, members);
+			final GroupOrg group = new GroupOrg(dn, name, members);
 			subGroupsDn.put(group.getId(), subGroups);
 			groups.put(group.getId(), group);
 			dnToGroups.put(dn, group);
@@ -128,11 +128,11 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 	/**
 	 * Complete the sub-groups hierarchy and update the two-ways relationship
 	 */
-	private void updateSubGroups(final Map<String, GroupLdap> groups, final Map<String, Set<String>> subGroupsDn,
-			final Map<String, GroupLdap> dnToGroups) {
-		for (final GroupLdap group : groups.values()) {
+	private void updateSubGroups(final Map<String, GroupOrg> groups, final Map<String, Set<String>> subGroupsDn,
+			final Map<String, GroupOrg> dnToGroups) {
+		for (final GroupOrg group : groups.values()) {
 			for (final String subGroupDn : subGroupsDn.get(group.getId())) {
-				final GroupLdap subGroup = dnToGroups.get(Normalizer.normalize(subGroupDn));
+				final GroupOrg subGroup = dnToGroups.get(Normalizer.normalize(subGroupDn));
 				if (subGroup == null) {
 					// The unique member previously found does not match to an existing group, report it
 					log.warn("Broken group reference found '" + group.getDn() + "' --> " + subGroupDn);
@@ -145,7 +145,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 		}
 	}
 
-	private void removeFromJavaCache(final GroupLdap group) {
+	private void removeFromJavaCache(final GroupOrg group) {
 		// Remove the sub groups from LDAP
 		new ArrayList<>(group.getSubGroups()).stream().map(this::findById).filter(Objects::nonNull)
 				.forEach(child -> removeGroup(child, group.getId()));
@@ -165,7 +165,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 	 *            the LDAP group.
 	 */
 	@Override
-	public void delete(final GroupLdap group) {
+	public void delete(final GroupOrg group) {
 
 		/*
 		 * Remove from the managed groups, all groups within (sub LDAP DN) this group. This operation is needed since we
@@ -190,13 +190,13 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 	 * @param users
 	 *            All known users could be removed from this group.
 	 */
-	public void empty(final GroupLdap group, final Map<String, UserLdap> users) {
+	public void empty(final GroupOrg group, final Map<String, UserOrg> users) {
 		ldapCacheRepository.empty(group, users);
 	}
 
 	@Override
-	public GroupLdap create(final String dn, final String cn) {
-		final GroupLdap group = super.create(dn, cn);
+	public GroupOrg create(final String dn, final String cn) {
+		final GroupOrg group = super.create(dn, cn);
 
 		// Also, update the SQL cache
 		ldapCacheRepository.create(group);
@@ -210,10 +210,10 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 	 *            The new member to add.
 	 * @param group
 	 *            CN of the group to update. Must be normalized.
-	 * @return the target {@link GroupLdap}.
+	 * @return the target {@link GroupOrg}.
 	 */
-	private GroupLdap addMember(final LdapElement element, final String group) {
-		final GroupLdap groupLdap = findById(group);
+	private GroupOrg addMember(final ResourceOrg element, final String group) {
+		final GroupOrg groupLdap = findById(group);
 		if (!groupLdap.getMembers().contains(element.getId())) {
 			// Not useless operation
 			addAttributes(groupLdap.getDn(), UNIQUE_MEMBER, Collections.singletonList(element.getDn()));
@@ -232,7 +232,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 	 *            CN of the group to update.
 	 */
 	public void updateMemberDn(final String group, final String oldUniqueMemberDn, final String newUniqueMemberDn) {
-		final GroupLdap groupLdap = findById(group);
+		final GroupOrg groupLdap = findById(group);
 		final ModificationItem[] mods = new ModificationItem[2];
 		mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute(UNIQUE_MEMBER, oldUniqueMemberDn));
 		mods[1] = new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute(UNIQUE_MEMBER, newUniqueMemberDn));
@@ -243,11 +243,11 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 	 * Add a user to given group. Cache is updated.
 	 * 
 	 * @param user
-	 *            {@link UserLdap} to add.
+	 *            {@link UserOrg} to add.
 	 * @param group
 	 *            CN of the group to update.
 	 */
-	public void addUser(final UserLdap user, final String group) {
+	public void addUser(final UserOrg user, final String group) {
 		// Add to Java cache and to SQL cache
 		ldapCacheRepository.addUserToGroup(user, addMember(user, group));
 	}
@@ -256,11 +256,11 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 	 * Add a group to another group. Cache is updated.
 	 * 
 	 * @param subGroup
-	 *            {@link GroupLdap} to add to a parent group.
+	 *            {@link GroupOrg} to add to a parent group.
 	 * @param toGroup
 	 *            CN of the parent group to update.
 	 */
-	public void addGroup(final GroupLdap subGroup, final String toGroup) {
+	public void addGroup(final GroupOrg subGroup, final String toGroup) {
 		// Add to Java cache and to SQL cache
 		ldapCacheRepository.addGroupToGroup(subGroup, addMember(subGroup, toGroup));
 	}
@@ -269,11 +269,11 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 	 * Remove a user from a given group. Cache is updated.
 	 * 
 	 * @param user
-	 *            {@link UserLdap} to remove.
+	 *            {@link UserOrg} to remove.
 	 * @param group
 	 *            CN of the group to update.
 	 */
-	public void removeUser(final UserLdap user, final String group) {
+	public void removeUser(final UserOrg user, final String group) {
 		// Remove from Java cache and from SQL cache
 		ldapCacheRepository.removeUserFromGroup(user, removeMember(user, group));
 	}
@@ -282,11 +282,11 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 	 * Remove a group from another group. Cache is updated. There is no deletion.
 	 * 
 	 * @param subGroup
-	 *            {@link GroupLdap} to remove.
+	 *            {@link GroupOrg} to remove.
 	 * @param group
 	 *            CN of the group to update.
 	 */
-	public void removeGroup(final GroupLdap subGroup, final String group) {
+	public void removeGroup(final GroupOrg subGroup, final String group) {
 		// Remove from Java cache and from SQL cache
 		ldapCacheRepository.removeGroupFromGroup(subGroup, removeMember(subGroup, group));
 	}
@@ -298,10 +298,10 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 	 *            DN of the member to remove.
 	 * @param group
 	 *            CN of the group to update. Must be normalized.
-	 * @return the {@link GroupLdap} where the member has just been removed from.
+	 * @return the {@link GroupOrg} where the member has just been removed from.
 	 */
-	private GroupLdap removeMember(final LdapElement uniqueMember, final String group) {
-		final GroupLdap groupLdap = findById(group);
+	private GroupOrg removeMember(final ResourceOrg uniqueMember, final String group) {
+		final GroupOrg groupLdap = findById(group);
 		if (groupLdap.getMembers().contains(uniqueMember.getId()) || groupLdap.getSubGroups().contains(uniqueMember.getId())) {
 			// Not useless LDAP operation, avoid LDAP duplicate deletion
 			final ModificationItem[] mods = new ModificationItem[1];
@@ -322,18 +322,18 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 	}
 
 	/**
-	 * Map {@link GroupLdap} to LDAP
+	 * Map {@link GroupOrg} to LDAP
 	 */
 	@Override
-	protected void mapToContext(final GroupLdap entry, final DirContextOperations context) {
+	protected void mapToContext(final GroupOrg entry, final DirContextOperations context) {
 		context.setAttributeValue("cn", entry.getName());
 		// Dummy member for initial group, due to LDAP compliance of class "groupOfUniqueNames"
 		context.setAttributeValue(UNIQUE_MEMBER, DEFAULT_MEMBER_DN);
 	}
 
 	@Override
-	protected GroupLdap newContainer(final String dn, final String cn) {
-		return new GroupLdap(Normalizer.normalize(dn), cn, new HashSet<>());
+	protected GroupOrg newContainer(final String dn, final String cn) {
+		return new GroupOrg(Normalizer.normalize(dn), cn, new HashSet<>());
 	}
 
 	/**
@@ -367,7 +367,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupLda
 	}
 
 	@Override
-	public GroupLdap findByDepartment(final String department) {
+	public GroupOrg findByDepartment(final String department) {
 		final AndFilter filter = new AndFilter();
 		filter.and(new EqualsFilter("objectclass", GROUP_OF_UNIQUE_NAMES));
 		filter.and(new EqualsFilter(DEPARTMENT_ATTRIBUTE, department));

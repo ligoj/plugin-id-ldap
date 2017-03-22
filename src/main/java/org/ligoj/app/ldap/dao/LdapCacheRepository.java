@@ -5,10 +5,10 @@ import java.util.Map;
 
 import javax.cache.annotation.CacheResult;
 
-import org.ligoj.app.api.CompanyLdap;
-import org.ligoj.app.api.GroupLdap;
+import org.ligoj.app.api.CompanyOrg;
+import org.ligoj.app.api.GroupOrg;
 import org.ligoj.app.api.Normalizer;
-import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.IamProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -47,9 +47,9 @@ public class LdapCacheRepository {
 
 		// Fetch LDAP data
 		log.info("Fetching LDAP data ...");
-		final Map<String, CompanyLdap> companies = getCompany().findAllNoCache();
-		final Map<String, GroupLdap> groups = getGroup().findAllNoCache();
-		final Map<String, UserLdap> users = getUser().findAllNoCache(groups);
+		final Map<String, CompanyOrg> companies = getCompany().findAllNoCache();
+		final Map<String, GroupOrg> groups = getGroup().findAllNoCache();
+		final Map<String, UserOrg> users = getUser().findAllNoCache(groups);
 		result.put(LdapData.COMPANY, companies);
 		result.put(LdapData.GROUP, groups);
 		result.put(LdapData.USER, users);
@@ -63,7 +63,7 @@ public class LdapCacheRepository {
 	 * @param group
 	 *            the new group.
 	 */
-	protected void create(final GroupLdap group) {
+	protected void create(final GroupOrg group) {
 		ldapCacheDao.create(group);
 		getGroup().findAll().put(group.getId(), group);
 	}
@@ -74,7 +74,7 @@ public class LdapCacheRepository {
 	 * @param company
 	 *            the new group.
 	 */
-	protected void create(final CompanyLdap company) {
+	protected void create(final CompanyOrg company) {
 		ldapCacheDao.create(company);
 		getCompany().findAll().put(company.getId(), company);
 	}
@@ -85,7 +85,7 @@ public class LdapCacheRepository {
 	 * @param user
 	 *            the new user.
 	 */
-	protected void create(final UserLdap user) {
+	protected void create(final UserOrg user) {
 		ldapCacheDao.create(user);
 		getUser().findAll().put(user.getId(), user);
 	}
@@ -96,8 +96,8 @@ public class LdapCacheRepository {
 	 * @param group
 	 *            the group to remove.
 	 */
-	protected void delete(final GroupLdap group) {
-		final Map<String, GroupLdap> groupsNameToDn = getGroup().findAll();
+	protected void delete(final GroupOrg group) {
+		final Map<String, GroupOrg> groupsNameToDn = getGroup().findAll();
 
 		// Remove the group from the users
 		deleteMemoryAssociations(group, getUser().findAll());
@@ -117,7 +117,7 @@ public class LdapCacheRepository {
 	 * @param users
 	 *            All known users could be removed from this group.
 	 */
-	protected void empty(final GroupLdap group, final Map<String, UserLdap> users) {
+	protected void empty(final GroupOrg group, final Map<String, UserOrg> users) {
 		// Remove the group from the users
 		deleteMemoryAssociations(group, users);
 
@@ -133,7 +133,7 @@ public class LdapCacheRepository {
 	 * @param users
 	 *            All known users.
 	 */
-	private void deleteMemoryAssociations(final GroupLdap group, final Map<String, UserLdap> users) {
+	private void deleteMemoryAssociations(final GroupOrg group, final Map<String, UserOrg> users) {
 		// Remove from in-memory cache all users
 		for (final String member : group.getMembers()) {
 			users.get(member).getGroups().remove(group.getId());
@@ -150,8 +150,8 @@ public class LdapCacheRepository {
 	 * @param company
 	 *            The company to remove.
 	 */
-	public void delete(final CompanyLdap company) {
-		final Map<String, GroupLdap> companiesNameToDn = getGroup().findAll();
+	public void delete(final CompanyOrg company) {
+		final Map<String, GroupOrg> companiesNameToDn = getGroup().findAll();
 
 		// Remove from JPA cache
 		ldapCacheDao.delete(company);
@@ -167,8 +167,8 @@ public class LdapCacheRepository {
 	 * @param user
 	 *            the user to remove.
 	 */
-	protected void delete(final UserLdap user) {
-		final Map<String, UserLdap> users = getUser().findAll();
+	protected void delete(final UserOrg user) {
+		final Map<String, UserOrg> users = getUser().findAll();
 
 		// Remove from JPA cache
 		ldapCacheDao.delete(user);
@@ -180,7 +180,7 @@ public class LdapCacheRepository {
 	/**
 	 * Remove the user from the given group. Cache is also updated but only in group members.
 	 */
-	protected void removeUserFromGroup(final UserLdap user, final GroupLdap group) {
+	protected void removeUserFromGroup(final UserOrg user, final GroupOrg group) {
 		// Remove from JPA cache
 		ldapCacheDao.removeUserFromGroup(user, group);
 
@@ -192,7 +192,7 @@ public class LdapCacheRepository {
 	/**
 	 * Remove the group from the another group. Cache is also updated but only in group members.
 	 */
-	protected void removeGroupFromGroup(final GroupLdap subGroup, final GroupLdap group) {
+	protected void removeGroupFromGroup(final GroupOrg subGroup, final GroupOrg group) {
 		// Remove from JPA cache
 		ldapCacheDao.removeGroupFromGroup(subGroup, group);
 
@@ -204,7 +204,7 @@ public class LdapCacheRepository {
 	/**
 	 * Add the group to the given group.Cache is also updated.
 	 */
-	protected void addGroupToGroup(final GroupLdap subGroup, final GroupLdap group) {
+	protected void addGroupToGroup(final GroupOrg subGroup, final GroupOrg group) {
 
 		// Add to JPA cache
 		ldapCacheDao.addGroupToGroup(subGroup, group);
@@ -217,7 +217,7 @@ public class LdapCacheRepository {
 	/**
 	 * Add the user to the given group.Cache is also updated.
 	 */
-	protected void addUserToGroup(final UserLdap user, final GroupLdap group) {
+	protected void addUserToGroup(final UserOrg user, final GroupOrg group) {
 
 		// Add to JPA cache
 		ldapCacheDao.addUserToGroup(user, group);
@@ -230,7 +230,7 @@ public class LdapCacheRepository {
 	/**
 	 * Update the attributes.
 	 */
-	protected void update(final UserLdap user) {
+	protected void update(final UserOrg user) {
 		ldapCacheDao.update(user);
 	}
 

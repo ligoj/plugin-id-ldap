@@ -8,8 +8,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.ligoj.app.MatcherUtil;
-import org.ligoj.app.api.CompanyLdap;
-import org.ligoj.app.api.GroupLdap;
+import org.ligoj.app.api.CompanyOrg;
+import org.ligoj.app.api.GroupOrg;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.dao.ContainerScopeRepository;
 import org.ligoj.app.plugin.id.model.ContainerScope;
@@ -270,7 +270,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals("France", group0.getType());
 
 		// Check the creation from LDAP
-		final CompanyLdap companyLdap = getCompany().findAllNoCache().get("new-ax-1-z:z 0");
+		final CompanyOrg companyLdap = getCompany().findAllNoCache().get("new-ax-1-z:z 0");
 		Assert.assertNotNull(companyLdap);
 		Assert.assertEquals("new-ax-1-z:z 0", companyLdap.getId());
 		Assert.assertEquals("New-Ax-1-z:Z 0", companyLdap.getName());
@@ -279,9 +279,9 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		// For coverage
 		Assert.assertEquals("new-ax-1-z:z 0".hashCode(), companyLdap.hashCode());
 		Assert.assertEquals(companyLdap, companyLdap);
-		Assert.assertEquals(companyLdap, new CompanyLdap("any", "New-AX-1-Z:Z 0"));
-		Assert.assertNotEquals(companyLdap, new CompanyLdap("any", "some"));
-		Assert.assertNotEquals(companyLdap, new GroupLdap("any", "some", null));
+		Assert.assertEquals(companyLdap, new CompanyOrg("any", "New-AX-1-Z:Z 0"));
+		Assert.assertNotEquals(companyLdap, new CompanyOrg("any", "some"));
+		Assert.assertNotEquals(companyLdap, new GroupOrg("any", "some", null));
 	}
 
 	@Test

@@ -39,20 +39,20 @@ import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.api.Activity;
-import org.ligoj.app.api.GroupLdap;
-import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.api.GroupOrg;
+import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.dao.NodeRepository;
 import org.ligoj.app.dao.ParameterRepository;
 import org.ligoj.app.dao.ProjectRepository;
+import org.ligoj.app.iam.model.CacheCompany;
+import org.ligoj.app.iam.model.CacheGroup;
+import org.ligoj.app.iam.model.CacheMembership;
+import org.ligoj.app.iam.model.CacheUser;
 import org.ligoj.app.ldap.dao.LdapCacheRepository;
 import org.ligoj.app.ldap.dao.ProjectCustomerLdapRepository;
 import org.ligoj.app.ldap.resource.AbstractContainerLdapResourceTest;
 import org.ligoj.app.ldap.resource.UserLdapEdition;
 import org.ligoj.app.ldap.resource.UserLdapResource;
-import org.ligoj.app.model.CacheCompany;
-import org.ligoj.app.model.CacheGroup;
-import org.ligoj.app.model.CacheMembership;
-import org.ligoj.app.model.CacheUser;
 import org.ligoj.app.model.Node;
 import org.ligoj.app.model.Parameter;
 import org.ligoj.app.model.ParameterValue;
@@ -311,7 +311,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		basicCreate(subscription2);
 
 		// Checks
-		final GroupLdap groupLdap = getGroup().findById(groupAndProject);
+		final GroupOrg groupLdap = getGroup().findById(groupAndProject);
 		Assert.assertNotNull(groupLdap);
 		Assert.assertEquals(groupAndProject, groupLdap.getName());
 		Assert.assertEquals(groupAndProject, groupLdap.getId());
@@ -516,7 +516,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		basicCreate(subscription2);
 
 		// Checks
-		final GroupLdap groupLdap = getGroup().findById("some-new-project");
+		final GroupOrg groupLdap = getGroup().findById("some-new-project");
 		Assert.assertNotNull(groupLdap);
 		Assert.assertEquals("some-new-project", groupLdap.getName());
 		Assert.assertEquals("cn=some-new-project,ou=some,ou=project,dc=sample,dc=com", groupLdap.getDn());
@@ -924,14 +924,14 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		basicCreate(subscription2);
 
 		// Checks
-		final GroupLdap groupLdap = getGroup().findById(subGroup);
+		final GroupOrg groupLdap = getGroup().findById(subGroup);
 		Assert.assertNotNull(groupLdap);
 		Assert.assertEquals(subGroup, groupLdap.getName());
 		Assert.assertEquals("cn=" + subGroup + ",cn=" + parentGroup + ",ou=sea,ou=project,dc=sample,dc=com", groupLdap.getDn());
 		Assert.assertEquals(subGroup, groupLdap.getId());
 		Assert.assertEquals(1, groupLdap.getGroups().size());
 		Assert.assertTrue(groupLdap.getGroups().contains(parentGroup));
-		final GroupLdap groupLdapParent = getGroup().findById(parentGroup);
+		final GroupOrg groupLdapParent = getGroup().findById(parentGroup);
 		Assert.assertEquals(1, groupLdapParent.getSubGroups().size());
 		Assert.assertTrue(groupLdapParent.getSubGroups().contains(subGroup));
 		return subscription2;
@@ -993,7 +993,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void toApplicationUserExists() {
 		// Create a new LDAP node plugged to the primary node
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setMails(Collections.singletonList("marc.martin@sample.com"));
 		user.setFirstName("First");
 		user.setLastName("Last123");
@@ -1001,7 +1001,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		user.setCompany("gfi");
 		Assert.assertEquals("mmartin", resource.toApplicationUser(user));
 
-		final UserLdap userLdap = userLdapResource.findByIdNoCache("mmartin");
+		final UserOrg userLdap = userLdapResource.findByIdNoCache("mmartin");
 		Assert.assertEquals("mmartin", userLdap.getName());
 		Assert.assertEquals("Marc", userLdap.getFirstName());
 		Assert.assertEquals("Martin", userLdap.getLastName());
@@ -1011,7 +1011,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void toApplicationUserNew() {
 		// Create a new LDAP node plugged to the primary node
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setMails(Collections.singletonList("some@where.com"));
 		user.setFirstName("First");
 		user.setLastName("Last123");
@@ -1019,7 +1019,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		user.setName("secondarylogin");
 		Assert.assertEquals("flast123", resource.toApplicationUser(user));
 
-		final UserLdap userLdap = userLdapResource.findByIdNoCache("flast123");
+		final UserOrg userLdap = userLdapResource.findByIdNoCache("flast123");
 		Assert.assertEquals("flast123", userLdap.getName());
 		Assert.assertEquals("First", userLdap.getFirstName());
 		Assert.assertEquals("Last123", userLdap.getLastName());
@@ -1031,7 +1031,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void toApplicationUserNewWithCollision() {
 		// Create a new LDAP node plugged to the primary node
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setMails(Collections.singletonList("some@where.com"));
 		user.setFirstName("Marc");
 		user.setLastName("Martin");
@@ -1039,7 +1039,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		user.setName("secondarylogin");
 		Assert.assertEquals("mmartin1", resource.toApplicationUser(user));
 
-		final UserLdap userLdap = userLdapResource.findByIdNoCache("mmartin1");
+		final UserOrg userLdap = userLdapResource.findByIdNoCache("mmartin1");
 		Assert.assertEquals("mmartin1", userLdap.getName());
 		Assert.assertEquals("Marc", userLdap.getFirstName());
 		Assert.assertEquals("Martin", userLdap.getLastName());
@@ -1051,7 +1051,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 	@Test(expected = NotAuthorizedException.class)
 	public void toApplicationUserTooManyMail() {
 		// Create a new LDAP node pluged to the primary node
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setMails(Collections.singletonList("fabrice.daugan@sample.com"));
 		user.setFirstName("First");
 		user.setLastName("Last123");
@@ -1061,7 +1061,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test
 	public void toLogin() throws Exception {
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setFirstName("First");
 		user.setLastName("Last123");
 		Assert.assertEquals("flast123", resource.toLogin(user));
@@ -1069,14 +1069,14 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test(expected = NotAuthorizedException.class)
 	public void toLoginNoFirstName() {
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setLastName("Last123");
 		resource.toLogin(user);
 	}
 
 	@Test(expected = NotAuthorizedException.class)
 	public void toLoginNoLastName() {
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setFirstName("First");
 		resource.toLogin(user);
 	}
@@ -1108,7 +1108,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		Mockito.when(resource.userLdapResource.findByIdNoCache("flast123")).thenReturn(null);
 		Mockito.doThrow(new UncategorizedLdapException("")).when(resource.userLdapResource).saveOrUpdate(ArgumentMatchers.any(UserLdapEdition.class));
 
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setMails(Collections.singletonList("fabrice.daugan@sample.com"));
 		user.setFirstName("First");
 		user.setLastName("Last123");
@@ -1123,7 +1123,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		resource.userLdapResource = Mockito.mock(UserLdapResource.class);
 		Mockito.doThrow(new RuntimeException()).when(resource.userLdapResource).findByIdNoCache("flast123");
 
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setMails(Collections.singletonList("fabrice.daugan@sample.com"));
 		user.setFirstName("First");
 		user.setLastName("Last123");

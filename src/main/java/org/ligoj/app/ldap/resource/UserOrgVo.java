@@ -2,7 +2,7 @@ package org.ligoj.app.ldap.resource;
 
 import java.util.List;
 
-import org.ligoj.app.api.SimpleUserLdap;
+import org.ligoj.app.api.SimpleUserOrg;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +12,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class UserLdapVo extends SimpleUserLdap {
+public class UserOrgVo extends SimpleUserOrg {
 
 	/**
 	 * SID

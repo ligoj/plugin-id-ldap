@@ -24,8 +24,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.ligoj.bootstrap.AbstractDataGeneratorTest;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.app.MatcherUtil;
-import org.ligoj.app.api.GroupLdap;
-import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.api.GroupOrg;
+import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.ldap.dao.GroupLdapRepository;
 import org.ligoj.app.ldap.dao.LdapCacheRepository;
 
@@ -44,8 +44,8 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 		final Set<String> users = new HashSet<>();
 		final GroupLdapRepository groupRepository = new GroupLdapRepository() {
 			@Override
-			public GroupLdap findById(final String name) {
-				return new GroupLdap("dc=" + name, name, users);
+			public GroupOrg findById(final String name) {
+				return new GroupOrg("dc=" + name, name, users);
 			}
 
 		};
@@ -55,7 +55,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 		groupRepository.setTemplate(ldapTemplate);
 		addUser(groupRepository);
 
-		Mockito.verify(cacheRepository, VerificationModeFactory.times(1)).addUserToGroup(ArgumentMatchers.any(UserLdap.class), ArgumentMatchers.any(GroupLdap.class));
+		Mockito.verify(cacheRepository, VerificationModeFactory.times(1)).addUserToGroup(ArgumentMatchers.any(UserOrg.class), ArgumentMatchers.any(GroupOrg.class));
 	}
 
 	@Test
@@ -64,8 +64,8 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 		users.add("flast1");
 		final GroupLdapRepository groupRepository = new GroupLdapRepository() {
 			@Override
-			public GroupLdap findById(final String name) {
-				return new GroupLdap("dc=" + name, name, users);
+			public GroupOrg findById(final String name) {
+				return new GroupOrg("dc=" + name, name, users);
 			}
 
 		};
@@ -151,9 +151,9 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 		thrown.expect(MatcherUtil.validationMatcher("groups", "last-member-of-group"));
 		final GroupLdapRepository groupRepository = new GroupLdapRepository() {
 			@Override
-			public GroupLdap findById(final String name) {
+			public GroupOrg findById(final String name) {
 				// The group has only the user user we want to remove
-				return new GroupLdap("dc=" + name, name, Collections.singleton("flast1"));
+				return new GroupOrg("dc=" + name, name, Collections.singleton("flast1"));
 			}
 
 		};
@@ -171,7 +171,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 		final GroupLdapRepository groupRepository = newGroupLdapRepository();
 		final LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
-		groupRepository.removeGroup(new GroupLdap("any", "any", null), "DIG RHA");
+		groupRepository.removeGroup(new GroupOrg("any", "any", null), "DIG RHA");
 	}
 
 	@Test
@@ -179,7 +179,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 		final GroupLdapRepository groupRepository = newGroupLdapRepository();
 		final LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
-		groupRepository.addGroup(new GroupLdap("dc=any", "any", null), "DIG RHA");
+		groupRepository.addGroup(new GroupOrg("dc=any", "any", null), "DIG RHA");
 	}
 
 	/**
@@ -189,9 +189,9 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	public void removeUserSync() {
 		final GroupLdapRepository groupRepository = new GroupLdapRepository() {
 			@Override
-			public GroupLdap findById(final String name) {
+			public GroupOrg findById(final String name) {
 				// The group has only the user user we want to remove
-				return new GroupLdap("dc=" + name, name, Collections.singleton("flast1"));
+				return new GroupOrg("dc=" + name, name, Collections.singleton("flast1"));
 			}
 
 		};
@@ -206,8 +206,8 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	private GroupLdapRepository newGroupLdapRepository() {
 		final GroupLdapRepository groupRepository = new GroupLdapRepository() {
 			@Override
-			public GroupLdap findById(final String name) {
-				return new GroupLdap("dc=" + name, name, new HashSet<>());
+			public GroupOrg findById(final String name) {
+				return new GroupOrg("dc=" + name, name, new HashSet<>());
 			}
 
 		};
@@ -216,7 +216,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	private void removeUser(final GroupLdapRepository groupRepository) {
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setId("flast1");
 		user.setDn("dc=com");
 		user.setCompany("ing");
@@ -224,7 +224,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	private void addUser(final GroupLdapRepository groupRepository) {
-		final UserLdap user = new UserLdap();
+		final UserOrg user = new UserOrg();
 		user.setId("flast1");
 		user.setDn("dc=com");
 		user.setCompany("ing");

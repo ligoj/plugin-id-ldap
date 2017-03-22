@@ -8,11 +8,11 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.ligoj.app.api.GroupLdap;
-import org.ligoj.app.dao.CacheRepository;
+import org.ligoj.app.api.GroupOrg;
+import org.ligoj.app.iam.dao.CacheContainerRepository;
+import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.ldap.dao.GroupLdapRepository;
 import org.ligoj.app.ldap.resource.AbstractContainerLdapResource.TypeComparator;
-import org.ligoj.app.model.CacheGroup;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 
@@ -23,11 +23,11 @@ public class TypeComparatorTest {
 
 	@Test
 	public void compareNullType() {
-		final Comparator<GroupLdap> comparator = newComparator(new ArrayList<>());
-		final List<GroupLdap> groups = new ArrayList<>();
-		groups.add(new GroupLdap("cn=NameA,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameA", null));
-		groups.add(new GroupLdap("cn=NameC,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameC", null));
-		groups.add(new GroupLdap("cn=NameB,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameB", null));
+		final Comparator<GroupOrg> comparator = newComparator(new ArrayList<>());
+		final List<GroupOrg> groups = new ArrayList<>();
+		groups.add(new GroupOrg("cn=NameA,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameA", null));
+		groups.add(new GroupOrg("cn=NameC,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameC", null));
+		groups.add(new GroupOrg("cn=NameB,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameB", null));
 		groups.sort(comparator);
 		Assert.assertEquals("NameA", groups.get(0).getName());
 		Assert.assertEquals("NameB", groups.get(1).getName());
@@ -41,11 +41,11 @@ public class TypeComparatorTest {
 		containerType.setName("name1");
 		containerType.setType(ContainerType.GROUP);
 
-		final Comparator<GroupLdap> comparator = newComparator(Collections.singletonList(containerType));
-		final List<GroupLdap> groups = new ArrayList<>();
-		groups.add(new GroupLdap("cn=NameA,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameA", null));
-		groups.add(new GroupLdap("cn=NameC,ou=Client1,ou=Project,ou=Internal,dc=sample,dc=com", "NameC", null));
-		groups.add(new GroupLdap("cn=NameB,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameB", null));
+		final Comparator<GroupOrg> comparator = newComparator(Collections.singletonList(containerType));
+		final List<GroupOrg> groups = new ArrayList<>();
+		groups.add(new GroupOrg("cn=NameA,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameA", null));
+		groups.add(new GroupOrg("cn=NameC,ou=Client1,ou=Project,ou=Internal,dc=sample,dc=com", "NameC", null));
+		groups.add(new GroupOrg("cn=NameB,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameB", null));
 		groups.sort(comparator);
 		Assert.assertEquals("NameC", groups.get(0).getName());
 		Assert.assertEquals("NameA", groups.get(1).getName());
@@ -59,11 +59,11 @@ public class TypeComparatorTest {
 		containerType.setName("name1");
 		containerType.setType(ContainerType.GROUP);
 
-		final Comparator<GroupLdap> comparator = newComparator(Collections.singletonList(containerType));
-		final List<GroupLdap> groups = new ArrayList<>();
-		groups.add(new GroupLdap("cn=NameA,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameA", null));
-		groups.add(new GroupLdap("cn=NameC,ou=Client1,ou=Project,ou=Internal,dc=sample,dc=com", "NameC", null));
-		groups.add(new GroupLdap("cn=NameB,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameB", null));
+		final Comparator<GroupOrg> comparator = newComparator(Collections.singletonList(containerType));
+		final List<GroupOrg> groups = new ArrayList<>();
+		groups.add(new GroupOrg("cn=NameA,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameA", null));
+		groups.add(new GroupOrg("cn=NameC,ou=Client1,ou=Project,ou=Internal,dc=sample,dc=com", "NameC", null));
+		groups.add(new GroupOrg("cn=NameB,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameB", null));
 		groups.sort(comparator);
 		Assert.assertEquals("NameA", groups.get(0).getName());
 		Assert.assertEquals("NameB", groups.get(1).getName());
@@ -81,19 +81,19 @@ public class TypeComparatorTest {
 		containerType2.setName("name1");
 		containerType2.setType(ContainerType.GROUP);
 
-		final Comparator<GroupLdap> comparator = newComparator(Arrays.asList(containerType1, containerType2));
-		final List<GroupLdap> groups = new ArrayList<>();
-		groups.add(new GroupLdap("cn=NameB,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameB", null));
-		groups.add(new GroupLdap("cn=NameC,ou=Client1,ou=Project,ou=Internal,dc=sample,dc=com", "NameC", null));
-		groups.add(new GroupLdap("cn=NameA,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameA", null));
+		final Comparator<GroupOrg> comparator = newComparator(Arrays.asList(containerType1, containerType2));
+		final List<GroupOrg> groups = new ArrayList<>();
+		groups.add(new GroupOrg("cn=NameB,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameB", null));
+		groups.add(new GroupOrg("cn=NameC,ou=Client1,ou=Project,ou=Internal,dc=sample,dc=com", "NameC", null));
+		groups.add(new GroupOrg("cn=NameA,ou=Client1,ou=Project,ou=External,dc=sample,dc=com", "NameA", null));
 		groups.sort(comparator);
 		Assert.assertEquals("NameC", groups.get(0).getName());
 		Assert.assertEquals("NameA", groups.get(1).getName());
 		Assert.assertEquals("NameB", groups.get(2).getName());
 	}
 
-	private Comparator<GroupLdap> newComparator(final List<ContainerScope> containerTypes) {
-		return new AbstractContainerLdapResource<GroupLdap, GroupLdapEditionVo, CacheGroup>(ContainerType.GROUP) {
+	private Comparator<GroupOrg> newComparator(final List<ContainerScope> containerTypes) {
+		return new AbstractContainerLdapResource<GroupOrg, GroupLdapEditionVo, CacheGroup>(ContainerType.GROUP) {
 
 			@Override
 			protected GroupLdapRepository getRepository() {
@@ -106,7 +106,7 @@ public class TypeComparatorTest {
 			}
 
 			@Override
-			protected CacheRepository<CacheGroup> getCacheRepository() {
+			protected CacheContainerRepository<CacheGroup> getCacheRepository() {
 				return null;
 			}
 		}.new TypeComparator(containerTypes);

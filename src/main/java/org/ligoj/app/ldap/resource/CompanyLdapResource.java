@@ -15,13 +15,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.ligoj.app.api.CompanyLdap;
-import org.ligoj.app.api.ContainerLdap;
-import org.ligoj.app.api.UserLdap;
-import org.ligoj.app.dao.CacheCompanyRepository;
+import org.ligoj.app.api.CompanyOrg;
+import org.ligoj.app.api.ContainerOrg;
+import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.dao.CacheCompanyRepository;
+import org.ligoj.app.iam.model.CacheCompany;
 import org.ligoj.app.ldap.LdapUtils;
 import org.ligoj.app.ldap.dao.CompanyLdapRepository;
-import org.ligoj.app.model.CacheCompany;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.bootstrap.core.json.TableItem;
@@ -39,7 +39,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Produces(MediaType.APPLICATION_JSON)
 @Transactional
-public class CompanyLdapResource extends AbstractContainerLdapResource<CompanyLdap, ContainerLdapEditionVo, CacheCompany> {
+public class CompanyLdapResource extends AbstractContainerLdapResource<CompanyOrg, ContainerLdapEditionVo, CacheCompany> {
 
 	/**
 	 * Attribute name used as filter and path.
@@ -71,8 +71,8 @@ public class CompanyLdapResource extends AbstractContainerLdapResource<CompanyLd
 	 * 
 	 * @return The company name of current user or <code>null</code> if the current user is not in LDAP.
 	 */
-	public CompanyLdap getUserCompany() {
-		final UserLdap user = getUser().findById(securityHelper.getLogin());
+	public CompanyOrg getUserCompany() {
+		final UserOrg user = getUser().findById(securityHelper.getLogin());
 		if (user == null) {
 			return null;
 		}
@@ -85,7 +85,7 @@ public class CompanyLdapResource extends AbstractContainerLdapResource<CompanyLd
 	 * @return the company DN of current user or <code>null</code> if the current user is not in LDAP.
 	 */
 	private String getUserCompanyDn() {
-		final CompanyLdap company = getUserCompany();
+		final CompanyOrg company = getUserCompany();
 		if (company == null) {
 			return null;
 		}
@@ -114,14 +114,14 @@ public class CompanyLdapResource extends AbstractContainerLdapResource<CompanyLd
 		final PageRequest pageRequest = paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS);
 
 		final List<ContainerScope> types = containerScopeResource.findAllDescOrder(ContainerType.COMPANY);
-		final Set<CompanyLdap> managedCompanies = getContainers();
-		final Set<String> managedCompaniesAsString = managedCompanies.stream().map(CompanyLdap::getId).collect(Collectors.toSet());
-		final Set<CompanyLdap> managedCompaniesWrite = getContainersForWrite();
-		final Set<CompanyLdap> managedCompaniesAdmin = getContainersForAdmin();
-		final Map<String, UserLdap> ldapUsers = getUser().findAll();
+		final Set<CompanyOrg> managedCompanies = getContainers();
+		final Set<String> managedCompaniesAsString = managedCompanies.stream().map(CompanyOrg::getId).collect(Collectors.toSet());
+		final Set<CompanyOrg> managedCompaniesWrite = getContainersForWrite();
+		final Set<CompanyOrg> managedCompaniesAdmin = getContainersForAdmin();
+		final Map<String, UserOrg> ldapUsers = getUser().findAll();
 
 		// Search the companies
-		final Page<CompanyLdap> findAll = getRepository().findAll(managedCompanies, DataTableAttributes.getSearch(uriInfo), pageRequest,
+		final Page<CompanyOrg> findAll = getRepository().findAll(managedCompanies, DataTableAttributes.getSearch(uriInfo), pageRequest,
 				Collections.singletonMap(TYPE_ATTRIBUTE, new TypeComparator(types)));
 
 		// Apply pagination and secure the users data
@@ -140,13 +140,13 @@ public class CompanyLdapResource extends AbstractContainerLdapResource<CompanyLd
 	}
 
 	@Override
-	protected void checkForDeletion(final ContainerLdap container) {
+	protected void checkForDeletion(final ContainerOrg container) {
 		super.checkForDeletion(container);
 
 		// Company deletion is only possible where there is no user inside this company, or inside any sub-company
-		final Map<String, UserLdap> ldapUsers = getUser().findAll();
+		final Map<String, UserOrg> ldapUsers = getUser().findAll();
 		if (getRepository().findAll().values().stream().filter(g -> LdapUtils.equalsOrParentOf(container.getDn(), g.getDn()))
-				.anyMatch(c -> ldapUsers.values().stream().map(UserLdap::getCompany).anyMatch(c.getId()::equals))) {
+				.anyMatch(c -> ldapUsers.values().stream().map(UserOrg::getCompany).anyMatch(c.getId()::equals))) {
 			// Locked container is inside the container to delete
 			throw new ValidationJsonException(getTypeName(), "not-empty-company", "0", getTypeName(), "1",
 					container.getId());

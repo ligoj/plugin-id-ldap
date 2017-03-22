@@ -13,15 +13,13 @@ import java.util.TreeSet;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.ligoj.app.api.ContainerLdap;
+import org.ligoj.app.api.ContainerOrg;
 import org.ligoj.app.api.Normalizer;
-import org.ligoj.app.dao.CacheRepository;
-import org.ligoj.app.iam.ContainerLdapRepository;
-import org.ligoj.app.model.CacheContainer;
+import org.ligoj.app.iam.IContainerRepository;
+import org.ligoj.app.iam.dao.CacheContainerRepository;
+import org.ligoj.app.iam.model.CacheContainer;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.bootstrap.core.json.InMemoryPagination;
-import org.ligoj.bootstrap.core.resource.BusinessException;
-import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
  *            The container cache type.
  */
 @Slf4j
-public abstract class AbstractContainerLdaRepository<T extends ContainerLdap, C extends CacheContainer> implements ContainerLdapRepository<T> {
+public abstract class AbstractContainerLdaRepository<T extends ContainerOrg, C extends CacheContainer> implements IContainerRepository<T> {
 
 	protected static final Sort.Order DEFAULT_ORDER = new Sort.Order(Direction.ASC, "name");
 
@@ -85,7 +83,7 @@ public abstract class AbstractContainerLdaRepository<T extends ContainerLdap, C 
 	 * 
 	 * @return the repository managing the container as cache.
 	 */
-	protected abstract CacheRepository<C> getCacheRepository();
+	protected abstract CacheContainerRepository<C> getCacheRepository();
 
 	/**
 	 * Map a container <T> to LDAP.
@@ -170,18 +168,21 @@ public abstract class AbstractContainerLdaRepository<T extends ContainerLdap, C 
 		return StringUtils.containsIgnoreCase(group.getName(), criteria);
 	}
 
+
+	/**
+	 * Find a container from its identifier. Security is applied regarding the given user.
+	 * 
+	 * @param user
+	 *            The user requesting this container.
+	 * @param id
+	 *            The container's identifier. Will be normalized.
+	 * @return The container from its identifier. <code>null</code> if the container is not found or cannot be seen by
+	 *         the given user.
+	 */
 	@Override
 	public T findById(final String user, final String id) {
 		// Check the container exists and return the in memory object.
 		return Optional.ofNullable(getCacheRepository().findById(user, Normalizer.normalize(id))).map(CacheContainer::getId).map(this::findById)
 				.orElse(null);
 	}
-
-	@Override
-	public T findByIdExpected(final String user, final String id) {
-		// Check the container exists and return the in memory object.
-		return Optional.ofNullable(findById(user, id))
-				.orElseThrow(() -> new ValidationJsonException(typeName, BusinessException.KEY_UNKNOW_ID, "0", "id", "1", id));
-	}
-
 }

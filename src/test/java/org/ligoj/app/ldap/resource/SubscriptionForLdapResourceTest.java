@@ -15,14 +15,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.ligoj.app.api.GroupLdap;
+import org.ligoj.app.api.GroupOrg;
 import org.ligoj.app.api.SubscriptionMode;
 import org.ligoj.app.dao.ParameterValueRepository;
 import org.ligoj.app.dao.ProjectRepository;
 import org.ligoj.app.dao.SubscriptionRepository;
+import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.ldap.dao.LdapCacheRepository;
 import org.ligoj.app.model.DelegateNode;
-import org.ligoj.app.model.DelegateOrg;
 import org.ligoj.app.model.Subscription;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.app.plugin.id.resource.IdentityResource;
@@ -190,7 +190,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		em.createQuery("DELETE Parameter WHERE id LIKE ?1").setParameter(1, "c_%").executeUpdate();
 		final String dn = "cn=gfi-gstack-client,cn=gfi-gstack,ou=gfi,ou=project,dc=sample,dc=com";
 		try {
-			getGroup().delete(new GroupLdap(dn, "gfi-gstack-client", new HashSet<>()));
+			getGroup().delete(new GroupOrg(dn, "gfi-gstack-client", new HashSet<>()));
 		} catch (final Exception e) {
 			// Ignore no group
 		}
@@ -233,7 +233,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 				parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_PARENT_GROUP));
 
 		// Check the creation in LDAP
-		final GroupLdap group = getGroup().findById("gfi-gstack-client");
+		final GroupOrg group = getGroup().findById("gfi-gstack-client");
 		Assert.assertNotNull(group);
 		Assert.assertEquals("gfi-gstack-client", group.getName());
 		Assert.assertEquals("gfi-gstack-client", group.getId());
@@ -260,7 +260,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		em.createQuery("DELETE Parameter WHERE id LIKE ?1").setParameter(1, "c_%").executeUpdate();
 		final String dn = "cn=gfi-gstack-client2,ou=gfi,ou=project,dc=sample,dc=com";
 		try {
-			getGroup().delete(new GroupLdap(dn, "gfi-gstack-client", new HashSet<>()));
+			getGroup().delete(new GroupOrg(dn, "gfi-gstack-client", new HashSet<>()));
 		} catch (final Exception e) {
 			// Ignore no group
 		}
@@ -302,7 +302,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		Assert.assertNull(parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_PARENT_GROUP));
 
 		// Check the creation in LDAP
-		final GroupLdap group = getGroup().findById("gfi-gstack-client2");
+		final GroupOrg group = getGroup().findById("gfi-gstack-client2");
 		Assert.assertNotNull(group);
 		Assert.assertEquals("gfi-gstack-client2", group.getId());
 		Assert.assertEquals("gfi-gstack-client2", group.getName());

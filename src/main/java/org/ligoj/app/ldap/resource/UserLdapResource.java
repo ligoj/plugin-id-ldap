@@ -34,20 +34,20 @@ import org.apache.commons.lang3.text.WordUtils;
 import org.apache.cxf.jaxrs.impl.UriInfoImpl;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.message.MessageImpl;
-import org.ligoj.app.api.CompanyLdap;
-import org.ligoj.app.api.ContainerLdap;
-import org.ligoj.app.api.GroupLdap;
+import org.ligoj.app.api.CompanyOrg;
+import org.ligoj.app.api.ContainerOrg;
+import org.ligoj.app.api.GroupOrg;
 import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.api.SimpleUser;
-import org.ligoj.app.api.UserLdap;
-import org.ligoj.app.dao.DelegateOrgRepository;
+import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.ICompanyRepository;
 import org.ligoj.app.iam.IamProvider;
+import org.ligoj.app.iam.dao.DelegateOrgRepository;
+import org.ligoj.app.iam.model.DelegateOrg;
+import org.ligoj.app.iam.model.DelegateType;
 import org.ligoj.app.ldap.LdapUtils;
 import org.ligoj.app.ldap.dao.GroupLdapRepository;
 import org.ligoj.app.ldap.dao.UserLdapRepository;
-import org.ligoj.app.model.DelegateOrg;
-import org.ligoj.app.model.DelegateType;
 import org.ligoj.app.plugin.id.resource.PasswordResource;
 import org.ligoj.bootstrap.core.json.PaginationJson;
 import org.ligoj.bootstrap.core.json.TableItem;
@@ -127,8 +127,8 @@ public class UserLdapResource {
 	 *            the optional group name to match.
 	 * @return found users.
 	 */
-	public List<UserLdap> findAllNotSecure(final String company, final String group) {
-		final Set<GroupLdap> managedGroups = groupResource.getContainers();
+	public List<UserOrg> findAllNotSecure(final String company, final String group) {
+		final Set<GroupOrg> managedGroups = groupResource.getContainers();
 
 		// Search the users
 		final MessageImpl message = new MessageImpl();
@@ -154,18 +154,18 @@ public class UserLdapResource {
 	 *            filter data.
 	 * @return found users.
 	 */
-	private Page<UserLdap> findAllNotSecure(final Set<GroupLdap> managedGroups, final String company, final String group, final String criteria,
+	private Page<UserOrg> findAllNotSecure(final Set<GroupOrg> managedGroups, final String company, final String group, final String criteria,
 			@Context final UriInfo uriInfo) {
 		final PageRequest pageRequest = paginationJson.getPageRequest(uriInfo, ORDERED_COLUMNS);
 
-		final Collection<String> managedCompanies = organizationResource.getContainers().stream().map(CompanyLdap::getId).collect(Collectors.toSet());
-		final Map<String, GroupLdap> allGroups = getGroup().findAll();
+		final Collection<String> managedCompanies = organizationResource.getContainers().stream().map(CompanyOrg::getId).collect(Collectors.toSet());
+		final Map<String, GroupOrg> allGroups = getGroup().findAll();
 
 		// The companies to use
 		final Set<String> filteredCompanies = computeFilteredCompanies(Normalizer.normalize(company), managedCompanies);
 
 		// The groups to use
-		final Collection<GroupLdap> filteredGroups = computeFilteredGroups(group, managedGroups, allGroups);
+		final Collection<GroupOrg> filteredGroups = computeFilteredGroups(group, managedGroups, allGroups);
 
 		// Search the users
 		return getRepository().findAll(filteredGroups, filteredCompanies, StringUtils.trimToNull(criteria), pageRequest);
@@ -187,20 +187,20 @@ public class UserLdapResource {
 	 * @return found users.
 	 */
 	@GET
-	public TableItem<UserLdapVo> findAll(@QueryParam(SimpleUser.COMPANY_ALIAS) final String company, @QueryParam("group") final String group,
+	public TableItem<UserOrgVo> findAll(@QueryParam(SimpleUser.COMPANY_ALIAS) final String company, @QueryParam("group") final String group,
 			@QueryParam(DataTableAttributes.SEARCH) final String criteria, @Context final UriInfo uriInfo) {
-		final Set<GroupLdap> managedGroups = groupResource.getContainers();
-		final Set<GroupLdap> managedGroupsWrite = groupResource.getContainersForWrite();
-		final Collection<String> managedCompaniesWrite = organizationResource.getContainersForWrite().stream().map(CompanyLdap::getId)
+		final Set<GroupOrg> managedGroups = groupResource.getContainers();
+		final Set<GroupOrg> managedGroupsWrite = groupResource.getContainersForWrite();
+		final Collection<String> managedCompaniesWrite = organizationResource.getContainersForWrite().stream().map(CompanyOrg::getId)
 				.collect(Collectors.toList());
 
 		// Search the users
-		final Page<UserLdap> findAll = findAllNotSecure(managedGroups, company, group, criteria, uriInfo);
+		final Page<UserOrg> findAll = findAllNotSecure(managedGroups, company, group, criteria, uriInfo);
 
 		// Apply pagination and secure the users data
 		return paginationJson.applyPagination(uriInfo, findAll, rawUserLdap -> {
 
-			final UserLdapVo securedUserLdap = new UserLdapVo();
+			final UserOrgVo securedUserLdap = new UserOrgVo();
 			rawUserLdap.copy(securedUserLdap);
 			securedUserLdap.setManaged(managedCompaniesWrite.contains(rawUserLdap.getCompany()) || !managedGroupsWrite.isEmpty());
 
@@ -238,14 +238,14 @@ public class UserLdapResource {
 	/**
 	 * Computed visible groups
 	 */
-	private Collection<GroupLdap> computeFilteredGroups(final String group, final Set<GroupLdap> managedGroups,
-			final Map<String, GroupLdap> allGroups) {
-		final Collection<GroupLdap> filteredGroups;
+	private Collection<GroupOrg> computeFilteredGroups(final String group, final Set<GroupOrg> managedGroups,
+			final Map<String, GroupOrg> allGroups) {
+		final Collection<GroupOrg> filteredGroups;
 		// Restrict access to delegated groups
 		if (StringUtils.isBlank(group)) {
 			filteredGroups = null;
 		} else {
-			final GroupLdap filteredGroup = allGroups.get(Normalizer.normalize(group));
+			final GroupOrg filteredGroup = allGroups.get(Normalizer.normalize(group));
 			// Filter the group, including the children
 			filteredGroups = allGroups.values().stream().filter(groupEntry -> managedGroups.contains(groupEntry) && filteredGroup != null
 					&& LdapUtils.equalsOrParentOf(filteredGroup.getDn(), groupEntry.getDn())).collect(Collectors.toList());
@@ -263,21 +263,21 @@ public class UserLdapResource {
 	 */
 	@GET
 	@Path("{user:" + SimpleUser.USER_PATTERN + "}")
-	public UserLdap findById(@PathParam("user") final String user) {
-		final UserLdap rawUserLdap = getRepository().findByIdExpected(Normalizer.normalize(user));
+	public UserOrg findById(@PathParam("user") final String user) {
+		final UserOrg rawUserLdap = getRepository().findByIdExpected(Normalizer.normalize(user));
 		if (organizationResource.findById(rawUserLdap.getCompany()) == null) {
 			// No available delegation -> no result
 			throw new ValidationJsonException(USER_KEY, BusinessException.KEY_UNKNOW_ID, "0", "user", "1", user);
 		}
 
 		// User has been found, secure the object regarding the visible groups
-		final UserLdap securedUserLdap = new UserLdap();
+		final UserOrg securedUserLdap = new UserOrg();
 		rawUserLdap.copy(securedUserLdap);
 
 		// Show only the groups of user that are also visible to current user
-		final Set<GroupLdap> managedGroups = groupResource.getContainers();
+		final Set<GroupOrg> managedGroups = groupResource.getContainers();
 		securedUserLdap.setGroups(managedGroups.stream().filter(mGroup -> rawUserLdap.getGroups().contains(mGroup.getId())).sorted()
-				.map(GroupLdap::getName).collect(Collectors.toList()));
+				.map(GroupOrg::getName).collect(Collectors.toList()));
 		return securedUserLdap;
 	}
 
@@ -325,10 +325,10 @@ public class UserLdapResource {
 		final List<DelegateOrg> delegates = delegateRepository.findAllByUser(securityHelper.getLogin());
 
 		// Get the implied user
-		final UserLdap userLdap = getRepository().findByIdExpected(user);
+		final UserOrg userLdap = getRepository().findByIdExpected(user);
 
 		// Check the implied group
-		final Map<String, GroupLdap> allGroups = getGroup().findAll();
+		final Map<String, GroupOrg> allGroups = getGroup().findAll();
 		validateAndGroupsCN(Collections.singletonList(group), delegates, allGroups);
 
 		// Compute the new groups
@@ -404,11 +404,11 @@ public class UserLdapResource {
 		final List<DelegateOrg> delegates = delegateRepository.findAllByUser(principal);
 
 		// Get the stored data of the implied user
-		final UserLdap userLdap = getRepository().findById(importEntry.getId());
+		final UserOrg userLdap = getRepository().findById(importEntry.getId());
 
 		// Check the implied company and request changes
 		final String cleanCompany = Normalizer.normalize(importEntry.getCompany());
-		final String companyDn = ContainerLdap.getSafeDn(getCompany().findById(cleanCompany));
+		final String companyDn = ContainerOrg.getSafeDn(getCompany().findById(cleanCompany));
 		final boolean hasAttributeChange = hasAttributeChange(importEntry, userLdap);
 		if (!isGrantedAccess(delegates, companyDn, DelegateType.COMPANY, hasAttributeChange)) {
 			// No right at all, unknown company, no (write|admin) right on this company, or no delegate on this company
@@ -422,7 +422,7 @@ public class UserLdapResource {
 		importEntry.setCompany(cleanCompany);
 
 		// Check the groups : one group failed implies entry creation to fail
-		final Map<String, GroupLdap> allGroups = getGroup().findAll();
+		final Map<String, GroupOrg> allGroups = getGroup().findAll();
 
 		final List<String> groups = validateAndGroupsCN(userLdap, importEntry, delegates, allGroups);
 
@@ -445,14 +445,14 @@ public class UserLdapResource {
 	/**
 	 * Validate assigned groups, and return corresponding group identifiers.
 	 */
-	private List<String> validateAndGroupsCN(final UserLdap userLdap, final UserLdapEdition importEntry, final List<DelegateOrg> delegates,
-			final Map<String, GroupLdap> allGroups) {
+	private List<String> validateAndGroupsCN(final UserOrg userLdap, final UserLdapEdition importEntry, final List<DelegateOrg> delegates,
+			final Map<String, GroupOrg> allGroups) {
 
 		// First complete the groups with the implicit ones from department
-		final String previous = Optional.ofNullable(userLdap).map(UserLdap::getDepartment).orElse(null);
+		final String previous = Optional.ofNullable(userLdap).map(UserOrg::getDepartment).orElse(null);
 		if (ObjectUtils.notEqual(previous, importEntry.getDepartment())) {
-			Optional.ofNullable(toDepartmentGroup(previous)).map(GroupLdap::getId).ifPresent(importEntry.getGroups()::remove);
-			Optional.ofNullable(toDepartmentGroup(importEntry.getDepartment())).map(GroupLdap::getId).ifPresent(importEntry.getGroups()::add);
+			Optional.ofNullable(toDepartmentGroup(previous)).map(GroupOrg::getId).ifPresent(importEntry.getGroups()::remove);
+			Optional.ofNullable(toDepartmentGroup(importEntry.getDepartment())).map(GroupOrg::getId).ifPresent(importEntry.getGroups()::add);
 		}
 		return validateAndGroupsCN(importEntry.getGroups(), delegates, allGroups);
 	}
@@ -461,10 +461,10 @@ public class UserLdapResource {
 	 * Validate assigned groups, and return corresponding group identifiers.
 	 */
 	private List<String> validateAndGroupsCN(final Collection<String> newGroups, final List<DelegateOrg> delegates,
-			final Map<String, GroupLdap> allGroups) {
+			final Map<String, GroupOrg> allGroups) {
 		final List<String> groupsCn = new ArrayList<>();
 		for (final String group : CollectionUtils.emptyIfNull(newGroups)) {
-			final GroupLdap groupLdap = allGroups.get(Normalizer.normalize(group));
+			final GroupOrg groupLdap = allGroups.get(Normalizer.normalize(group));
 			if (groupLdap == null || !isGrantedAccess(delegates, groupLdap.getDn(), DelegateType.GROUP, true)) {
 				// No right on this group, or unknown LDAP group
 				throw new ValidationJsonException("groups", BusinessException.KEY_UNKNOW_ID, "0", "groups", "1", group);
@@ -496,7 +496,7 @@ public class UserLdapResource {
 	 *            The visible and writable groups identifiers to be set to the LDAP entry.
 	 * @return the merged group identifiers to be set internally.
 	 */
-	private Collection<String> mergeGroups(final List<DelegateOrg> delegates, final UserLdap userLdap, final Map<String, GroupLdap> allGroups,
+	private Collection<String> mergeGroups(final List<DelegateOrg> delegates, final UserOrg userLdap, final Map<String, GroupOrg> allGroups,
 			final Collection<String> groups) {
 		// Compute the groups merged groups
 		final Collection<String> newGroups = new HashSet<>(userLdap.getGroups());
@@ -540,7 +540,7 @@ public class UserLdapResource {
 	 * Indicate the two user details have attribute differences
 	 */
 	@SuppressWarnings("unchecked")
-	private boolean hasAttributeChange(final UserLdapEdition importEntry, final UserLdap userLdap) {
+	private boolean hasAttributeChange(final UserLdapEdition importEntry, final UserOrg userLdap) {
 		return userLdap == null || hasAttributeChange(importEntry, userLdap, SimpleUser::getFirstName, SimpleUser::getLastName,
 				SimpleUser::getCompany, SimpleUser::getLocalId, SimpleUser::getDepartment) || !userLdap.getMails().contains(importEntry.getMail());
 	}
@@ -568,8 +568,8 @@ public class UserLdapResource {
 
 		// Create as needed the user, groups will be proceeded after.
 		final UserLdapRepository repository = getRepository();
-		UserLdap user = repository.findById(importEntry.getId());
-		final UserLdap newUser = toUserLdap(importEntry);
+		UserOrg user = repository.findById(importEntry.getId());
+		final UserOrg newUser = toUserLdap(importEntry);
 		if (user == null) {
 			// Create a new entry in LDAP
 			log.info("{} will be created", newUser.getId());
@@ -588,7 +588,7 @@ public class UserLdapResource {
 	/**
 	 * Update the attributes the given user. Groups are not managed there.
 	 */
-	private void updateUser(final UserLdap oldUser, final UserLdap newUser) {
+	private void updateUser(final UserOrg oldUser, final UserOrg newUser) {
 		// Update the LDAP
 		log.info("{} already exists", newUser.getId());
 
@@ -623,8 +623,8 @@ public class UserLdapResource {
 	 *            The raw imported user.
 	 * @return The internal format of the user.
 	 */
-	private UserLdap toUserLdap(final UserLdapEdition importEntry) {
-		final UserLdap user = new UserLdap();
+	private UserOrg toUserLdap(final UserLdapEdition importEntry) {
+		final UserOrg user = new UserOrg();
 		importEntry.copy(user);
 		user.setGroups(new ArrayList<>());
 		final List<String> mails = new ArrayList<>();
@@ -651,11 +651,11 @@ public class UserLdapResource {
 	@Path("{user}")
 	public void delete(@PathParam("user") final String user) {
 		// Check the user can be deleted
-		final UserLdap userLdap = checkDeletionRight(user, "delete");
+		final UserOrg userLdap = checkDeletionRight(user, "delete");
 
 		// Hard deletion
 		// Check the group : You can't delete an user if he is the last member of a group
-		final Map<String, GroupLdap> allGroups = getGroup().findAll();
+		final Map<String, GroupOrg> allGroups = getGroup().findAll();
 		checkLastMemberInGroups(userLdap, allGroups);
 
 		final UserLdapRepository repository = getRepository();
@@ -760,12 +760,12 @@ public class UserLdapResource {
 	 *            When <code>true</code> the user is completely deleted, in other case, this a simple disable.
 	 * @return The internal representation of found user.
 	 */
-	private UserLdap checkDeletionRight(final String user, final String mode) {
+	private UserOrg checkDeletionRight(final String user, final String mode) {
 		// Check the user exists
-		final UserLdap userLdap = getRepository().findByIdExpected(Normalizer.normalize(user));
+		final UserOrg userLdap = getRepository().findByIdExpected(Normalizer.normalize(user));
 
 		// Check the company
-		final String companyDn = ContainerLdap.getSafeDn(getCompany().findById(Normalizer.normalize(userLdap.getCompany())));
+		final String companyDn = ContainerOrg.getSafeDn(getCompany().findById(Normalizer.normalize(userLdap.getCompany())));
 		final List<Integer> ids = delegateRepository.findByMatchingDnForWrite(securityHelper.getLogin(), companyDn, DelegateType.COMPANY);
 		if (ids.isEmpty()) {
 			// Report this attempt to delete a non managed user
@@ -783,7 +783,7 @@ public class UserLdapResource {
 	 * @param allGroups
 	 *            Map of group by groupName
 	 */
-	private void checkLastMemberInGroups(final UserLdap userLdap, final Map<String, GroupLdap> allGroups) {
+	private void checkLastMemberInGroups(final UserOrg userLdap, final Map<String, GroupOrg> allGroups) {
 		for (final String group : userLdap.getGroups()) {
 			if (allGroups.get(group).getMembers().size() == 1) {
 				throw new ValidationJsonException(USER_KEY, "last-member-of-group", "user", userLdap.getId(), "group", group);
@@ -797,7 +797,7 @@ public class UserLdapResource {
 	 * @param user
 	 *            then LDAP user.
 	 */
-	private String updatePassword(final UserLdap user) {
+	private String updatePassword(final UserOrg user) {
 		// Have to generate a new password
 		final String password = passwordRessource.generate(user.getId());
 
@@ -820,7 +820,7 @@ public class UserLdapResource {
 	}
 
 	/**
-	 * Return the {@link UserLdap} list corresponding to the given attribute/value without using cache for the search,
+	 * Return the {@link UserOrg} list corresponding to the given attribute/value without using cache for the search,
 	 * but using it for the instances.
 	 * 
 	 * @param attribute
@@ -829,18 +829,18 @@ public class UserLdapResource {
 	 *            the attribute value to match.
 	 * @return the found users. May be empty.
 	 */
-	public List<UserLdap> findAllBy(final String attribute, final String value) {
+	public List<UserOrg> findAllBy(final String attribute, final String value) {
 		return getRepository().findAllBy(attribute, value);
 	}
 
 	/**
-	 * Return the {@link UserLdap} corresponding to the given attribute/value without using cache.
+	 * Return the {@link UserOrg} corresponding to the given attribute/value without using cache.
 	 * 
 	 * @param user
 	 *            The user to find. A normalized form will be used for the search.
 	 * @return the found user or <code>null</code> when not found. Groups are not fetched for this operation.
 	 */
-	public UserLdap findByIdNoCache(final String user) {
+	public UserOrg findByIdNoCache(final String user) {
 		return getRepository().findByIdNoCache(Normalizer.normalize(user));
 	}
 
@@ -879,7 +879,7 @@ public class UserLdapResource {
 	 * @param newUser
 	 *            The new user data. Note this will not be the stored instance.
 	 */
-	private void updateCompanyAsNeeded(final UserLdap userLdap, final UserLdap newUser) {
+	private void updateCompanyAsNeeded(final UserOrg userLdap, final UserOrg newUser) {
 		// Check the company
 		if (ObjectUtils.notEqual(userLdap.getCompany(), newUser.getCompany())) {
 			// Move the user
@@ -894,7 +894,7 @@ public class UserLdapResource {
 	 *            The department to match.
 	 * @return The group corresponding to the given department or <code>null</code>.
 	 */
-	private GroupLdap toDepartmentGroup(final String department) {
+	private GroupOrg toDepartmentGroup(final String department) {
 		return Optional.ofNullable(department).map(getGroup()::findByDepartment).orElse(null);
 	}
 
@@ -907,7 +907,7 @@ public class UserLdapResource {
 	 * @param newUser
 	 *            The new user data. Note this will not be the stored instance.
 	 */
-	public void mergeUser(final UserLdap userLdap, final UserLdap newUser) {
+	public void mergeUser(final UserOrg userLdap, final UserOrg newUser) {
 		boolean needUpdate = false;
 
 		// Merge department

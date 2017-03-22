@@ -7,8 +7,8 @@ import java.util.function.BiConsumer;
 import javax.validation.ValidationException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ligoj.app.api.UserLdap;
-import org.ligoj.app.dao.DelegateOrgRepository;
+import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.dao.DelegateOrgRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -80,7 +80,7 @@ public class UserAtomicLdapTask extends AbstractLdapBatchTask<UserUpdateEntry> {
 		// Update the user
 		if (type == UserBatchUpdateType.ATTRIBUTE) {
 			// Fetch the user
-			final UserLdap user = resource.findById(entry.getUser());
+			final UserOrg user = resource.findById(entry.getUser());
 
 			// Prepare the local entity
 			final UserLdapEdition editUser = new UserLdapEdition();

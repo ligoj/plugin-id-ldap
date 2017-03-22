@@ -14,11 +14,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.api.SimpleUser;
-import org.ligoj.app.dao.DelegateOrgRepository;
+import org.ligoj.app.iam.dao.DelegateOrgRepository;
+import org.ligoj.app.iam.model.DelegateOrg;
+import org.ligoj.app.iam.model.DelegateType;
+import org.ligoj.app.iam.model.ReceiverType;
 import org.ligoj.app.ldap.resource.AbstractLdapTest;
-import org.ligoj.app.model.DelegateOrg;
-import org.ligoj.app.model.DelegateType;
-import org.ligoj.app.model.ReceiverType;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.mockito.Mockito;
@@ -132,8 +132,6 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		// mlavoine;tree;cn=biz agency,ou=tools,dc=sample,dc=com
 		Assert.assertEquals(DelegateType.TREE, result.getData().get(0).getType());
 		Assert.assertEquals("cn=biz agency,ou=tools,dc=sample,dc=com", result.getData().get(0).getName());
-		
-
 	}
 
 	@Test
@@ -321,7 +319,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	@Test
 	public void createDelegateCompanyReceiverCompany() {
 		initSpringSecurityContext("mtuyer");
-	
+
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setName("InG");
 		vo.setType(DelegateType.COMPANY);
@@ -345,7 +343,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	@Test
 	public void createDelegateCompanyReceiverGroup() {
 		initSpringSecurityContext("mtuyer");
-	
+
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setName("ing");
 		vo.setType(DelegateType.COMPANY);

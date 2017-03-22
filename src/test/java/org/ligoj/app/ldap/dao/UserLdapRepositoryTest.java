@@ -7,8 +7,8 @@ import javax.naming.Name;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.ligoj.app.api.CompanyLdap;
-import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.api.CompanyOrg;
+import org.ligoj.app.api.UserOrg;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -73,7 +73,7 @@ public class UserLdapRepositoryTest {
 
 	@Test
 	public void digest() {
-		UserLdap user = new UserLdap();
+		UserOrg user = new UserOrg();
 		user.setDn("dc=sample,dc=com");
 		new UserLdapRepository() {
 			@Override
@@ -88,8 +88,8 @@ public class UserLdapRepositoryTest {
 	public void toUser() {
 		UserLdapRepository repository = new UserLdapRepository() {
 			@Override
-			public UserLdap findById(final String login) {
-				final UserLdap userLdap = new UserLdap();
+			public UserOrg findById(final String login) {
+				final UserOrg userLdap = new UserOrg();
 				userLdap.setId(login);
 				userLdap.setFirstName("First");
 				return userLdap;
@@ -104,7 +104,7 @@ public class UserLdapRepositoryTest {
 	public void toUserNotExist() {
 		UserLdapRepository repository = new UserLdapRepository() {
 			@Override
-			public UserLdap findById(final String login) {
+			public UserOrg findById(final String login) {
 				return null;
 			}
 
@@ -147,13 +147,13 @@ public class UserLdapRepositoryTest {
 
 		UserLdapRepository repository = new UserLdapRepository() {
 			@Override
-			public UserLdap findById(final String login) {
-				UserLdap user = new UserLdap();
+			public UserOrg findById(final String login) {
+				UserOrg user = new UserOrg();
 				user.setId(login);
 				return user;
 			}
 		};
-		repository.setCompanyLdapRepository(Mockito.mock(CompanyLdapRepository.class));
+		repository.setCompanyRepository(Mockito.mock(CompanyLdapRepository.class));
 		repository.findByIdExpected("user1", "user2");
 	}
 
@@ -162,16 +162,16 @@ public class UserLdapRepositoryTest {
 
 		UserLdapRepository repository = new UserLdapRepository() {
 			@Override
-			public UserLdap findById(final String login) {
-				UserLdap user = new UserLdap();
+			public UserOrg findById(final String login) {
+				UserOrg user = new UserOrg();
 				user.setId(login);
 				user.setCompany("company");
 				return user;
 			}
 		};
 		CompanyLdapRepository mock = Mockito.mock(CompanyLdapRepository.class);
-		Mockito.when(mock.findById("user1", "company")).thenReturn(new CompanyLdap("", ""));
-		repository.setCompanyLdapRepository(mock);
+		Mockito.when(mock.findById("user1", "company")).thenReturn(new CompanyOrg("", ""));
+		repository.setCompanyRepository(mock);
 		repository.findByIdExpected("user1", "user2");
 	}
 }

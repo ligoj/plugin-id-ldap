@@ -6,7 +6,7 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.ligoj.app.api.ContainerLdap;
+import org.ligoj.app.api.ContainerOrg;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -25,7 +25,7 @@ public class ContainerLdapEditionVo {
 	@NotEmpty
 	@NotBlank
 	@Size(max = 255)
-	@Pattern(regexp = ContainerLdap.NAME_PATTERN)
+	@Pattern(regexp = ContainerOrg.NAME_PATTERN)
 	private String name;
 
 	/**

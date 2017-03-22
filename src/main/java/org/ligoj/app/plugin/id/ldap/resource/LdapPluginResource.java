@@ -28,11 +28,11 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.api.Activity;
-import org.ligoj.app.api.GroupLdap;
+import org.ligoj.app.api.GroupOrg;
 import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.api.ServicePlugin;
 import org.ligoj.app.api.SubscriptionStatusWithData;
-import org.ligoj.app.api.UserLdap;
+import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.IamConfiguration;
 import org.ligoj.app.iam.IamConfigurationProvider;
 import org.ligoj.app.iam.IamProvider;
@@ -327,7 +327,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 		final String groupDn = "cn=" + group + "," + parentDn;
 		log.info("New Group CN would be created {} project {} and subscription {}", group, pkey);
 		final GroupLdapRepository repository = getGroup();
-		final GroupLdap groupLdap = repository.create(groupDn, group);
+		final GroupOrg groupLdap = repository.create(groupDn, group);
 
 		// Complete as needed the relationship between parent and this new group
 		if (StringUtils.isNotBlank(parentGroup)) {
@@ -407,7 +407,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	 * Validate the group against its parent and return the corresponding DN.
 	 */
 	private String validateParentGroup(final String group, final String parentGroup) {
-		final GroupLdap parentGroupLdap = groupLdapResource.findById(parentGroup);
+		final GroupOrg parentGroupLdap = groupLdapResource.findById(parentGroup);
 		if (parentGroupLdap == null) {
 			// The parent group does not exists
 			throw new ValidationJsonException(IdentityResource.PARAMETER_PARENT_GROUP, BusinessException.KEY_UNKNOW_ID, parentGroup);
@@ -484,12 +484,12 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 		// Get users from other LDAP subscriptions
 		final Subscription main = subscriptionResource.checkVisibleSubscription(subscription);
 		final List<Subscription> subscriptions = subscriptionRepository.findAllOnSameProject(subscription);
-		final Set<UserLdap> users = global ? getMembersOfAllSubscription(subscriptions) : getMembersOfSubscription(main);
+		final Set<UserOrg> users = global ? getMembersOfAllSubscription(subscriptions) : getMembersOfSubscription(main);
 
 		// Get the activities from each subscription of the same project,
 		final ActivitiesComputations result = new ActivitiesComputations();
 		result.setUsers(users);
-		final List<String> userLogins = users.stream().map(UserLdap::getId).collect(Collectors.toList());
+		final List<String> userLogins = users.stream().map(UserOrg::getId).collect(Collectors.toList());
 		final Map<String, Map<String, Activity>> activities = new HashMap<>();
 		final Set<IDescribableBean<String>> nodes = new LinkedHashSet<>();
 		for (final Subscription projectSubscription : subscriptions) {
@@ -507,15 +507,15 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	/**
 	 * Return members of all LDAP subscriptions
 	 */
-	private Set<UserLdap> getMembersOfAllSubscription(final Collection<Subscription> projectSubscriptions) {
+	private Set<UserOrg> getMembersOfAllSubscription(final Collection<Subscription> projectSubscriptions) {
 		return projectSubscriptions.stream().flatMap(s -> getMembersOfSubscription(s).stream()).collect(Collectors.toSet());
 	}
 
 	/**
 	 * Return members of given subscription.
 	 */
-	private Set<UserLdap> getMembersOfSubscription(final Subscription subscription) {
-		final Set<UserLdap> users = new HashSet<>();
+	private Set<UserOrg> getMembersOfSubscription(final Subscription subscription) {
+		final Set<UserOrg> users = new HashSet<>();
 		final ServicePlugin plugin = servicePluginLocator.getResource(subscription.getNode().getId());
 		if (plugin instanceof LdapPluginResource) {
 			users.addAll(((LdapPluginResource) plugin).getMembers(subscription.getId()));
@@ -530,7 +530,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	 *            The subscription identifier used to get the related group and members.
 	 * @return The members of related groups of the subscription.
 	 */
-	public Collection<UserLdap> getMembers(final int subscription) {
+	public Collection<UserOrg> getMembers(final int subscription) {
 		// Get current subscription parameters
 		final Map<String, String> parameters = subscriptionResource.getParameters(subscription);
 		final String group = parameters.get(IdentityResource.PARAMETER_GROUP);
@@ -604,9 +604,9 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	public List<INamableBean<String>> findGroupsByName(@PathParam("criteria") final String criteria) throws Exception {
 		final List<INamableBean<String>> result = new ArrayList<>();
 		final String criteriaClean = Normalizer.normalize(criteria);
-		final Set<GroupLdap> managedGroups = groupLdapResource.getContainers();
+		final Set<GroupOrg> managedGroups = groupLdapResource.getContainers();
 		final List<ContainerScope> types = groupTypeLdapResource.findAllDescOrder(ContainerType.GROUP);
-		for (final GroupLdap group : managedGroups) {
+		for (final GroupOrg group : managedGroups) {
 			final ContainerScope scope = groupLdapResource.toScope(types, group);
 
 			// Check type and criteria
@@ -660,7 +660,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 
 			// Check the group exists, but is not required to continue the process
 			final GroupLdapRepository repository = getGroup();
-			final GroupLdap groupLdap = repository.findById(group);
+			final GroupOrg groupLdap = repository.findById(group);
 			if (groupLdap != null) {
 				// Perform the deletion
 				repository.delete(groupLdap);
@@ -689,7 +689,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 
 	@Override
 	public SubscriptionStatusWithData checkSubscriptionStatus(final String node, final Map<String, String> parameters) throws Exception {
-		final GroupLdap groupLdap = getGroup().findById(parameters.get(IdentityResource.PARAMETER_GROUP));
+		final GroupOrg groupLdap = getGroup().findById(parameters.get(IdentityResource.PARAMETER_GROUP));
 		if (groupLdap == null) {
 			return new SubscriptionStatusWithData(false);
 		}
@@ -707,7 +707,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 		configuration.setUserRepository(repository);
 		configuration.setCompanyRepository(newCompanyLdapRepository(node, repository.getTemplate()));
 		configuration.setGroupRepository(newGroupLdapRepository(node, repository.getTemplate()));
-		repository.setCompanyLdapRepository((CompanyLdapRepository) configuration.getCompanyRepository());
+		repository.setCompanyRepository((CompanyLdapRepository) configuration.getCompanyRepository());
 		repository.setGroupLdapRepository((GroupLdapRepository) configuration.getGroupRepository());
 		return configuration;
 	}
@@ -744,7 +744,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	 */
 	protected String toApplicationUser(final UserLdapRepository repository, final Authentication authentication) {
 		// Check the authentication
-		final UserLdap account = repository.findOneBy(repository.getAuthenticateProperty(authentication.getName()), authentication.getName());
+		final UserOrg account = repository.findOneBy(repository.getAuthenticateProperty(authentication.getName()), authentication.getName());
 
 		// Check at least one mail is present
 		if (account.getMails().isEmpty()) {
@@ -764,9 +764,9 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	 *            The account from the authentication.
 	 * @return A not <code>null</code> application user.
 	 */
-	protected String toApplicationUser(final UserLdap account) {
+	protected String toApplicationUser(final UserOrg account) {
 		// Find the user by the mail in the primary repository
-		final List<UserLdap> usersByMail = userLdapResource.findAllBy("mail", account.getMails().get(0));
+		final List<UserOrg> usersByMail = userLdapResource.findAllBy("mail", account.getMails().get(0));
 		if (usersByMail.isEmpty()) {
 			// No more try, account can be created in the application repository with a free login
 			return newApplicationUser(account);
@@ -791,7 +791,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	 *            The account from the authentication.
 	 * @return The new application user.
 	 */
-	protected String newApplicationUser(final UserLdap account) {
+	protected String newApplicationUser(final UserOrg account) {
 		synchronized (USER_LOCK) {
 
 			// Copy the data from the authenticated account to the application account
@@ -819,7 +819,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	 */
 	protected String nextFreeLogin(final String login) {
 		int suffix = 0;
-		UserLdap userLdap;
+		UserOrg userLdap;
 		String nextLogin;
 		do {
 			nextLogin = login + (suffix == 0 ? "" : suffix);
@@ -838,7 +838,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	 *            The current authenticated account in this security provider.
 	 * @return a corresponding application login candidate from an account.
 	 */
-	protected String toLogin(final UserLdap account) {
+	protected String toLogin(final UserOrg account) {
 		final String trimFirstName = normalize(account.getFirstName());
 		final String trimLastName = normalize(account.getLastName());
 		if (trimFirstName.length() * trimLastName.length() == 0) {

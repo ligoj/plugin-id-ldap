@@ -20,17 +20,17 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
-import org.ligoj.app.api.ContainerLdap;
+import org.ligoj.app.api.ContainerOrg;
 import org.ligoj.app.api.Normalizer;
-import org.ligoj.app.dao.CacheRepository;
-import org.ligoj.app.dao.DelegateOrgRepository;
-import org.ligoj.app.iam.ContainerLdapRepository;
+import org.ligoj.app.iam.IContainerRepository;
 import org.ligoj.app.iam.IamProvider;
+import org.ligoj.app.iam.dao.CacheContainerRepository;
+import org.ligoj.app.iam.dao.DelegateOrgRepository;
+import org.ligoj.app.iam.model.CacheContainer;
 import org.ligoj.app.ldap.LdapUtils;
 import org.ligoj.app.ldap.dao.CompanyLdapRepository;
 import org.ligoj.app.ldap.dao.GroupLdapRepository;
 import org.ligoj.app.ldap.dao.UserLdapRepository;
-import org.ligoj.app.model.CacheContainer;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
@@ -61,7 +61,7 @@ import lombok.extern.slf4j.Slf4j;
  *            The container cache type.
  */
 @Slf4j
-public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V extends ContainerLdapEditionVo, C extends CacheContainer> {
+public abstract class AbstractContainerLdapResource<T extends ContainerOrg, V extends ContainerLdapEditionVo, C extends CacheContainer> {
 
 	@Autowired
 	protected ContainerScopeResource containerScopeResource;
@@ -106,14 +106,14 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	 * 
 	 * @return the repository managing the container as cache.
 	 */
-	protected abstract CacheRepository<C> getCacheRepository();
+	protected abstract CacheContainerRepository<C> getCacheRepository();
 
 	/**
 	 * Return the repository managing the container.
 	 * 
 	 * @return the repository managing the container.
 	 */
-	protected abstract ContainerLdapRepository<T> getRepository();
+	protected abstract IContainerRepository<T> getRepository();
 
 	/**
 	 * Return the DN from the container and the computed type.
@@ -144,7 +144,7 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	 * @return Container (CN) with its type.
 	 */
 	@GET
-	@Path("{container:" + ContainerLdap.NAME_PATTERN + "}")
+	@Path("{container:" + ContainerOrg.NAME_PATTERN + "}")
 	@OnNullReturn404
 	public ContainerLdapWithTypeVo findByName(@PathParam("container") final String name) {
 		return Optional.ofNullable(findById(name)).map(this::toVo).orElse(null);
@@ -157,7 +157,7 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	 * 
 	 * @param container
 	 *            The container to create.
-	 * @return The identifier of created {@link org.ligoj.app.api.ContainerLdap}.
+	 * @return The identifier of created {@link org.ligoj.app.api.ContainerOrg}.
 	 */
 	@POST
 	public String create(final V container) {
@@ -172,7 +172,7 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	 * 
 	 * @param container
 	 *            The container to create.
-	 * @return The created {@link org.ligoj.app.api.ContainerLdap} internal identifier.
+	 * @return The created {@link org.ligoj.app.api.ContainerOrg} internal identifier.
 	 */
 	public T createInternal(final V container) {
 
@@ -302,7 +302,7 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	 * @param container
 	 *            The container to delete.
 	 */
-	protected void checkForDeletion(final ContainerLdap container) {
+	protected void checkForDeletion(final ContainerOrg container) {
 
 		// Check the container can be deleted by the current user. Used DN will be FQN to match the delegates
 		if (!delegateRepository.isAdmin(securityHelper.getLogin(), Normalizer.normalize(container.getDn()), this.type.getDelegateType())) {
@@ -327,7 +327,7 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	 *            The containers to check.
 	 * @return The closest {@link ContainerScope} or <code>null</code> if not found.
 	 */
-	public ContainerScope toScope(final List<ContainerScope> scopes, final ContainerLdap container) {
+	public ContainerScope toScope(final List<ContainerScope> scopes, final ContainerOrg container) {
 		return scopes.stream().filter(s -> LdapUtils.equalsOrParentOf(s.getDn(), container.getDn())).findFirst().orElse(null);
 	}
 
@@ -380,7 +380,7 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	 *            The defined type with locking information.
 	 * @return A secured container with right and lock information the current user has.
 	 */
-	protected ContainerLdapCountVo newContainerLdapCountVo(final ContainerLdap rawContainer, final Set<T> managedWrite, final Set<T> managedAdmin,
+	protected ContainerLdapCountVo newContainerLdapCountVo(final ContainerOrg rawContainer, final Set<T> managedWrite, final Set<T> managedAdmin,
 			final List<ContainerScope> types) {
 		final ContainerLdapCountVo securedUserLdap = new ContainerLdapCountVo();
 		NamedBean.copy(rawContainer, securedUserLdap);
@@ -483,7 +483,7 @@ public abstract class AbstractContainerLdapResource<T extends ContainerLdap, V e
 	 * 
 	 * @param cacheItems
 	 *            The database base page cache containers to convert.
-	 * @return The internal representation of {@link org.ligoj.app.model.CacheCompany} set. Ordered by the name.
+	 * @return The internal representation of {@link org.ligoj.app.iam.model.CacheCompany} set. Ordered by the name.
 	 */
 	protected Page<T> toInternal(final Page<C> cacheItems) {
 		return new PageImpl<>(new ArrayList<>(toInternal(cacheItems.getContent())), null, cacheItems.getTotalElements());

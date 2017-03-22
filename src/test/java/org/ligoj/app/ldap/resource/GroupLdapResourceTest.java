@@ -9,8 +9,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
-import org.ligoj.app.api.CompanyLdap;
-import org.ligoj.app.api.GroupLdap;
+import org.ligoj.app.api.CompanyOrg;
+import org.ligoj.app.api.GroupOrg;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.bootstrap.core.json.TableItem;
@@ -344,7 +344,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals("Fonction", group0.getType());
 
 		// Check the creation from LDAP
-		final GroupLdap groupLdap = getGroup().findAllNoCache().get("new-ax-1-z:z 0");
+		final GroupOrg groupLdap = getGroup().findAllNoCache().get("new-ax-1-z:z 0");
 		Assert.assertNotNull(groupLdap);
 		Assert.assertEquals("new-ax-1-z:z 0", groupLdap.getId());
 		Assert.assertEquals("New-Ax-1-z:Z 0", groupLdap.getName());
@@ -356,9 +356,9 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		// For coverage
 		Assert.assertEquals("new-ax-1-z:z 0".hashCode(), groupLdap.hashCode());
 		Assert.assertEquals(groupLdap, groupLdap);
-		Assert.assertEquals(groupLdap, new GroupLdap("any", "New-AX-1-Z:Z 0", null));
-		Assert.assertNotEquals(groupLdap, new GroupLdap("any", "some", null));
-		Assert.assertNotEquals(groupLdap, new CompanyLdap("any", "some"));
+		Assert.assertEquals(groupLdap, new GroupOrg("any", "New-AX-1-Z:Z 0", null));
+		Assert.assertNotEquals(groupLdap, new GroupOrg("any", "some", null));
+		Assert.assertNotEquals(groupLdap, new CompanyOrg("any", "some"));
 	}
 
 	@Test(expected = ValidationJsonException.class)
