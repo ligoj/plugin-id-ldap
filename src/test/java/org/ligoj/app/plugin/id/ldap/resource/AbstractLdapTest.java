@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.Before;
 import org.springframework.ldap.core.LdapTemplate;
+import org.ligoj.app.AbstractAppTest;
 import org.ligoj.app.ldap.dao.CompanyLdapRepository;
 import org.ligoj.app.ldap.dao.GroupLdapRepository;
 import org.ligoj.app.ldap.dao.UserLdapRepository;
@@ -17,7 +18,7 @@ import org.ligoj.app.model.Subscription;
 /**
  * Test for LDAP resources.
  */
-public abstract class AbstractLdapTest extends org.ligoj.app.AbstractJpaTest {
+public abstract class AbstractLdapTest extends AbstractAppTest {
 
 	/**
 	 * Prepare the Spring Security in the context, not the REST one.
@@ -45,7 +46,7 @@ public abstract class AbstractLdapTest extends org.ligoj.app.AbstractJpaTest {
 	 */
 	@Override
 	protected CompanyLdapRepository getCompany() {
-		return (CompanyLdapRepository)super.getCompany();
+		return (CompanyLdapRepository) super.getCompany();
 	}
 
 	/**
@@ -55,7 +56,7 @@ public abstract class AbstractLdapTest extends org.ligoj.app.AbstractJpaTest {
 	 */
 	@Override
 	protected GroupLdapRepository getGroup() {
-		return (GroupLdapRepository)super.getGroup();
+		return (GroupLdapRepository) super.getGroup();
 	}
 
 	/**
