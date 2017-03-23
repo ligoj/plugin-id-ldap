@@ -10,6 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.ligoj.app.DefaultVerificationMode;
 import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.plugin.id.resource.UserLdapEdition;
+import org.ligoj.app.plugin.id.resource.UserLdapResource;
 import org.ligoj.bootstrap.AbstractSecurityTest;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.mockito.Mockito;

@@ -1,3 +1,0 @@
-name;value
-redirect.external.home;http://localhost:8081/external
-redirect.internal.home;http://localhost:8081/internal

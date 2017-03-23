@@ -7,7 +7,7 @@ import javax.cache.annotation.CacheKey;
 import javax.cache.annotation.CacheResult;
 
 import org.ligoj.app.iam.IamProvider;
-import org.ligoj.app.ldap.LdapUtils;
+import org.ligoj.app.plugin.id.LdapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;

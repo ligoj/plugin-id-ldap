@@ -2,6 +2,8 @@ package org.ligoj.app.ldap.resource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
+import org.ligoj.app.plugin.id.resource.GroupLdapEditionVo;
+import org.ligoj.app.plugin.id.resource.GroupLdapResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;

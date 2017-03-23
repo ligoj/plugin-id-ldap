@@ -1,4 +1,4 @@
-package org.ligoj.app.ldap.resource;
+package org.ligoj.app.plugin.id.resource;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -7,6 +7,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.junit.Before;
 import org.ligoj.app.iam.model.DelegateOrg;
+import org.ligoj.app.ldap.resource.AbstractLdapTest;
 import org.ligoj.app.plugin.id.dao.ContainerScopeRepository;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;

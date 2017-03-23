@@ -37,8 +37,8 @@ import org.ligoj.app.api.SimpleUser;
 import org.ligoj.app.api.SimpleUserOrg;
 import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.IUserRepository;
-import org.ligoj.app.ldap.LdapUtils;
 import org.ligoj.app.ldap.dao.LdapCacheRepository.LdapData;
+import org.ligoj.app.plugin.id.LdapUtils;
 import org.ligoj.app.plugin.id.model.CompanyComparator;
 import org.ligoj.app.plugin.id.model.FirstNameComparator;
 import org.ligoj.app.plugin.id.model.LastNameComparator;
@@ -185,13 +185,7 @@ public class UserLdapRepository implements IUserRepository {
 		COMPARATORS.put("mail", new MailComparator());
 	}
 
-	/**
-	 * Create an entry.
-	 * 
-	 * @param entry
-	 *            User to add to LDAP.
-	 * @return the formal parameter.
-	 */
+	@Override
 	public UserOrg create(final UserOrg entry) {
 		// Build the DN
 		final Name dn = buildDn(entry);
@@ -318,6 +312,11 @@ public class UserLdapRepository implements IUserRepository {
 		});
 	}
 
+	@Override
+	public String toDn(UserOrg newUser) {
+		return buildDn(newUser).toString();
+	}
+
 	/**
 	 * Return DN from entry.
 	 * 
@@ -326,8 +325,7 @@ public class UserLdapRepository implements IUserRepository {
 	 * @return DN from entry.
 	 */
 	public Name buildDn(final UserOrg entry) {
-		return org.springframework.ldap.support.LdapUtils
-				.newLdapName(buildDn(entry.getId(), companyRepository.findById(entry.getCompany()).getDn()));
+		return org.springframework.ldap.support.LdapUtils.newLdapName(buildDn(entry.getId(), companyRepository.findById(entry.getCompany()).getDn()));
 	}
 
 	/**
@@ -493,14 +491,7 @@ public class UserLdapRepository implements IUserRepository {
 				|| !userLdap.getMails().isEmpty() && StringUtils.containsIgnoreCase(userLdap.getMails().get(0), criteria);
 	}
 
-	/**
-	 * Update membership of given user.
-	 * 
-	 * @param groups
-	 *            the target groups CN, not normalized.
-	 * @param user
-	 *            the target user.
-	 */
+	@Override
 	public void updateMembership(final Collection<String> groups, final UserOrg user) {
 		// Add new groups
 		addUserToGroups(user, CollectionUtils.subtract(groups, user.getGroups()));
@@ -530,13 +521,7 @@ public class UserLdapRepository implements IUserRepository {
 		}
 	}
 
-	/**
-	 * Execute LDAP modifications for each change between entries. Cache is also updated.
-	 * 
-	 * @param user
-	 *            The user to update. The properties will be copied, this instance will not be the one stored
-	 *            internally.
-	 */
+	@Override
 	public void updateUser(final UserOrg user) {
 		final DirContextOperations context = template.lookupContext(org.springframework.ldap.support.LdapUtils.newLdapName(user.getDn()));
 		mapToContext(user, context);
@@ -550,12 +535,7 @@ public class UserLdapRepository implements IUserRepository {
 		ldapCacheRepository.update(user);
 	}
 
-	/**
-	 * Delete the given user.
-	 * 
-	 * @param user
-	 *            the LDAP user.
-	 */
+	@Override
 	public void delete(final UserOrg user) {
 		final Name userDn = org.springframework.ldap.support.LdapUtils.newLdapName(user.getDn());
 
@@ -569,36 +549,12 @@ public class UserLdapRepository implements IUserRepository {
 		ldapCacheRepository.delete(user);
 	}
 
-	/**
-	 * Lock an user :
-	 * <ul>
-	 * <li>Clear the password to prevent new authentication</li>
-	 * <li>Set the disabled flag.</li>
-	 * </ul>
-	 * 
-	 * @param principal
-	 *            User requesting the lock.
-	 * @param user
-	 *            The LDAP user to disable.
-	 */
+	@Override
 	public void lock(final String principal, final UserOrg user) {
 		lock(principal, user, false);
 	}
 
-	/**
-	 * Isolate an user to the quarantine zone :
-	 * <ul>
-	 * <li>Clear the password to prevent new authentication</li>
-	 * <li>Set the disabled flag.</li>
-	 * <li>Move the user to the quarantine zone, DN is also update.</li>
-	 * <li>Set the previous company.</li>
-	 * </ul>
-	 * 
-	 * @param principal
-	 *            User requesting the lock.
-	 * @param user
-	 *            The LDAP user to disable.
-	 */
+	@Override
 	public void isolate(final String principal, final UserOrg user) {
 		if (user.getIsolated() == null) {
 			// Not yet isolated
@@ -609,12 +565,7 @@ public class UserLdapRepository implements IUserRepository {
 		}
 	}
 
-	/**
-	 * Restore a user from the isolate to the previous company of this user and unlock this user.
-	 * 
-	 * @param user
-	 *            The LDAP user to disable.
-	 */
+	@Override
 	public void restore(final UserOrg user) {
 		if (user.getIsolated() != null) {
 			move(user, companyRepository.findById(user.getIsolated()));
@@ -623,15 +574,7 @@ public class UserLdapRepository implements IUserRepository {
 		}
 	}
 
-	/**
-	 * Move a user from his/her location to the target company. Cache is also updated, and the company of given user is
-	 * replaced by the given company.
-	 * 
-	 * @param user
-	 *            The LDAP user to disable.
-	 * @param company
-	 *            The target company.
-	 */
+	@Override
 	public void move(final UserOrg user, final CompanyOrg company) {
 		final LdapName newDn = org.springframework.ldap.support.LdapUtils.newLdapName(buildDn(user.getId(), company.getDn()));
 		final LdapName oldDn = org.springframework.ldap.support.LdapUtils.newLdapName(user.getDn());
@@ -674,18 +617,7 @@ public class UserLdapRepository implements IUserRepository {
 		}
 	}
 
-	/**
-	 * Unlock an user :
-	 * <ul>
-	 * <li>Check the user is not isolated</li>
-	 * <li>Check the user is locked</li>
-	 * <li>Clear the locked flag</li>
-	 * </ul>
-	 * Note the password stills as is. If this user was previously locked, the password stills cleared.
-	 * 
-	 * @param user
-	 *            The LDAP user to disable.
-	 */
+	@Override
 	public void unlock(final UserOrg user) {
 		if (user.getIsolated() == null && user.getLockedBy() != null) {
 			// Need to be unlocked

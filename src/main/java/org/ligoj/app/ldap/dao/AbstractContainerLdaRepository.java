@@ -110,19 +110,7 @@ public abstract class AbstractContainerLdaRepository<T extends ContainerOrg, C e
 		return container;
 	}
 
-	/**
-	 * Return the groups matching to the given pattern.
-	 * 
-	 * @param groups
-	 *            the visible groups.
-	 * @param criteria
-	 *            the optional criteria used to check name (CN).
-	 * @param pageable
-	 *            the ordering and page data.
-	 * @param customComparators
-	 *            The custom comparators used to order the result. The key is the ordered property name.
-	 * @return the UID of users matching all above criteria.
-	 */
+	@Override
 	public Page<T> findAll(final Set<T> groups, final String criteria, final Pageable pageable, final Map<String, Comparator<T>> customComparators) {
 		// Create the set with the right comparator
 		final List<Sort.Order> orders = IteratorUtils.toList(ObjectUtils.defaultIfNull(pageable.getSort(), new ArrayList<Sort.Order>()).iterator());

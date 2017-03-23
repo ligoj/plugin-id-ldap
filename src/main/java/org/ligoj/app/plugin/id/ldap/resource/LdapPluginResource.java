@@ -40,18 +40,18 @@ import org.ligoj.app.ldap.dao.CompanyLdapRepository;
 import org.ligoj.app.ldap.dao.GroupLdapRepository;
 import org.ligoj.app.ldap.dao.ProjectCustomerLdapRepository;
 import org.ligoj.app.ldap.dao.UserLdapRepository;
-import org.ligoj.app.ldap.resource.CompanyLdapResource;
-import org.ligoj.app.ldap.resource.ContainerLdapWithTypeVo;
-import org.ligoj.app.ldap.resource.GroupLdapResource;
-import org.ligoj.app.ldap.resource.UserLdapEdition;
-import org.ligoj.app.ldap.resource.UserLdapResource;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.model.Node;
 import org.ligoj.app.model.Subscription;
 import org.ligoj.app.plugin.id.model.ContainerScope;
+import org.ligoj.app.plugin.id.resource.CompanyResource;
 import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
+import org.ligoj.app.plugin.id.resource.ContainerWithTypeVo;
+import org.ligoj.app.plugin.id.resource.GroupLdapResource;
 import org.ligoj.app.plugin.id.resource.IdentityResource;
 import org.ligoj.app.plugin.id.resource.IdentityServicePlugin;
+import org.ligoj.app.plugin.id.resource.UserLdapEdition;
+import org.ligoj.app.plugin.id.resource.UserLdapResource;
 import org.ligoj.app.resource.ActivitiesProvider;
 import org.ligoj.app.resource.ServicePluginLocator;
 import org.ligoj.app.resource.plugin.AbstractToolPluginResource;
@@ -182,7 +182,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	protected ProjectCustomerLdapRepository projectCustomerLdapRepository;
 
 	@Autowired
-	protected CompanyLdapResource companyLdapResource;
+	protected CompanyResource companyLdapResource;
 
 	@Autowired
 	protected UserLdapResource userLdapResource;
@@ -570,7 +570,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	protected INamableBean<String> validateGroup(final Map<String, String> parameters) {
 		// Get group configuration
 		final String group = parameters.get(IdentityResource.PARAMETER_GROUP);
-		final ContainerLdapWithTypeVo groupLdap = groupLdapResource.findByName(group);
+		final ContainerWithTypeVo groupLdap = groupLdapResource.findByName(group);
 
 		// Check the group exists
 		if (groupLdap == null) {

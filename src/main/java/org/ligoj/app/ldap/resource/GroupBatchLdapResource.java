@@ -10,12 +10,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+import org.ligoj.app.plugin.id.resource.IdentityResource;
 import org.springframework.stereotype.Service;
 
 /**
  * LDAP batch resource for group.
  */
-@Path("/ldap/group/batch")
+@Path(IdentityResource.SERVICE_URL + "/group/batch")
 @Service
 @Produces(MediaType.APPLICATION_JSON)
 public class GroupBatchLdapResource extends AbstractBatchResource {

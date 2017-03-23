@@ -9,6 +9,8 @@ import javax.validation.ValidationException;
 import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.dao.DelegateOrgRepository;
+import org.ligoj.app.plugin.id.resource.UserLdapEdition;
+import org.ligoj.app.plugin.id.resource.UserLdapResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;

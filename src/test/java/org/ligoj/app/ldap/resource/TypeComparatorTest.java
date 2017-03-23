@@ -12,9 +12,11 @@ import org.ligoj.app.api.GroupOrg;
 import org.ligoj.app.iam.dao.CacheContainerRepository;
 import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.ldap.dao.GroupLdapRepository;
-import org.ligoj.app.ldap.resource.AbstractContainerLdapResource.TypeComparator;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.model.ContainerScope;
+import org.ligoj.app.plugin.id.resource.AbstractContainerResource;
+import org.ligoj.app.plugin.id.resource.GroupLdapEditionVo;
+import org.ligoj.app.plugin.id.resource.AbstractContainerResource.TypeComparator;
 
 /**
  * Test class of {@link TypeComparator}
@@ -93,7 +95,7 @@ public class TypeComparatorTest {
 	}
 
 	private Comparator<GroupOrg> newComparator(final List<ContainerScope> containerTypes) {
-		return new AbstractContainerLdapResource<GroupOrg, GroupLdapEditionVo, CacheGroup>(ContainerType.GROUP) {
+		return new AbstractContainerResource<GroupOrg, GroupLdapEditionVo, CacheGroup>(ContainerType.GROUP) {
 
 			@Override
 			protected GroupLdapRepository getRepository() {

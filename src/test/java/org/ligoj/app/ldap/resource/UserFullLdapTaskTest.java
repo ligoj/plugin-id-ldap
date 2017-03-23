@@ -14,6 +14,7 @@ import org.apache.cxf.message.Message;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.ligoj.app.plugin.id.resource.UserLdapResource;
 import org.ligoj.bootstrap.AbstractSecurityTest;
 import org.ligoj.bootstrap.core.resource.mapper.FailSafeExceptionMapper;
 import org.ligoj.bootstrap.core.security.SecurityHelper;

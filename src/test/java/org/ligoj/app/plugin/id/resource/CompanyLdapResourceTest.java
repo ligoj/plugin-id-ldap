@@ -1,4 +1,4 @@
-package org.ligoj.app.ldap.resource;
+package org.ligoj.app.plugin.id.resource;
 
 import javax.transaction.Transactional;
 import javax.ws.rs.core.UriInfo;
@@ -13,6 +13,9 @@ import org.ligoj.app.api.GroupOrg;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.dao.ContainerScopeRepository;
 import org.ligoj.app.plugin.id.model.ContainerScope;
+import org.ligoj.app.plugin.id.resource.CompanyResource;
+import org.ligoj.app.plugin.id.resource.ContainerCountVo;
+import org.ligoj.app.plugin.id.resource.ContainerEditionVo;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
@@ -22,7 +25,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * Test of {@link CompanyLdapResource}<br>
+ * Test of {@link CompanyResource}<br>
  * Delegate are :
  * <ul>
  * <li>user;type;name;write;admin;dn</li>
@@ -61,7 +64,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Autowired
-	private CompanyLdapResource resource;
+	private CompanyResource resource;
 
 	@Autowired
 	private ContainerScopeRepository containerTypeLdapRepository;
@@ -175,7 +178,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test(expected = ValidationJsonException.class)
 	public void createNoRight() {
 		final ContainerScope typeLdap = containerTypeLdapRepository.findByName("France");
-		final ContainerLdapEditionVo group = new ContainerLdapEditionVo();
+		final ContainerEditionVo group = new ContainerEditionVo();
 		group.setName("New-Ax-1-z:Z 0");
 		group.setType(typeLdap.getId());
 		initSpringSecurityContext("mmartin");
@@ -224,7 +227,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test(expected = ValidationJsonException.class)
 	public void createAlreadyExists() {
 		final ContainerScope typeLdap = containerTypeLdapRepository.findByName("France");
-		final ContainerLdapEditionVo group = new ContainerLdapEditionVo();
+		final ContainerEditionVo group = new ContainerEditionVo();
 		group.setName("orange");
 		group.setType(typeLdap.getId());
 		resource.create(group);
@@ -233,7 +236,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test(expected = ValidationJsonException.class)
 	public void createInvalidType() {
 		final ContainerScope typeLdap = containerTypeLdapRepository.findByName("Fonction");
-		final ContainerLdapEditionVo company = new ContainerLdapEditionVo();
+		final ContainerEditionVo company = new ContainerEditionVo();
 		company.setName("New-Ax-1-z:Z 0");
 		company.setType(typeLdap.getId());
 		resource.create(company);
@@ -252,16 +255,16 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	private void createInternal() {
 		final ContainerScope typeLdap = containerTypeLdapRepository.findByName("France");
-		final ContainerLdapEditionVo company = new ContainerLdapEditionVo();
+		final ContainerEditionVo company = new ContainerEditionVo();
 		company.setName("New-Ax-1-z:Z 0");
 		company.setType(typeLdap.getId());
 		resource.create(company);
 
 		// Check the creation from cache
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "ew-Ax"));
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "ew-Ax"));
 		Assert.assertEquals(1, groups.getRecordsTotal());
 
-		final ContainerLdapCountVo group0 = groups.getData().get(0);
+		final ContainerCountVo group0 = groups.getData().get(0);
 		Assert.assertEquals("New-Ax-1-z:Z 0", group0.getName());
 		Assert.assertEquals(0, group0.getCount());
 		Assert.assertEquals(0, group0.getCountVisible());
@@ -287,9 +290,9 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void findAllOnlyMyCompany() {
 		initSpringSecurityContext("mmartin");
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "gfi"));
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "gfi"));
 		Assert.assertEquals(1, groups.getRecordsTotal());
-		final ContainerLdapCountVo group0 = groups.getData().get(0);
+		final ContainerCountVo group0 = groups.getData().get(0);
 		Assert.assertEquals("gfi", group0.getName());
 		Assert.assertEquals(7, group0.getCount());
 		Assert.assertEquals(7, group0.getCountVisible());
@@ -305,9 +308,9 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		initSpringSecurityContext("mmartin");
 		final UriInfo uriInfo = newUriInfo("name", "desc");
 		uriInfo.getQueryParameters().add(DataTableAttributes.SEARCH, "gfi");
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(uriInfo);
+		final TableItem<ContainerCountVo> groups = resource.findAll(uriInfo);
 		Assert.assertEquals(1, groups.getRecordsTotal());
-		final ContainerLdapCountVo group0 = groups.getData().get(0);
+		final ContainerCountVo group0 = groups.getData().get(0);
 		Assert.assertEquals("gfi", group0.getName());
 		Assert.assertEquals(7, group0.getCount());
 		Assert.assertEquals(7, group0.getCountVisible());
@@ -321,7 +324,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void findAllExternal() {
 		initSpringSecurityContext("mtuyer");
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "gfi"));
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "gfi"));
 		Assert.assertEquals(0, groups.getRecordsTotal());
 	}
 
@@ -329,9 +332,9 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	public void findAllNoCriteriaNoType() {
 		initSpringSecurityContext("mlavoine");
 		containerTypeLdapRepository.deleteAllBy("name", "Root");
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAsc("name"));
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAsc("name"));
 		Assert.assertEquals(2, groups.getRecordsTotal());
-		final ContainerLdapCountVo group0 = groups.getData().get(0);
+		final ContainerCountVo group0 = groups.getData().get(0);
 		Assert.assertEquals("ing", group0.getName());
 		Assert.assertEquals(7, group0.getCount());
 		Assert.assertEquals(7, group0.getCountVisible());
@@ -345,9 +348,9 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test
 	public void findAll() {
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "g"));
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "g"));
 		Assert.assertEquals(5, groups.getRecordsTotal());
-		final ContainerLdapCountVo group0 = groups.getData().get(0);
+		final ContainerCountVo group0 = groups.getData().get(0);
 		Assert.assertEquals("gfi", group0.getName());
 		Assert.assertEquals(7, group0.getCount());
 		Assert.assertEquals(7, group0.getCountVisible());
@@ -359,7 +362,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals(ContainerType.COMPANY, group0.getContainerType());
 
 		// No group type case
-		final ContainerLdapCountVo group2 = groups.getData().get(2);
+		final ContainerCountVo group2 = groups.getData().get(2);
 		Assert.assertEquals("ing-internal", group2.getName());
 		Assert.assertEquals(1, group2.getCount());
 		Assert.assertEquals(1, group2.getCountVisible());
@@ -373,9 +376,9 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test
 	public void findAllLocked() {
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "quarantine"));
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "quarantine"));
 		Assert.assertEquals(1, groups.getRecordsTotal());
-		final ContainerLdapCountVo group0 = groups.getData().get(0);
+		final ContainerCountVo group0 = groups.getData().get(0);
 		Assert.assertEquals("quarantine", group0.getName());
 		Assert.assertEquals(0, group0.getCount());
 		Assert.assertEquals(0, group0.getCountVisible());

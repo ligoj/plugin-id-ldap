@@ -21,6 +21,8 @@ import org.junit.runners.MethodSorters;
 import org.ligoj.app.DefaultVerificationMode;
 import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.model.DelegateOrg;
+import org.ligoj.app.plugin.id.resource.UserLdapEdition;
+import org.ligoj.app.plugin.id.resource.UserLdapResource;
 import org.ligoj.bootstrap.core.SpringUtils;
 import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.resource.system.session.SessionSettings;

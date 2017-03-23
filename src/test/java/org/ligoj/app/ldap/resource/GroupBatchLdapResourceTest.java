@@ -19,6 +19,8 @@ import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
+import org.ligoj.app.plugin.id.resource.GroupLdapEditionVo;
+import org.ligoj.app.plugin.id.resource.GroupLdapResource;
 import org.ligoj.bootstrap.core.SpringUtils;
 import org.ligoj.bootstrap.resource.system.session.SessionSettings;
 import org.mockito.ArgumentMatchers;

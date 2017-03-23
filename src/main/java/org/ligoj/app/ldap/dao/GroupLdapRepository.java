@@ -22,9 +22,9 @@ import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.IGroupRepository;
 import org.ligoj.app.iam.dao.CacheGroupRepository;
 import org.ligoj.app.iam.model.CacheGroup;
-import org.ligoj.app.ldap.LdapUtils;
 import org.ligoj.app.ldap.dao.LdapCacheRepository.LdapData;
 import org.ligoj.app.model.ContainerType;
+import org.ligoj.app.plugin.id.LdapUtils;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
@@ -181,15 +181,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 		ldapCacheRepository.delete(group);
 	}
 
-	/**
-	 * Empty the group. All users from the group will not be anymore associated to this group, and the members of the
-	 * group will be emptied. Not that the sub groups are not removed, only users are concerned.
-	 * 
-	 * @param group
-	 *            the LDAP group.
-	 * @param users
-	 *            All known users could be removed from this group.
-	 */
+	@Override
 	public void empty(final GroupOrg group, final Map<String, UserOrg> users) {
 		ldapCacheRepository.empty(group, users);
 	}
@@ -239,40 +231,19 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 		template.modifyAttributes(org.springframework.ldap.support.LdapUtils.newLdapName(groupLdap.getDn()), mods);
 	}
 
-	/**
-	 * Add a user to given group. Cache is updated.
-	 * 
-	 * @param user
-	 *            {@link UserOrg} to add.
-	 * @param group
-	 *            CN of the group to update.
-	 */
+	@Override
 	public void addUser(final UserOrg user, final String group) {
 		// Add to Java cache and to SQL cache
 		ldapCacheRepository.addUserToGroup(user, addMember(user, group));
 	}
 
-	/**
-	 * Add a group to another group. Cache is updated.
-	 * 
-	 * @param subGroup
-	 *            {@link GroupOrg} to add to a parent group.
-	 * @param toGroup
-	 *            CN of the parent group to update.
-	 */
+	@Override
 	public void addGroup(final GroupOrg subGroup, final String toGroup) {
 		// Add to Java cache and to SQL cache
 		ldapCacheRepository.addGroupToGroup(subGroup, addMember(subGroup, toGroup));
 	}
 
-	/**
-	 * Remove a user from a given group. Cache is updated.
-	 * 
-	 * @param user
-	 *            {@link UserOrg} to remove.
-	 * @param group
-	 *            CN of the group to update.
-	 */
+	@Override
 	public void removeUser(final UserOrg user, final String group) {
 		// Remove from Java cache and from SQL cache
 		ldapCacheRepository.removeUserFromGroup(user, removeMember(user, group));
@@ -336,16 +307,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 		return new GroupOrg(Normalizer.normalize(dn), cn, new HashSet<>());
 	}
 
-	/**
-	 * Add attributes to the given DN.
-	 * 
-	 * @param dn
-	 *            The target DN.
-	 * @param attribute
-	 *            The attribute name.
-	 * @param values
-	 *            The values to add. My be empty.
-	 */
+	@Override
 	public void addAttributes(final String dn, final String attribute, final Collection<String> values) {
 		if (values.isEmpty()) {
 			// Ignore this call

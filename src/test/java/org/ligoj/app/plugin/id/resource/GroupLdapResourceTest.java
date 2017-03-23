@@ -1,4 +1,4 @@
-package org.ligoj.app.ldap.resource;
+package org.ligoj.app.plugin.id.resource;
 
 import java.util.Collections;
 
@@ -42,10 +42,10 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test
 	public void findAll() {
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "d"));
-		Assert.assertEquals(6, groups.getRecordsTotal());
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "d"));
+		Assert.assertEquals(5, groups.getRecordsTotal());
 
-		final ContainerLdapCountVo group0 = groups.getData().get(0);
+		final ContainerCountVo group0 = groups.getData().get(0);
 		Assert.assertEquals("DIG", group0.getName());
 		Assert.assertEquals(0, group0.getCount());
 		Assert.assertEquals(0, group0.getCountVisible());
@@ -55,7 +55,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals("dig", group0.getId());
 		Assert.assertFalse(group0.isLocked());
 
-		final ContainerLdapCountVo group10 = groups.getData().get(3);
+		final ContainerCountVo group10 = groups.getData().get(3);
 		Assert.assertEquals("DIG RHA", group10.getName());
 		Assert.assertEquals(4, group10.getCount());
 		Assert.assertEquals(4, group10.getCountVisible());
@@ -66,7 +66,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertFalse(group10.isLocked());
 
 		// No group type case
-		final ContainerLdapCountVo group20 = groups.getData().get(4);
+		final ContainerCountVo group20 = groups.getData().get(4);
 		Assert.assertEquals("Production", group20.getName());
 		Assert.assertEquals(1, group20.getCount());
 		Assert.assertEquals(1, group20.getCountVisible());
@@ -79,10 +79,10 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test
 	public void findAll2() {
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "sea-octopus"));
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "sea-octopus"));
 		Assert.assertEquals(1, groups.getRecordsTotal());
 
-		final ContainerLdapCountVo group0 = groups.getData().get(0);
+		final ContainerCountVo group0 = groups.getData().get(0);
 		Assert.assertEquals("sea-octopus", group0.getName());
 		Assert.assertEquals(0, group0.getCount());
 		Assert.assertEquals(0, group0.getCountVisible());
@@ -95,18 +95,18 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test
 	public void findAllDescNoCriteria() {
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoDesc("name"));
-		Assert.assertTrue(groups.getRecordsTotal() > 20);
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoDesc("name"));
+		Assert.assertTrue(groups.getRecordsTotal() >= 16);
 
 		// No group type case
-		final ContainerLdapCountVo group0 = groups.getData().get(0);
+		final ContainerCountVo group0 = groups.getData().get(0);
 		Assert.assertEquals("VigiReport", group0.getName());
 	}
 
 	@Test
 	public void findAllNotExistingGroup() {
 		initSpringSecurityContext("any");
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "d"));
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "d"));
 		Assert.assertEquals(0, groups.getRecordsTotal());
 	}
 
@@ -118,7 +118,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void findAllFromMembership() {
 		initSpringSecurityContext("mmartin");
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "hub"));
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "hub"));
 		Assert.assertEquals(2, groups.getRecordsTotal());
 		Assert.assertEquals("Hub France", groups.getData().get(0).getName());
 		Assert.assertEquals("Hub Paris", groups.getData().get(1).getName());
@@ -130,17 +130,17 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void findAllNoRight() {
 		initSpringSecurityContext("jlast3");
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "hub"));
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "hub"));
 		Assert.assertEquals(0, groups.getRecordsTotal());
 	}
 
 	@Test
 	public void findAllLimitedRights() {
 		initSpringSecurityContext("mmartin");
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "dig as"));
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "dig as"));
 		Assert.assertEquals(1, groups.getRecordsTotal());
 
-		final ContainerLdapCountVo group0 = groups.getData().get(0);
+		final ContainerCountVo group0 = groups.getData().get(0);
 		Assert.assertEquals("DIG AS", group0.getName());
 		Assert.assertEquals(1, group0.getCount());
 		Assert.assertEquals(1, group0.getCountVisible());
@@ -151,7 +151,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test
 	public void findByNameNoType() {
-		final ContainerLdapWithTypeVo group = resource.findByName("business solution");
+		final ContainerWithTypeVo group = resource.findByName("business solution");
 		Assert.assertEquals("Business Solution", group.getName());
 		Assert.assertNull(group.getType());
 	}
@@ -163,7 +163,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test
 	public void findById() {
-		final ContainerLdapWithTypeVo group = resource.findByName("dig as");
+		final ContainerWithTypeVo group = resource.findByName("dig as");
 		Assert.assertEquals("DIG AS", group.getName());
 		Assert.assertEquals("Fonction", group.getType());
 	}
@@ -191,7 +191,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void findByNameLimitedRights() {
 		initSpringSecurityContext("mmartin");
-		final ContainerLdapWithTypeVo group = resource.findByName("dig as");
+		final ContainerWithTypeVo group = resource.findByName("dig as");
 		Assert.assertEquals("DIG AS", group.getName());
 		Assert.assertEquals("Fonction", group.getType());
 	}
@@ -281,21 +281,21 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		userLdapResource.addUserToGroup("wuser", "New-Ax-1-z:Z 0");
 
 		// Pre check
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
 		Assert.assertEquals(1, groups.getRecordsTotal());
 		Assert.assertEquals(1, groups.getData().get(0).getCount());
 
 		resource.empty("New-Ax-1-z:Z 0");
 
 		// Post check
-		final TableItem<ContainerLdapCountVo> groupsEmpty = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
+		final TableItem<ContainerCountVo> groupsEmpty = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
 		Assert.assertEquals(1, groupsEmpty.getRecordsTotal());
 		Assert.assertEquals(0, groupsEmpty.getData().get(0).getCount());
 
 		resource.delete("New-Ax-1-z:Z 0");
 
 		// Post check
-		final TableItem<ContainerLdapCountVo> groupsDelete = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
+		final TableItem<ContainerCountVo> groupsDelete = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
 		Assert.assertEquals(0, groupsDelete.getRecordsTotal());
 	}
 
@@ -307,21 +307,21 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		userLdapResource.addUserToGroup("wuser", "New-Ax-1-z:Z 0");
 
 		// Pre check
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
 		Assert.assertEquals(1, groups.getRecordsTotal());
 		Assert.assertEquals(1, groups.getData().get(0).getCount());
 
 		resource.empty("New-Ax-1-z:Z 0");
 
 		// Post check
-		final TableItem<ContainerLdapCountVo> groupsEmpty = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
+		final TableItem<ContainerCountVo> groupsEmpty = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
 		Assert.assertEquals(1, groupsEmpty.getRecordsTotal());
 		Assert.assertEquals(0, groupsEmpty.getData().get(0).getCount());
 
 		resource.delete("New-Ax-1-z:Z 0");
 
 		// Post check
-		final TableItem<ContainerLdapCountVo> groupsDelete = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
+		final TableItem<ContainerCountVo> groupsDelete = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
 		Assert.assertEquals(0, groupsDelete.getRecordsTotal());
 	}
 
@@ -332,10 +332,10 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		resource.create(group);
 
 		// Check the creation from cache
-		final TableItem<ContainerLdapCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "ew-Ax"));
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "ew-Ax"));
 		Assert.assertEquals(1, groups.getRecordsTotal());
 
-		final ContainerLdapCountVo group0 = groups.getData().get(0);
+		final ContainerCountVo group0 = groups.getData().get(0);
 		Assert.assertEquals("New-Ax-1-z:Z 0", group0.getName());
 		Assert.assertEquals(0, group0.getCount());
 		Assert.assertEquals(0, group0.getCountVisible());
@@ -486,7 +486,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void findAllUsingDelegateReceiverCompany() {
 		initSpringSecurityContext("flast1");
-		final TableItem<ContainerLdapCountVo> tableItem = resource.findAll(newUriInfoAsc("id"));
+		final TableItem<ContainerCountVo> tableItem = resource.findAll(newUriInfoAsc("id"));
 		Assert.assertEquals(2, tableItem.getRecordsTotal());
 		Assert.assertEquals(2, tableItem.getRecordsFiltered());
 		Assert.assertEquals(2, tableItem.getData().size());

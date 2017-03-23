@@ -7,5 +7,4 @@ encoding//src/main/resources/application.properties=UTF-8
 encoding//src/main/resources/csv=cp1250
 encoding//src/test/java=UTF-8
 encoding//src/test/resources=UTF-8
-encoding//src/test/resources/csv=cp1250
 encoding/<project>=UTF-8

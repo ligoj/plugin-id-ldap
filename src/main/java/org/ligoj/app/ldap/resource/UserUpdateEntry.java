@@ -3,6 +3,8 @@ package org.ligoj.app.ldap.resource;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
+import org.ligoj.app.plugin.id.resource.UserLdapEdition;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;

@@ -1,5 +1,7 @@
 package org.ligoj.app.ldap.resource;
 
+import org.ligoj.app.plugin.id.resource.UserLdapEdition;
+import org.ligoj.app.plugin.id.resource.UserLdapResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;

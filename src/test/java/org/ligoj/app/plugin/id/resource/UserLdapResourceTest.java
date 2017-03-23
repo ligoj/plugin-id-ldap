@@ -1,4 +1,4 @@
-package org.ligoj.app.ldap.resource;
+package org.ligoj.app.plugin.id.resource;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -23,6 +23,11 @@ import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.iam.model.DelegateType;
 import org.ligoj.app.ldap.dao.GroupLdapRepository;
 import org.ligoj.app.ldap.dao.UserLdapRepository;
+import org.ligoj.app.ldap.resource.AbstractLdapTest;
+import org.ligoj.app.plugin.id.resource.GroupLdapVo;
+import org.ligoj.app.plugin.id.resource.UserLdapEdition;
+import org.ligoj.app.plugin.id.resource.UserLdapResource;
+import org.ligoj.app.plugin.id.resource.UserOrgVo;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.resource.BusinessException;

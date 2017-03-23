@@ -12,9 +12,9 @@ import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.iam.ICompanyRepository;
 import org.ligoj.app.iam.dao.CacheCompanyRepository;
 import org.ligoj.app.iam.model.CacheCompany;
-import org.ligoj.app.ldap.LdapUtils;
 import org.ligoj.app.ldap.dao.LdapCacheRepository.LdapData;
 import org.ligoj.app.model.ContainerType;
+import org.ligoj.app.plugin.id.LdapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
@@ -43,16 +43,16 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 	@Autowired
 	private CacheCompanyRepository cacheCompanyRepository;
 
-	@Override
-	public CacheCompanyRepository getCacheRepository() {
-		return cacheCompanyRepository;
-	}
-
 	/**
 	 * Default constructor for a container of type {@link ContainerType#COMPANY}
 	 */
 	public CompanyLdapRepository() {
 		super(ContainerType.COMPANY, ORGANIZATIONAL_UNIT);
+	}
+
+	@Override
+	public CacheCompanyRepository getCacheRepository() {
+		return cacheCompanyRepository;
 	}
 
 	/**
