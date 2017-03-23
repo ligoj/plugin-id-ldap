@@ -1,14 +1,17 @@
 package org.ligoj.app.ldap.resource;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 
 import javax.transaction.Transactional;
 import javax.ws.rs.core.Response;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ligoj.bootstrap.dao.system.SystemUserSettingRepository;
+import org.ligoj.bootstrap.model.system.SystemConfiguration;
 import org.ligoj.bootstrap.model.system.SystemUserSetting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +33,11 @@ public class RedirectResourceTest extends AbstractLdapTest {
 
 	@Autowired
 	private SystemUserSettingRepository userSettingRepository;
+
+	@Before
+	public void prepareConfiguration() throws IOException {
+		persistEntities("csv/app-test", SystemConfiguration.class);
+	}
 
 	@Test
 	public void handleRedirectAnonymousNoCookie() throws URISyntaxException {

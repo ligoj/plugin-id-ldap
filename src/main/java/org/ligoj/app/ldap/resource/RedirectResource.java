@@ -23,9 +23,9 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.ligoj.bootstrap.dao.system.SystemUserSettingRepository;
 import org.ligoj.bootstrap.model.system.SystemUserSetting;
+import org.ligoj.bootstrap.resource.system.configuration.ConfigurationResource;
 import org.ligoj.bootstrap.resource.system.user.UserSettingResource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -53,6 +53,9 @@ public class RedirectResource {
 	private UserSettingResource userSettingResource;
 
 	@Autowired
+	private ConfigurationResource configuration;
+
+	@Autowired
 	private SystemUserSettingRepository repository;
 
 	@Autowired
@@ -63,12 +66,6 @@ public class RedirectResource {
 	public static final String PREFERRED_HASH = "preferred-hash";
 
 	public static final String PREFERRED_COOKIE_HASH = "saas-preferred-hash";
-
-	@Value("${redirect.external.home}")
-	private String externalHomeUrl;
-
-	@Value("${redirect.internal.home}")
-	private String internalHomeUrl;
 
 	/**
 	 * Handle redirect request using cookie (checked, and updated), and the stored preferred URL.
@@ -208,17 +205,17 @@ public class RedirectResource {
 		final String user = securityHelper.getLogin();
 		if (isAnonymous(user)) {
 			// We know nothing about the user
-			return redirectToUrl(externalHomeUrl);
+			return redirectToUrl(configuration.get("redirect.external.home"));
 		}
 
 		// Guess the company of this user
 		if (companyLdapResource.isUserInternalCommpany()) {
 			// Internal user, redirect to the default URL of corporate user
-			return redirectToUrl(internalHomeUrl);
+			return redirectToUrl(configuration.get("redirect.internal.home"));
 		}
 
 		// Not internal user, redirect to the other home page
-		return redirectToUrl(externalHomeUrl);
+		return redirectToUrl(configuration.get("redirect.external.home"));
 
 	}
 
