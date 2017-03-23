@@ -1,2 +1,8 @@
-/target/
-/.DS_Store
+**/.DS_Store
+.project
+.settings
+**/.project
+/target
+/*/target
+**/.classpath
+/*.exec
