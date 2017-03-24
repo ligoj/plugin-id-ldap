@@ -543,7 +543,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	 * Add activities related to given subscription.
 	 */
 	protected void addSubscriptionActivities(final Map<String, Map<String, Activity>> activities, final Collection<String> userLogins,
-			final Subscription otherSubscription, final ServicePlugin plugin, final Set<IDescribableBean<String>> nodes) throws Exception {
+			final Subscription otherSubscription, final ServicePlugin plugin, final Set<IDescribableBean<String>> nodes) throws Exception { // NOSONAR
 
 		// Collect activities of each subscription of unique node
 		if (plugin instanceof ActivitiesProvider && nodes.add(otherSubscription.getNode())) {

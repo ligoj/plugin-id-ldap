@@ -55,8 +55,10 @@ public abstract class AbstractLdapBatchTask<B extends BatchElement> implements R
 	 * 
 	 * @param entry
 	 *            A batch entry.
+	 * @throws Exception
+	 *             Any error cause the abortion for this entry.
 	 */
-	protected abstract void doBatch(B entry) throws Exception;
+	protected abstract void doBatch(B entry) throws Exception; // NOSONAR Allow global error there
 
 	/**
 	 * Process the entries
