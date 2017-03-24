@@ -236,7 +236,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 		repository.setQuarantineBaseDn(StringUtils.trimToEmpty(parameters.get(PARAMETER_QUARANTINE_DN)));
 		repository.setDepartmentAttribute(parameters.get(PARAMETER_DEPARTMENT_ATTRIBUTE));
 		repository.setLocalIdAttribute(parameters.get(PARAMETER_LOCAL_ID_ATTRIBUTE));
-		repository.setUid(parameters.get(PARAMETER_UID_ATTRIBUTE));
+		repository.setUidAttribute(parameters.get(PARAMETER_UID_ATTRIBUTE));
 		repository.setLockedAttribute(parameters.get(PARAMETER_LOCKED_ATTRIBUTE));
 		repository.setLockedValue(parameters.get(PARAMETER_LOCKED_VALUE));
 		repository.setPeopleClass(parameters.get(PARAMETER_PEOPLE_CLASS));

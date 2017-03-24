@@ -62,7 +62,7 @@ public class UserLdapRepositoryTest {
 
 	@Test
 	public void getAuthenticateProperty() {
-		repository.setUid("my-uid");
+		repository.setUidAttribute("my-uid");
 		Assert.assertEquals("my-uid", repository.getAuthenticateProperty("some"));
 	}
 

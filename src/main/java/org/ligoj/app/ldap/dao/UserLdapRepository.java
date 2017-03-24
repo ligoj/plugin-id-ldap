@@ -95,7 +95,7 @@ public class UserLdapRepository implements IUserRepository {
 	 * UID attribute name.
 	 */
 	@Setter
-	private String uid = "sAMAccountName";
+	private String uidAttribute = "sAMAccountName";
 
 	/**
 	 * Employee number attribute
@@ -236,7 +236,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	@Override
 	public UserOrg findByIdNoCache(final String login) {
-		return findOneBy(uid, login);
+		return findOneBy(uidAttribute, login);
 	}
 
 	@Override
@@ -345,7 +345,7 @@ public class UserLdapRepository implements IUserRepository {
 		context.setAttributeValue("cn", entry.getFirstName() + " " + entry.getLastName());
 		context.setAttributeValue("sn", entry.getLastName());
 		context.setAttributeValue("givenName", entry.getFirstName());
-		context.setAttributeValue(uid, Normalizer.normalize(entry.getId()));
+		context.setAttributeValue(uidAttribute, Normalizer.normalize(entry.getId()));
 		context.setAttributeValues("mail", entry.getMails().toArray(), true);
 
 		// Special and also optional attributes
@@ -361,7 +361,7 @@ public class UserLdapRepository implements IUserRepository {
 			user.setLastName(context.getStringAttribute("sn"));
 			user.setFirstName(context.getStringAttribute("givenName"));
 			user.setSecured(context.getObjectAttribute("userPassword") != null);
-			user.setId(Normalizer.normalize(context.getStringAttribute(uid)));
+			user.setId(Normalizer.normalize(context.getStringAttribute(uidAttribute)));
 
 			// Special and also optional attributes
 			Optional.ofNullable(departmentAttribute).ifPresent(a -> user.setDepartment(context.getStringAttribute(a)));
@@ -649,14 +649,14 @@ public class UserLdapRepository implements IUserRepository {
 	 * @return the property name used to match the user name.
 	 */
 	public String getAuthenticateProperty(final String name) {
-		return new EmailValidator().isValid(name, null) ? "mail" : uid;
+		return new EmailValidator().isValid(name, null) ? "mail" : uidAttribute;
 	}
 
 	@Override
 	public String getToken(final String login) {
 		final AndFilter filter = new AndFilter();
 		filter.and(new EqualsFilter(OBJECT_CLASS, peopleClass));
-		filter.and(new EqualsFilter(uid, login));
+		filter.and(new EqualsFilter(uidAttribute, login));
 		return template.search(peopleBaseDn, filter.encode(), new AbstractContextMapper<String>() {
 			@Override
 			public String doMapFromContext(final DirContextOperations context) {
