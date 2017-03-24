@@ -10,8 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.ligoj.app.DefaultVerificationMode;
 import org.ligoj.app.api.UserOrg;
-import org.ligoj.app.plugin.id.resource.UserLdapEdition;
-import org.ligoj.app.plugin.id.resource.UserLdapResource;
+import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
+import org.ligoj.app.plugin.id.resource.UserOrgResource;
 import org.ligoj.bootstrap.AbstractSecurityTest;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.mockito.Mockito;
@@ -27,7 +27,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 	@Before
 	public void setup() {
 		task = new UserAtomicLdapTask();
-		task.resource = Mockito.mock(UserLdapResource.class);
+		task.resource = Mockito.mock(UserOrgResource.class);
 		task.securityHelper = new SecurityHelper();
 		initSpringSecurityContext(DEFAULT_USER);
 
@@ -65,7 +65,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 		entry.setValue("value");
 		entry.setUser(DEFAULT_USER);
 		task.doBatch(entry);
-		checkAttribute(UserLdapEdition::getDepartment, "value");
+		checkAttribute(UserOrgEditionVo::getDepartment, "value");
 	}
 
 	@Test
@@ -75,7 +75,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 		entry.setValue("value");
 		entry.setUser(DEFAULT_USER);
 		task.doBatch(entry);
-		checkAttribute(UserLdapEdition::getLastName, "value");
+		checkAttribute(UserOrgEditionVo::getLastName, "value");
 	}
 
 	@Test
@@ -85,7 +85,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 		entry.setValue("value");
 		entry.setUser(DEFAULT_USER);
 		task.doBatch(entry);
-		checkAttribute(UserLdapEdition::getCompany, "value");
+		checkAttribute(UserOrgEditionVo::getCompany, "value");
 	}
 
 	@Test
@@ -98,7 +98,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 		entry.setValue("value");
 		entry.setUser(DEFAULT_USER);
 		task.doBatch(entry);
-		checkAttribute(UserLdapEdition::getLocalId, "value");
+		checkAttribute(UserOrgEditionVo::getLocalId, "value");
 	}
 
 	@Test
@@ -108,7 +108,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 		entry.setValue("value");
 		entry.setUser(DEFAULT_USER);
 		task.doBatch(entry);
-		checkAttribute(UserLdapEdition::getMail, "value");
+		checkAttribute(UserOrgEditionVo::getMail, "value");
 	}
 
 	@Test
@@ -118,7 +118,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 		entry.setValue("value");
 		entry.setUser(DEFAULT_USER);
 		task.doBatch(entry);
-		checkAttribute(UserLdapEdition::getFirstName, "value");
+		checkAttribute(UserOrgEditionVo::getFirstName, "value");
 	}
 
 	@Test
@@ -165,7 +165,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 		Mockito.verify(task.resource).delete(DEFAULT_USER);
 	}
 
-	private void checkAttribute(final Function<UserLdapEdition, String> function, final String value) {
+	private void checkAttribute(final Function<UserOrgEditionVo, String> function, final String value) {
 
 		// Check LDAP
 		Mockito.verify(task.resource, new DefaultVerificationMode(data -> {
@@ -177,7 +177,7 @@ public class UserAtomicLdapTaskTest extends AbstractSecurityTest {
 			Assert.assertEquals(DEFAULT_USER, data.getAllInvocations().get(0).getArguments()[0]);
 
 			// "update" call
-			final UserLdapEdition userLdap = (UserLdapEdition) data.getAllInvocations().get(1).getArguments()[0];
+			final UserOrgEditionVo userLdap = (UserOrgEditionVo) data.getAllInvocations().get(1).getArguments()[0];
 			Assert.assertNotNull(userLdap);
 			Assert.assertEquals(value, function.apply(userLdap));
 		})).update(null);

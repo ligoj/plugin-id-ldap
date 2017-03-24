@@ -298,7 +298,7 @@ public class UserLdapRepository implements IUserRepository {
 			if (user == null) {
 				if (!dn.startsWith(GroupLdapRepository.DEFAULT_MEMBER_DN)) {
 					// It is a real broken reference
-					log.warn("Broken user UID reference found '" + groupLdap.getDn() + "' --> " + uid);
+					log.warn("Broken user UID reference found '{}' --> {}", groupLdap.getDn(), uid);
 				}
 			} else {
 				if (!Normalizer.normalize(dn).equals(Normalizer.normalize(user.getDn()))) {
@@ -360,7 +360,7 @@ public class UserLdapRepository implements IUserRepository {
 			user.setDn(context.getDn().toString());
 			user.setLastName(context.getStringAttribute("sn"));
 			user.setFirstName(context.getStringAttribute("givenName"));
-			user.setNoPassword(context.getObjectAttribute("userPassword") == null);
+			user.setSecured(context.getObjectAttribute("userPassword") != null);
 			user.setId(Normalizer.normalize(context.getStringAttribute(uid)));
 
 			// Special and also optional attributes

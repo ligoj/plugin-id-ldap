@@ -1,7 +1,7 @@
 package org.ligoj.app.ldap.resource;
 
-import org.ligoj.app.plugin.id.resource.UserLdapEdition;
-import org.ligoj.app.plugin.id.resource.UserLdapResource;
+import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
+import org.ligoj.app.plugin.id.resource.UserOrgResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -16,13 +16,13 @@ import org.springframework.stereotype.Component;
 public class UserFullLdapTask extends AbstractLdapBatchTask<UserImportEntry> {
 
 	@Autowired
-	protected UserLdapResource resource;
+	protected UserOrgResource resource;
 
 	@Override
 	protected void doBatch(final UserImportEntry entry) throws Exception {
 
 		// Copy the user information
-		final UserLdapEdition user = new UserLdapEdition();
+		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setCompany(entry.getCompany());
 		user.setFirstName(entry.getFirstName());
 		user.setLastName(entry.getLastName());

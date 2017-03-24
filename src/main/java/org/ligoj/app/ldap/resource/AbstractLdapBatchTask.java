@@ -71,7 +71,7 @@ public abstract class AbstractLdapBatchTask<B extends BatchElement> implements R
 
 				// Success
 				importEntry.setStatus(Boolean.TRUE);
-				log.info("Import of " + importEntry + " succeed");
+				log.info("Import of {} succeed", importEntry);
 			} catch (final Exception ne) {
 				// The entry creation failed : entity itself of group membership
 				log.info("Import of {} failed : {}", importEntry, ne.getMessage());

@@ -47,11 +47,11 @@ import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.app.plugin.id.resource.CompanyResource;
 import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
 import org.ligoj.app.plugin.id.resource.ContainerWithTypeVo;
-import org.ligoj.app.plugin.id.resource.GroupLdapResource;
+import org.ligoj.app.plugin.id.resource.GroupResource;
 import org.ligoj.app.plugin.id.resource.IdentityResource;
 import org.ligoj.app.plugin.id.resource.IdentityServicePlugin;
-import org.ligoj.app.plugin.id.resource.UserLdapEdition;
-import org.ligoj.app.plugin.id.resource.UserLdapResource;
+import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
+import org.ligoj.app.plugin.id.resource.UserOrgResource;
 import org.ligoj.app.resource.ActivitiesProvider;
 import org.ligoj.app.resource.ServicePluginLocator;
 import org.ligoj.app.resource.plugin.AbstractToolPluginResource;
@@ -81,6 +81,8 @@ import lombok.extern.slf4j.Slf4j;
 @Produces(MediaType.APPLICATION_JSON)
 @Slf4j
 public class LdapPluginResource extends AbstractToolPluginResource implements IdentityServicePlugin, IamConfigurationProvider {
+
+	private static final String PATTERN_PROPERTY = "pattern";
 
 	private static final String LDAP_VERSION = "3";
 
@@ -182,16 +184,16 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	protected ProjectCustomerLdapRepository projectCustomerLdapRepository;
 
 	@Autowired
-	protected CompanyResource companyLdapResource;
+	protected CompanyResource companyResource;
 
 	@Autowired
-	protected UserLdapResource userLdapResource;
+	protected UserOrgResource userResource;
 
 	@Autowired
-	protected GroupLdapResource groupLdapResource;
+	protected GroupResource groupLdapResource;
 
 	@Autowired
-	private ContainerScopeResource groupTypeLdapResource;
+	private ContainerScopeResource containerScopeResource;
 
 	@Autowired
 	private IamProvider iamProvider;
@@ -344,7 +346,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 		// Check the group does not exists
 		if (groupLdapResource.findById(group) != null) {
 			// This group already exists
-			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, "already-exist", "0", GroupLdapResource.GROUP_ATTRIBUTE, "1", group);
+			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, "already-exist", "0", GroupResource.GROUP_ATTRIBUTE, "1", group);
 		}
 
 		// Compare the project's key with the OU, and the name of the group
@@ -352,13 +354,13 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 		// The group must start with the target OU
 		if (!startsWithAndDifferent(group, ou + "-")) {
 			// This group has not a correct form
-			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, "pattern", ou + "-.+");
+			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, PATTERN_PROPERTY, ou + "-.+");
 		}
 
 		// The name of the group must start with the PKEY of project
 		if (!group.equals(pkey) && !startsWithAndDifferent(group, pkey + "-")) {
 			// This group has not a correct form
-			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, "pattern", pkey + "(-.+)?");
+			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, PATTERN_PROPERTY, pkey + "(-.+)?");
 		}
 	}
 
@@ -384,7 +386,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	 * Validate the group against its direct parent (a normalized OU) and return its DN.
 	 */
 	private String validateAndCreateParentOu(final String group, final String ou, final String pkey) {
-		final ContainerScope groupTypeLdap = groupTypeLdapResource.findByName(ContainerScope.TYPE_PROJECT);
+		final ContainerScope groupTypeLdap = containerScopeResource.findByName(ContainerScope.TYPE_PROJECT);
 
 		// Build the complete normalized DN from the OU and new Group
 		final String ouDn = "ou=" + ou + "," + groupTypeLdap.getDn();
@@ -416,7 +418,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 		// Compare the group and its parent
 		if (!group.startsWith(parentGroup + "-")) {
 			// This sub-group has not a correct form
-			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, "pattern", parentGroup + "-.*");
+			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, PATTERN_PROPERTY, parentGroup + "-.*");
 		}
 
 		// Parent will be another group, return its DN
@@ -534,7 +536,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 		// Get current subscription parameters
 		final Map<String, String> parameters = subscriptionResource.getParameters(subscription);
 		final String group = parameters.get(IdentityResource.PARAMETER_GROUP);
-		return userLdapResource.findAllNotSecure(null, group);
+		return userResource.findAllNotSecure(null, group);
 	}
 
 	/**
@@ -601,11 +603,11 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	@GET
 	@Path("group/{node}/{criteria}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public List<INamableBean<String>> findGroupsByName(@PathParam("criteria") final String criteria) throws Exception {
+	public List<INamableBean<String>> findGroupsByName(@PathParam("criteria") final String criteria) {
 		final List<INamableBean<String>> result = new ArrayList<>();
 		final String criteriaClean = Normalizer.normalize(criteria);
 		final Set<GroupOrg> managedGroups = groupLdapResource.getContainers();
-		final List<ContainerScope> types = groupTypeLdapResource.findAllDescOrder(ContainerType.GROUP);
+		final List<ContainerScope> types = containerScopeResource.findAllDescOrder(ContainerType.GROUP);
 		for (final GroupOrg group : managedGroups) {
 			final ContainerScope scope = groupLdapResource.toScope(types, group);
 
@@ -633,10 +635,10 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	@GET
 	@Path("customer/{node}/{criteria}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Collection<INamableBean<String>> findCustomersByName(@PathParam("criteria") final String criteria) throws Exception {
+	public Collection<INamableBean<String>> findCustomersByName(@PathParam("criteria") final String criteria) {
 		final Set<INamableBean<String>> result = new TreeSet<>();
 		final String criteriaClean = Normalizer.normalize(criteria);
-		final ContainerScope findByName = groupTypeLdapResource.findByName(ContainerScope.TYPE_PROJECT);
+		final ContainerScope findByName = containerScopeResource.findByName(ContainerScope.TYPE_PROJECT);
 		final Collection<String> allCustomers = projectCustomerLdapRepository.findAll(findByName.getDn()).keySet();
 
 		// Check type and criteria
@@ -766,14 +768,14 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	 */
 	protected String toApplicationUser(final UserOrg account) {
 		// Find the user by the mail in the primary repository
-		final List<UserOrg> usersByMail = userLdapResource.findAllBy("mail", account.getMails().get(0));
+		final List<UserOrg> usersByMail = userResource.findAllBy("mail", account.getMails().get(0));
 		if (usersByMail.isEmpty()) {
 			// No more try, account can be created in the application repository with a free login
 			return newApplicationUser(account);
 		}
 		if (usersByMail.size() == 1) {
 			// Everything is checked, account can be merged into the existing application user
-			userLdapResource.mergeUser(usersByMail.get(0), account);
+			userResource.mergeUser(usersByMail.get(0), account);
 			return usersByMail.get(0).getId();
 		}
 
@@ -795,7 +797,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 		synchronized (USER_LOCK) {
 
 			// Copy the data from the authenticated account to the application account
-			final UserLdapEdition userLdapEdition = new UserLdapEdition();
+			final UserOrgEditionVo userLdapEdition = new UserOrgEditionVo();
 			account.copy(userLdapEdition);
 			userLdapEdition.setGroups(Collections.emptyList());
 			userLdapEdition.setMail(account.getMails().get(0));
@@ -804,7 +806,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 			userLdapEdition.setName(nextFreeLogin(toLogin(account)));
 
 			// This user can be created in the primary repository
-			userLdapResource.saveOrUpdate(userLdapEdition);
+			userResource.saveOrUpdate(userLdapEdition);
 
 			return userLdapEdition.getId();
 		}
@@ -823,7 +825,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 		String nextLogin;
 		do {
 			nextLogin = login + (suffix == 0 ? "" : suffix);
-			userLdap = userLdapResource.findByIdNoCache(nextLogin);
+			userLdap = userResource.findByIdNoCache(nextLogin);
 			suffix++;
 		} while (userLdap != null);
 

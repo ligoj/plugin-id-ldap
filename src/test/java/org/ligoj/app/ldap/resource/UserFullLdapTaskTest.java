@@ -14,7 +14,7 @@ import org.apache.cxf.message.Message;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.ligoj.app.plugin.id.resource.UserLdapResource;
+import org.ligoj.app.plugin.id.resource.UserOrgResource;
 import org.ligoj.bootstrap.AbstractSecurityTest;
 import org.ligoj.bootstrap.core.resource.mapper.FailSafeExceptionMapper;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
@@ -32,7 +32,7 @@ public class UserFullLdapTaskTest extends AbstractSecurityTest {
 	@Before
 	public void setup() {
 		task = new UserFullLdapTask();
-		task.resource = Mockito.mock(UserLdapResource.class);
+		task.resource = Mockito.mock(UserOrgResource.class);
 		task.securityHelper = new SecurityHelper();
 		task.jaxrsFactory = ServerProviderFactory.getInstance();
 		initSpringSecurityContext(DEFAULT_USER);

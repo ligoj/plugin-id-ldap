@@ -19,8 +19,8 @@ import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
-import org.ligoj.app.plugin.id.resource.GroupLdapEditionVo;
-import org.ligoj.app.plugin.id.resource.GroupLdapResource;
+import org.ligoj.app.plugin.id.resource.GroupEditionVo;
+import org.ligoj.app.plugin.id.resource.GroupResource;
 import org.ligoj.bootstrap.core.SpringUtils;
 import org.ligoj.bootstrap.resource.system.session.SessionSettings;
 import org.mockito.ArgumentMatchers;
@@ -46,14 +46,14 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 	@Autowired
 	protected GroupBatchLdapResource resource;
 
-	private GroupLdapResource mockLdapResource;
+	private GroupResource mockLdapResource;
 
 	@SuppressWarnings("unchecked")
 	@Before
 	public void mockApplicationContext() {
 		final ApplicationContext applicationContext = Mockito.mock(ApplicationContext.class);
 		SpringUtils.setSharedApplicationContext(applicationContext);
-		mockLdapResource = Mockito.mock(GroupLdapResource.class);
+		mockLdapResource = Mockito.mock(GroupResource.class);
 		final GroupFullLdapTask mockTask = new GroupFullLdapTask();
 		mockTask.resource = mockLdapResource;
 		mockTask.securityHelper = securityHelper;
@@ -104,7 +104,7 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
-			final GroupLdapEditionVo group = (GroupLdapEditionVo) data.getAllInvocations().get(0).getArguments()[0];
+			final GroupEditionVo group = (GroupEditionVo) data.getAllInvocations().get(0).getArguments()[0];
 			Assert.assertNotNull(group);
 			Assert.assertEquals("Gfi France", group.getName());
 			Assert.assertNotNull(group.getType());
@@ -136,7 +136,7 @@ public class GroupBatchLdapResourceTest extends AbstractLdapBatchTest {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
-			final GroupLdapEditionVo group = (GroupLdapEditionVo) data.getAllInvocations().get(0).getArguments()[0];
+			final GroupEditionVo group = (GroupEditionVo) data.getAllInvocations().get(0).getArguments()[0];
 			Assert.assertNotNull(group);
 			Assert.assertEquals("Opérations Spéciales", group.getName());
 			Assert.assertNotNull(group.getType());

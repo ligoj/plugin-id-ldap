@@ -21,8 +21,8 @@ import org.junit.runners.MethodSorters;
 import org.ligoj.app.DefaultVerificationMode;
 import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.model.DelegateOrg;
-import org.ligoj.app.plugin.id.resource.UserLdapEdition;
-import org.ligoj.app.plugin.id.resource.UserLdapResource;
+import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
+import org.ligoj.app.plugin.id.resource.UserOrgResource;
 import org.ligoj.bootstrap.core.SpringUtils;
 import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.resource.system.session.SessionSettings;
@@ -49,14 +49,14 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 	@Autowired
 	protected UserBatchLdapResource resource;
 
-	private UserLdapResource mockLdapResource;
+	private UserOrgResource mockLdapResource;
 
 	@SuppressWarnings("unchecked")
 	@Before
 	public void mockApplicationContext() {
 		final ApplicationContext applicationContext = Mockito.mock(ApplicationContext.class);
 		SpringUtils.setSharedApplicationContext(applicationContext);
-		mockLdapResource = Mockito.mock(UserLdapResource.class);
+		mockLdapResource = Mockito.mock(UserOrgResource.class);
 		final UserFullLdapTask mockTask = new UserFullLdapTask();
 		mockTask.resource = mockLdapResource;
 		mockTask.securityHelper = securityHelper;
@@ -108,7 +108,7 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
-			final UserLdapEdition userLdap = (UserLdapEdition) data.getAllInvocations().get(0).getArguments()[0];
+			final UserOrgEditionVo userLdap = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
 			Assert.assertNotNull(userLdap);
 			Assert.assertEquals("Sébastien", userLdap.getFirstName());
 			Assert.assertEquals("Loubli", userLdap.getLastName());
@@ -159,7 +159,7 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 			Assert.assertEquals("fdaugan", data.getAllInvocations().get(0).getArguments()[0]);
 
 			// "update" call
-			final UserLdapEdition userLdap = (UserLdapEdition) data.getAllInvocations().get(1).getArguments()[0];
+			final UserOrgEditionVo userLdap = (UserOrgEditionVo) data.getAllInvocations().get(1).getArguments()[0];
 			Assert.assertNotNull(userLdap);
 			Assert.assertEquals("untouched", userLdap.getFirstName());
 			Assert.assertEquals("untouched", userLdap.getLastName());
@@ -186,7 +186,7 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
-			final UserLdapEdition userLdap = (UserLdapEdition) data.getAllInvocations().get(0).getArguments()[0];
+			final UserOrgEditionVo userLdap = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
 			Assert.assertNotNull(userLdap);
 			Assert.assertEquals("kloubli9", userLdap.getId());
 			Assert.assertEquals(1, userLdap.getGroups().size());
@@ -218,7 +218,7 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 			if (data.getAllInvocations().size() != 1) {
 				throw new MockitoException("Expect one call");
 			}
-			final UserLdapEdition userLdap = (UserLdapEdition) data.getAllInvocations().get(0).getArguments()[0];
+			final UserOrgEditionVo userLdap = (UserOrgEditionVo) data.getAllInvocations().get(0).getArguments()[0];
 			Assert.assertNotNull(userLdap);
 			Assert.assertNotNull(userLdap);
 			Assert.assertEquals("Sébastien", userLdap.getFirstName());
@@ -238,7 +238,7 @@ public class UserBatchLdapResourceTest extends AbstractLdapBatchTest {
 
 	@Test
 	public void fullFailed() throws IOException, InterruptedException {
-		Mockito.doThrow(new BusinessException("message")).when(this.mockLdapResource).create(ArgumentMatchers.any(UserLdapEdition.class));
+		Mockito.doThrow(new BusinessException("message")).when(this.mockLdapResource).create(ArgumentMatchers.any(UserOrgEditionVo.class));
 		final InputStream input = new ByteArrayInputStream("Loubli;Sébastien;fdaugan;my.address@sample.com;gfi;jira".getBytes("cp1250"));
 		initSpringSecurityContext(DEFAULT_USER);
 		@SuppressWarnings("unchecked")

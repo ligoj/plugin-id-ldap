@@ -60,16 +60,16 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 	@Autowired
 	private CacheGroupRepository cacheGroupRepository;
 
-	@Override
-	public CacheGroupRepository getCacheRepository() {
-		return cacheGroupRepository;
-	}
-
 	/**
 	 * Default constructor for a container of type {@link ContainerType#GROUP}
 	 */
 	public GroupLdapRepository() {
 		super(ContainerType.GROUP, GROUP_OF_UNIQUE_NAMES);
+	}
+
+	@Override
+	public CacheGroupRepository getCacheRepository() {
+		return cacheGroupRepository;
 	}
 
 	/**
@@ -135,7 +135,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 				final GroupOrg subGroup = dnToGroups.get(Normalizer.normalize(subGroupDn));
 				if (subGroup == null) {
 					// The unique member previously found does not match to an existing group, report it
-					log.warn("Broken group reference found '" + group.getDn() + "' --> " + subGroupDn);
+					log.warn("Broken group reference found '{}' --> {}", group.getDn(), subGroupDn);
 				} else {
 					// This is a valid sub group, create both sides of this relation. Raw CN are used
 					group.getSubGroups().add(subGroup.getId());
@@ -282,11 +282,11 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 			} catch (final org.springframework.ldap.AttributeInUseException aiue) {
 				// Even if the membership update failed, the user does not exist anymore. A broken reference can remains
 				// in LDAP, but this case is well managed.
-				log.info("Unable to remove user {} from the group {} : {}", uniqueMember.getDn(), group, aiue.getMessage());
+				log.info("Unable to remove user {} from the group {} : {}", uniqueMember.getDn(), group, aiue);
 			} catch (final org.springframework.ldap.SchemaViolationException sve) {
 				// Occurs when there is a LDAP schema violation such as as last member removed
-				log.warn("Unable to remove user {} from the group {} : {}", uniqueMember.getDn(), group, sve.getMessage());
-				throw new ValidationJsonException("groups", "last-member-of-group", "user", uniqueMember.getId(), "group", group); // NOPMD
+				log.warn("Unable to remove user {} from the group {}", uniqueMember.getDn(), group, sve);
+				throw new ValidationJsonException("groups", "last-member-of-group", "user", uniqueMember.getId(), "group", group, sve);
 			}
 		}
 		return groupLdap;

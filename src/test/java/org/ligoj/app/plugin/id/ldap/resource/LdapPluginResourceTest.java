@@ -56,10 +56,10 @@ import org.ligoj.app.model.ParameterValue;
 import org.ligoj.app.model.Project;
 import org.ligoj.app.model.Subscription;
 import org.ligoj.app.plugin.id.ldap.resource.LdapPluginResource;
-import org.ligoj.app.plugin.id.resource.AbstractContainerLdapResourceTest;
+import org.ligoj.app.plugin.id.resource.AbstractContainerResourceTest;
 import org.ligoj.app.plugin.id.resource.IdentityResource;
-import org.ligoj.app.plugin.id.resource.UserLdapEdition;
-import org.ligoj.app.plugin.id.resource.UserLdapResource;
+import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
+import org.ligoj.app.plugin.id.resource.UserOrgResource;
 import org.ligoj.app.resource.ServicePluginLocator;
 import org.ligoj.app.resource.node.NodeResource;
 import org.ligoj.app.resource.subscription.SubscriptionResource;
@@ -73,7 +73,7 @@ import net.sf.ehcache.CacheManager;
 @Rollback
 @Transactional
 @org.junit.FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
+public class LdapPluginResourceTest extends AbstractContainerResourceTest {
 	@Autowired
 	private LdapPluginResource resource;
 
@@ -87,7 +87,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 	private NodeRepository nodeRepository;
 
 	@Autowired
-	private UserLdapResource userLdapResource;
+	private UserOrgResource userResource;
 
 	@Autowired
 	private ProjectCustomerLdapRepository projectCustomerLdapRepository;
@@ -1001,7 +1001,7 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		user.setCompany("gfi");
 		Assert.assertEquals("mmartin", resource.toApplicationUser(user));
 
-		final UserOrg userLdap = userLdapResource.findByIdNoCache("mmartin");
+		final UserOrg userLdap = userResource.findByIdNoCache("mmartin");
 		Assert.assertEquals("mmartin", userLdap.getName());
 		Assert.assertEquals("Marc", userLdap.getFirstName());
 		Assert.assertEquals("Martin", userLdap.getLastName());
@@ -1019,13 +1019,13 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		user.setName("secondarylogin");
 		Assert.assertEquals("flast123", resource.toApplicationUser(user));
 
-		final UserOrg userLdap = userLdapResource.findByIdNoCache("flast123");
+		final UserOrg userLdap = userResource.findByIdNoCache("flast123");
 		Assert.assertEquals("flast123", userLdap.getName());
 		Assert.assertEquals("First", userLdap.getFirstName());
 		Assert.assertEquals("Last123", userLdap.getLastName());
 		Assert.assertEquals("gfi", userLdap.getCompany());
 		Assert.assertEquals("some@where.com", userLdap.getMails().get(0));
-		userLdapResource.delete("flast123");
+		userResource.delete("flast123");
 	}
 
 	@Test
@@ -1039,13 +1039,13 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 		user.setName("secondarylogin");
 		Assert.assertEquals("mmartin1", resource.toApplicationUser(user));
 
-		final UserOrg userLdap = userLdapResource.findByIdNoCache("mmartin1");
+		final UserOrg userLdap = userResource.findByIdNoCache("mmartin1");
 		Assert.assertEquals("mmartin1", userLdap.getName());
 		Assert.assertEquals("Marc", userLdap.getFirstName());
 		Assert.assertEquals("Martin", userLdap.getLastName());
 		Assert.assertEquals("gfi", userLdap.getCompany());
 		Assert.assertEquals("some@where.com", userLdap.getMails().get(0));
-		userLdapResource.delete("mmartin1");
+		userResource.delete("mmartin1");
 	}
 
 	@Test(expected = NotAuthorizedException.class)
@@ -1104,9 +1104,9 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 	@Test(expected = UncategorizedLdapException.class)
 	public void newApplicationUserSaveFail() {
 		final LdapPluginResource resource = new LdapPluginResource();
-		resource.userLdapResource = Mockito.mock(UserLdapResource.class);
-		Mockito.when(resource.userLdapResource.findByIdNoCache("flast123")).thenReturn(null);
-		Mockito.doThrow(new UncategorizedLdapException("")).when(resource.userLdapResource).saveOrUpdate(ArgumentMatchers.any(UserLdapEdition.class));
+		resource.userResource = Mockito.mock(UserOrgResource.class);
+		Mockito.when(resource.userResource.findByIdNoCache("flast123")).thenReturn(null);
+		Mockito.doThrow(new UncategorizedLdapException("")).when(resource.userResource).saveOrUpdate(ArgumentMatchers.any(UserOrgEditionVo.class));
 
 		final UserOrg user = new UserOrg();
 		user.setMails(Collections.singletonList("fabrice.daugan@sample.com"));
@@ -1120,8 +1120,8 @@ public class LdapPluginResourceTest extends AbstractContainerLdapResourceTest {
 	@Test(expected = RuntimeException.class)
 	public void newApplicationUserNextLoginFail() {
 		final LdapPluginResource resource = new LdapPluginResource();
-		resource.userLdapResource = Mockito.mock(UserLdapResource.class);
-		Mockito.doThrow(new RuntimeException()).when(resource.userLdapResource).findByIdNoCache("flast123");
+		resource.userResource = Mockito.mock(UserOrgResource.class);
+		Mockito.doThrow(new RuntimeException()).when(resource.userResource).findByIdNoCache("flast123");
 
 		final UserOrg user = new UserOrg();
 		user.setMails(Collections.singletonList("fabrice.daugan@sample.com"));

@@ -52,7 +52,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * <ul>
  * <li>ING : flast1(First1 Last1), fdoe2(First2 Doe2),jlast3(John3 Last3),jdoe4(John4 Doe4),jdoe5(First5 Last5)</li>
  * <li>socygan : flast0</li>
- * <li>DIG RHA : fdoe2,jlast3,jdoe4,jdoe5,gvescovi</li>
+ * <li>DIG RHA : fdoe2,jlast3,jdoe4,jdoe5</li>
  * <li>DIG SUD OUEST : jlast3,pgenais</li>
  * </ul>
  */
@@ -67,7 +67,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	private CompanyResource resource;
 
 	@Autowired
-	private ContainerScopeRepository containerTypeLdapRepository;
+	private ContainerScopeRepository containerScopeRepository;
 
 	/**
 	 * Check managed companies is filtered against available groups.
@@ -177,7 +177,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test(expected = ValidationJsonException.class)
 	public void createNoRight() {
-		final ContainerScope typeLdap = containerTypeLdapRepository.findByName("France");
+		final ContainerScope typeLdap = containerScopeRepository.findByName("France");
 		final ContainerEditionVo group = new ContainerEditionVo();
 		group.setName("New-Ax-1-z:Z 0");
 		group.setType(typeLdap.getId());
@@ -226,7 +226,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test(expected = ValidationJsonException.class)
 	public void createAlreadyExists() {
-		final ContainerScope typeLdap = containerTypeLdapRepository.findByName("France");
+		final ContainerScope typeLdap = containerScopeRepository.findByName("France");
 		final ContainerEditionVo group = new ContainerEditionVo();
 		group.setName("orange");
 		group.setType(typeLdap.getId());
@@ -235,7 +235,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test(expected = ValidationJsonException.class)
 	public void createInvalidType() {
-		final ContainerScope typeLdap = containerTypeLdapRepository.findByName("Fonction");
+		final ContainerScope typeLdap = containerScopeRepository.findByName("Fonction");
 		final ContainerEditionVo company = new ContainerEditionVo();
 		company.setName("New-Ax-1-z:Z 0");
 		company.setType(typeLdap.getId());
@@ -254,7 +254,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	private void createInternal() {
-		final ContainerScope typeLdap = containerTypeLdapRepository.findByName("France");
+		final ContainerScope typeLdap = containerScopeRepository.findByName("France");
 		final ContainerEditionVo company = new ContainerEditionVo();
 		company.setName("New-Ax-1-z:Z 0");
 		company.setType(typeLdap.getId());
@@ -331,7 +331,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void findAllNoCriteriaNoType() {
 		initSpringSecurityContext("mlavoine");
-		containerTypeLdapRepository.deleteAllBy("name", "Root");
+		containerScopeRepository.deleteAllBy("name", "Root");
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAsc("name"));
 		Assert.assertEquals(2, groups.getRecordsTotal());
 		final ContainerCountVo group0 = groups.getData().get(0);

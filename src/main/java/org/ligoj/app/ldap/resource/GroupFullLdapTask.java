@@ -2,8 +2,8 @@ package org.ligoj.app.ldap.resource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
-import org.ligoj.app.plugin.id.resource.GroupLdapEditionVo;
-import org.ligoj.app.plugin.id.resource.GroupLdapResource;
+import org.ligoj.app.plugin.id.resource.GroupEditionVo;
+import org.ligoj.app.plugin.id.resource.GroupResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 public class GroupFullLdapTask extends AbstractLdapBatchTask<GroupImportEntry> {
 
 	@Autowired
-	protected GroupLdapResource resource;
+	protected GroupResource resource;
 
 	@Autowired
 	protected ContainerScopeResource containerTypeLdapResource;
@@ -26,7 +26,7 @@ public class GroupFullLdapTask extends AbstractLdapBatchTask<GroupImportEntry> {
 	protected void doBatch(final GroupImportEntry entry) throws Exception {
 
 		// Copy the group information
-		final GroupLdapEditionVo edition = new GroupLdapEditionVo();
+		final GroupEditionVo edition = new GroupEditionVo();
 		edition.setName(entry.getName());
 		edition.setParent(StringUtils.trimToNull(entry.getParent()));
 		edition.setType(containerTypeLdapResource.findByName(entry.getType()).getId());

@@ -9,8 +9,8 @@ import javax.validation.ValidationException;
 import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.dao.DelegateOrgRepository;
-import org.ligoj.app.plugin.id.resource.UserLdapEdition;
-import org.ligoj.app.plugin.id.resource.UserLdapResource;
+import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
+import org.ligoj.app.plugin.id.resource.UserOrgResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 public class UserAtomicLdapTask extends AbstractLdapBatchTask<UserUpdateEntry> {
 
 	@Autowired
-	protected UserLdapResource resource;
+	protected UserOrgResource resource;
 
 	@Autowired
 	protected DelegateOrgRepository repository;
@@ -85,7 +85,7 @@ public class UserAtomicLdapTask extends AbstractLdapBatchTask<UserUpdateEntry> {
 			final UserOrg user = resource.findById(entry.getUser());
 
 			// Prepare the local entity
-			final UserLdapEdition editUser = new UserLdapEdition();
+			final UserOrgEditionVo editUser = new UserOrgEditionVo();
 			editUser.setId(user.getId());
 			editUser.setFirstName(user.getFirstName());
 			editUser.setLastName(user.getLastName());

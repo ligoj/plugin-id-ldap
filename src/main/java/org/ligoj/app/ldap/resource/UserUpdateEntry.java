@@ -3,7 +3,7 @@ package org.ligoj.app.ldap.resource;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
-import org.ligoj.app.plugin.id.resource.UserLdapEdition;
+import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -50,6 +50,6 @@ public class UserUpdateEntry implements BatchElement {
 	 */
 	@Transient
 	@JsonIgnore
-	private UserLdapEdition userLdap;
+	private UserOrgEditionVo userLdap;
 
 }
