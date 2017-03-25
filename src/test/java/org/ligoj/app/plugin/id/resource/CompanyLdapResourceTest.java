@@ -270,7 +270,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals(0, group0.getCountVisible());
 		Assert.assertTrue(group0.isCanAdmin());
 		Assert.assertTrue(group0.isCanWrite());
-		Assert.assertEquals("France", group0.getType());
+		Assert.assertEquals("France", group0.getScope());
 
 		// Check the creation from LDAP
 		final CompanyOrg companyLdap = getCompany().findAllNoCache().get("new-ax-1-z:z 0");
@@ -298,7 +298,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals(7, group0.getCountVisible());
 		Assert.assertFalse(group0.isCanAdmin());
 		Assert.assertFalse(group0.isCanWrite());
-		Assert.assertEquals("France", group0.getType());
+		Assert.assertEquals("France", group0.getScope());
 		Assert.assertEquals("gfi", group0.getId());
 		Assert.assertEquals(ContainerType.COMPANY, group0.getContainerType());
 	}
@@ -316,7 +316,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals(7, group0.getCountVisible());
 		Assert.assertFalse(group0.isCanAdmin());
 		Assert.assertFalse(group0.isCanWrite());
-		Assert.assertEquals("France", group0.getType());
+		Assert.assertEquals("France", group0.getScope());
 		Assert.assertEquals("gfi", group0.getId());
 		Assert.assertEquals(ContainerType.COMPANY, group0.getContainerType());
 	}
@@ -340,7 +340,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals(7, group0.getCountVisible());
 		Assert.assertFalse(group0.isCanAdmin());
 		Assert.assertFalse(group0.isCanWrite());
-		Assert.assertNull(group0.getType());
+		Assert.assertNull(group0.getScope());
 		Assert.assertEquals("ing", group0.getId());
 		Assert.assertEquals(ContainerType.COMPANY, group0.getContainerType());
 		Assert.assertEquals("ing-internal", groups.getData().get(1).getName());
@@ -357,7 +357,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertTrue(group0.isCanAdmin());
 		Assert.assertTrue(group0.isCanWrite());
 		Assert.assertFalse(group0.isLocked());
-		Assert.assertEquals("France", group0.getType());
+		Assert.assertEquals("France", group0.getScope());
 		Assert.assertEquals("gfi", group0.getId());
 		Assert.assertEquals(ContainerType.COMPANY, group0.getContainerType());
 
@@ -369,7 +369,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertTrue(group2.isCanAdmin());
 		Assert.assertTrue(group2.isCanWrite());
 		Assert.assertTrue(group2.isLocked());
-		Assert.assertEquals("Root", group2.getType());
+		Assert.assertEquals("Root", group2.getScope());
 		Assert.assertEquals("ing-internal", group2.getId());
 		Assert.assertEquals(ContainerType.COMPANY, group2.getContainerType());
 	}
@@ -385,7 +385,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertTrue(group0.isCanAdmin());
 		Assert.assertTrue(group0.isCanWrite());
 		Assert.assertTrue(group0.isLocked());
-		Assert.assertNull(group0.getType());
+		Assert.assertNull(group0.getScope());
 		Assert.assertEquals("quarantine", group0.getId());
 		Assert.assertEquals(ContainerType.COMPANY, group0.getContainerType());
 	}

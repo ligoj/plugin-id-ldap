@@ -51,7 +51,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals(0, group0.getCountVisible());
 		Assert.assertTrue(group0.isCanAdmin());
 		Assert.assertTrue(group0.isCanWrite());
-		Assert.assertEquals("Fonction", group0.getType());
+		Assert.assertEquals("Fonction", group0.getScope());
 		Assert.assertEquals("dig", group0.getId());
 		Assert.assertFalse(group0.isLocked());
 
@@ -61,7 +61,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals(4, group10.getCountVisible());
 		Assert.assertTrue(group10.isCanAdmin());
 		Assert.assertTrue(group10.isCanWrite());
-		Assert.assertEquals("Fonction", group10.getType());
+		Assert.assertEquals("Fonction", group10.getScope());
 		Assert.assertEquals(ContainerType.GROUP, group10.getContainerType());
 		Assert.assertFalse(group10.isLocked());
 
@@ -72,7 +72,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals(1, group20.getCountVisible());
 		Assert.assertTrue(group20.isCanAdmin());
 		Assert.assertTrue(group20.isCanWrite());
-		Assert.assertNull(group20.getType());
+		Assert.assertNull(group20.getScope());
 		Assert.assertEquals(ContainerType.GROUP, group20.getContainerType());
 		Assert.assertFalse(group20.isLocked());
 	}
@@ -88,7 +88,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals(0, group0.getCountVisible());
 		Assert.assertTrue(group0.isCanAdmin());
 		Assert.assertTrue(group0.isCanWrite());
-		Assert.assertEquals("Project", group0.getType());
+		Assert.assertEquals("Project", group0.getScope());
 		Assert.assertEquals("sea-octopus", group0.getId());
 		Assert.assertTrue(group0.isLocked());
 	}
@@ -146,14 +146,14 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals(1, group0.getCountVisible());
 		Assert.assertFalse(group0.isCanAdmin());
 		Assert.assertFalse(group0.isCanWrite());
-		Assert.assertEquals("Fonction", group0.getType());
+		Assert.assertEquals("Fonction", group0.getScope());
 	}
 
 	@Test
 	public void findByNameNoType() {
-		final ContainerWithTypeVo group = resource.findByName("business solution");
+		final ContainerWithScopeVo group = resource.findByName("business solution");
 		Assert.assertEquals("Business Solution", group.getName());
-		Assert.assertNull(group.getType());
+		Assert.assertNull(group.getScope());
 	}
 
 	@Test
@@ -163,9 +163,9 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Test
 	public void findById() {
-		final ContainerWithTypeVo group = resource.findByName("dig as");
+		final ContainerWithScopeVo group = resource.findByName("dig as");
 		Assert.assertEquals("DIG AS", group.getName());
-		Assert.assertEquals("Fonction", group.getType());
+		Assert.assertEquals("Fonction", group.getScope());
 	}
 
 	@Test
@@ -191,9 +191,9 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void findByNameLimitedRights() {
 		initSpringSecurityContext("mmartin");
-		final ContainerWithTypeVo group = resource.findByName("dig as");
+		final ContainerWithScopeVo group = resource.findByName("dig as");
 		Assert.assertEquals("DIG AS", group.getName());
-		Assert.assertEquals("Fonction", group.getType());
+		Assert.assertEquals("Fonction", group.getScope());
 	}
 
 	@Test
@@ -341,7 +341,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assert.assertEquals(0, group0.getCountVisible());
 		Assert.assertTrue(group0.isCanAdmin());
 		Assert.assertTrue(group0.isCanWrite());
-		Assert.assertEquals("Fonction", group0.getType());
+		Assert.assertEquals("Fonction", group0.getScope());
 
 		// Check the creation from LDAP
 		final GroupOrg groupLdap = getGroup().findAllNoCache().get("new-ax-1-z:z 0");

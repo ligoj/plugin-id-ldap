@@ -46,7 +46,7 @@ import org.ligoj.app.model.Subscription;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.app.plugin.id.resource.CompanyResource;
 import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
-import org.ligoj.app.plugin.id.resource.ContainerWithTypeVo;
+import org.ligoj.app.plugin.id.resource.ContainerWithScopeVo;
 import org.ligoj.app.plugin.id.resource.GroupResource;
 import org.ligoj.app.plugin.id.resource.IdentityResource;
 import org.ligoj.app.plugin.id.resource.IdentityServicePlugin;
@@ -572,7 +572,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	protected INamableBean<String> validateGroup(final Map<String, String> parameters) {
 		// Get group configuration
 		final String group = parameters.get(IdentityResource.PARAMETER_GROUP);
-		final ContainerWithTypeVo groupLdap = groupLdapResource.findByName(group);
+		final ContainerWithScopeVo groupLdap = groupLdapResource.findByName(group);
 
 		// Check the group exists
 		if (groupLdap == null) {
@@ -580,7 +580,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 		}
 
 		// Check the group has type TYPE_PROJECT
-		if (!ContainerScope.TYPE_PROJECT.equals(groupLdap.getType())) {
+		if (!ContainerScope.TYPE_PROJECT.equals(groupLdap.getScope())) {
 			// Invalid type
 			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, "group-type", group);
 		}
