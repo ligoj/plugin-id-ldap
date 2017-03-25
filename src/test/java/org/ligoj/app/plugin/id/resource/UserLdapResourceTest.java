@@ -1540,7 +1540,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		Assert.assertTrue(resource.findById("wuser").getGroups().contains("DIG RHA"));
 		Assert.assertTrue(getGroup().findById("dig rha").getMembers().contains("wuser"));
 
-		resource.removeUser("wuser", "dig rha");
+		resource.removeUserFromGroup("wuser", "dig rha");
 
 		// Post condition 2
 		Assert.assertFalse(resource.findById("wuser").getGroups().contains("DIG RHA"));
