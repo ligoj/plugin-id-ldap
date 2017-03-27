@@ -22,21 +22,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ldap.UncategorizedLdapException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import org.ligoj.bootstrap.core.IDescribableBean;
-import org.ligoj.bootstrap.core.INamableBean;
-import org.ligoj.bootstrap.core.resource.BusinessException;
-import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.api.Activity;
 import org.ligoj.app.api.GroupOrg;
@@ -55,7 +40,6 @@ import org.ligoj.app.model.Project;
 import org.ligoj.app.model.Subscription;
 import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository;
 import org.ligoj.app.plugin.id.ldap.dao.ProjectCustomerLdapRepository;
-import org.ligoj.app.plugin.id.ldap.resource.LdapPluginResource;
 import org.ligoj.app.plugin.id.resource.AbstractContainerResourceTest;
 import org.ligoj.app.plugin.id.resource.IdentityResource;
 import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
@@ -63,6 +47,20 @@ import org.ligoj.app.plugin.id.resource.UserOrgResource;
 import org.ligoj.app.resource.ServicePluginLocator;
 import org.ligoj.app.resource.node.NodeResource;
 import org.ligoj.app.resource.subscription.SubscriptionResource;
+import org.ligoj.bootstrap.core.INamableBean;
+import org.ligoj.bootstrap.core.resource.BusinessException;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ldap.UncategorizedLdapException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
 import net.sf.ehcache.CacheManager;
 
 /**
@@ -775,7 +773,7 @@ public class LdapPluginResourceTest extends AbstractContainerResourceTest {
 		service.setId("J");
 		susbscription.setNode(service);
 		final SampleActivityProvider plugin = Mockito.mock(SampleActivityProvider.class);
-		final Set<IDescribableBean<String>> nodes = new HashSet<>();
+		final Set<INamableBean<String>> nodes = new HashSet<>();
 		nodes.add(service);
 		resource.addSubscriptionActivities(activities, null, susbscription, plugin, nodes);
 		Assert.assertTrue(activities.isEmpty());
@@ -795,7 +793,7 @@ public class LdapPluginResourceTest extends AbstractContainerResourceTest {
 		final Activity activity2 = new Activity();
 		activities1.put(DEFAULT_USER, activity2);
 		Mockito.when(plugin.getActivities(1, null)).thenReturn(activities1);
-		final Set<IDescribableBean<String>> nodes = new HashSet<>();
+		final Set<INamableBean<String>> nodes = new HashSet<>();
 		resource.addSubscriptionActivities(activities, null, susbscription, plugin, nodes);
 		Assert.assertEquals(1, activities.size());
 		Assert.assertTrue(activities.containsKey(DEFAULT_USER));
@@ -821,7 +819,7 @@ public class LdapPluginResourceTest extends AbstractContainerResourceTest {
 		final Activity activity2 = new Activity();
 		activities1.put(DEFAULT_USER, activity2);
 		Mockito.when(plugin.getActivities(1, null)).thenReturn(activities1);
-		final Set<IDescribableBean<String>> nodes = new HashSet<>();
+		final Set<INamableBean<String>> nodes = new HashSet<>();
 		resource.addSubscriptionActivities(activities, null, susbscription, plugin, nodes);
 		Assert.assertEquals(1, activities.size());
 		Assert.assertTrue(activities.containsKey(DEFAULT_USER));

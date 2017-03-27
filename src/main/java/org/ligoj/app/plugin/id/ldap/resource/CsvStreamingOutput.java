@@ -13,7 +13,7 @@ import javax.ws.rs.core.StreamingOutput;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.ligoj.app.api.Activity;
 import org.ligoj.app.api.UserOrg;
-import org.ligoj.bootstrap.core.IDescribableBean;
+import org.ligoj.bootstrap.core.INamableBean;
 
 /**
  * CSV output writer for user activities.
@@ -67,7 +67,7 @@ public class CsvStreamingOutput implements StreamingOutput {
 	 */
 	protected void writeNodeHeaders(final Writer writer) throws IOException {
 		// Iterate over audited nodes
-		for (final IDescribableBean<String> node : computations.getNodes()) {
+		for (final INamableBean<String> node : computations.getNodes()) {
 			writer.write(";");
 			writer.write(node.getName());
 		}
@@ -108,7 +108,7 @@ public class CsvStreamingOutput implements StreamingOutput {
 	 * Write user's activities
 	 */
 	protected void writeNodeActivities(final Map<String, Activity> activities, final Writer writer, final Format df) throws IOException {
-		for (final IDescribableBean<String> node : computations.getNodes()) {
+		for (final INamableBean<String> node : computations.getNodes()) {
 			writer.write(';');
 
 			// Last connection, if available

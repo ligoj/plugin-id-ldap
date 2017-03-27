@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.ligoj.app.api.Activity;
 import org.ligoj.app.api.UserOrg;
-import org.ligoj.bootstrap.core.IDescribableBean;
+import org.ligoj.bootstrap.core.INamableBean;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -25,7 +25,7 @@ public class ActivitiesComputations {
 	/**
 	 * Unique related nodes
 	 */
-	private Collection<IDescribableBean<String>> nodes;
+	private Collection<INamableBean<String>> nodes;
 
 	/**
 	 * Activities of each user. K = user's login, V = activities, where K = node's identifier, and V is the activity.

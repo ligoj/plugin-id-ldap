@@ -55,7 +55,6 @@ import org.ligoj.app.plugin.id.resource.UserOrgResource;
 import org.ligoj.app.resource.ActivitiesProvider;
 import org.ligoj.app.resource.ServicePluginLocator;
 import org.ligoj.app.resource.plugin.AbstractToolPluginResource;
-import org.ligoj.bootstrap.core.IDescribableBean;
 import org.ligoj.bootstrap.core.INamableBean;
 import org.ligoj.bootstrap.core.NamedBean;
 import org.ligoj.bootstrap.core.SpringUtils;
@@ -493,7 +492,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 		result.setUsers(users);
 		final List<String> userLogins = users.stream().map(UserOrg::getId).collect(Collectors.toList());
 		final Map<String, Map<String, Activity>> activities = new HashMap<>();
-		final Set<IDescribableBean<String>> nodes = new LinkedHashSet<>();
+		final Set<INamableBean<String>> nodes = new LinkedHashSet<>();
 		for (final Subscription projectSubscription : subscriptions) {
 			final ServicePlugin resource = servicePluginLocator.getResource(projectSubscription.getNode().getId());
 			if (resource != null) {
@@ -543,7 +542,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	 * Add activities related to given subscription.
 	 */
 	protected void addSubscriptionActivities(final Map<String, Map<String, Activity>> activities, final Collection<String> userLogins,
-			final Subscription otherSubscription, final ServicePlugin plugin, final Set<IDescribableBean<String>> nodes) throws Exception { // NOSONAR
+			final Subscription otherSubscription, final ServicePlugin plugin, final Set<INamableBean<String>> nodes) throws Exception { // NOSONAR
 
 		// Collect activities of each subscription of unique node
 		if (plugin instanceof ActivitiesProvider && nodes.add(otherSubscription.getNode())) {

@@ -15,13 +15,10 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
-
-import org.ligoj.bootstrap.core.DescribedBean;
-import org.ligoj.bootstrap.core.IDescribableBean;
 import org.ligoj.app.api.Activity;
 import org.ligoj.app.api.UserOrg;
-import org.ligoj.app.plugin.id.ldap.resource.ActivitiesComputations;
-import org.ligoj.app.plugin.id.ldap.resource.CsvStreamingOutput;
+import org.ligoj.bootstrap.core.INamableBean;
+import org.ligoj.bootstrap.core.NamedBean;
 
 /**
  * Test class of {@link CsvStreamingOutput}
@@ -33,12 +30,12 @@ public class CsvStreamingOutputTest {
 		final ActivitiesComputations computations = new ActivitiesComputations();
 
 		// Nodes
-		final Collection<IDescribableBean<String>> nodes = new ArrayList<>();
-		final DescribedBean<String> node1 = new DescribedBean<>();
+		final Collection<INamableBean<String>> nodes = new ArrayList<>();
+		final NamedBean<String> node1 = new NamedBean<>();
 		nodes.add(node1);
 		node1.setId("J0");
 		node1.setName("J0N");
-		final DescribedBean<String> node2 = new DescribedBean<>();
+		final NamedBean<String> node2 = new NamedBean<>();
 		nodes.add(node2);
 		node2.setId("J1");
 		node2.setName("J1N");
