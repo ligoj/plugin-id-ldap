@@ -7,8 +7,8 @@ import javax.ws.rs.core.UriInfo;
 
 import org.junit.Before;
 import org.ligoj.app.iam.model.DelegateOrg;
-import org.ligoj.app.ldap.resource.AbstractLdapTest;
 import org.ligoj.app.plugin.id.dao.ContainerScopeRepository;
+import org.ligoj.app.plugin.id.ldap.resource.AbstractLdapTest;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.springframework.beans.factory.annotation.Autowired;
