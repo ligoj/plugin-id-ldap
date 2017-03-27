@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.Before;
-import org.springframework.ldap.core.LdapTemplate;
 import org.ligoj.app.AbstractAppTest;
 import org.ligoj.app.ldap.dao.CompanyLdapRepository;
 import org.ligoj.app.ldap.dao.GroupLdapRepository;
@@ -14,6 +13,7 @@ import org.ligoj.app.model.Parameter;
 import org.ligoj.app.model.ParameterValue;
 import org.ligoj.app.model.Project;
 import org.ligoj.app.model.Subscription;
+import org.springframework.ldap.core.LdapTemplate;
 
 /**
  * Test for LDAP resources.
