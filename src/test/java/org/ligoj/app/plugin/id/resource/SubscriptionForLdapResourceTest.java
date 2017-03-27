@@ -1,4 +1,4 @@
-package org.ligoj.app.ldap.resource;
+package org.ligoj.app.plugin.id.resource;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -21,9 +21,9 @@ import org.ligoj.app.dao.ParameterValueRepository;
 import org.ligoj.app.dao.ProjectRepository;
 import org.ligoj.app.dao.SubscriptionRepository;
 import org.ligoj.app.iam.model.DelegateOrg;
-import org.ligoj.app.ldap.dao.LdapCacheRepository;
 import org.ligoj.app.model.DelegateNode;
 import org.ligoj.app.model.Subscription;
+import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository;
 import org.ligoj.app.plugin.id.ldap.resource.AbstractLdapTest;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.app.plugin.id.resource.IdentityResource;

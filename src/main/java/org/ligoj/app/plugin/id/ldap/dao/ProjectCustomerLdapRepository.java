@@ -1,4 +1,4 @@
-package org.ligoj.app.ldap.dao;
+package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -7,7 +7,7 @@ import javax.cache.annotation.CacheKey;
 import javax.cache.annotation.CacheResult;
 
 import org.ligoj.app.iam.IamProvider;
-import org.ligoj.app.plugin.id.LdapUtils;
+import org.ligoj.app.plugin.id.DnUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
@@ -54,7 +54,7 @@ public class ProjectCustomerLdapRepository {
 		for (final DirContextAdapter groupRaw : getUser().getTemplate().search(baseDn, new EqualsFilter("objectClass", CUSTOMER_OF_PROJECT).encode(),
 				(Object ctx) -> (DirContextAdapter) ctx)) {
 			final String dn = groupRaw.getDn().toString();
-			result.put(LdapUtils.toRdn(dn), dn);
+			result.put(DnUtils.toRdn(dn), dn);
 		}
 		return result;
 	}

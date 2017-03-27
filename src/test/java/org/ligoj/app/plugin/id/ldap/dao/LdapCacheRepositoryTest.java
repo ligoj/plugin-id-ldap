@@ -1,4 +1,4 @@
-package org.ligoj.app.ldap.dao;
+package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.util.*;
 
@@ -15,12 +15,12 @@ import org.ligoj.app.api.GroupOrg;
 import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.IamConfiguration;
 import org.ligoj.app.iam.IamProvider;
-import org.ligoj.app.ldap.dao.CompanyLdapRepository;
-import org.ligoj.app.ldap.dao.GroupLdapRepository;
-import org.ligoj.app.ldap.dao.LdapCacheDao;
-import org.ligoj.app.ldap.dao.LdapCacheRepository;
-import org.ligoj.app.ldap.dao.UserLdapRepository;
-import org.ligoj.app.ldap.dao.LdapCacheRepository.LdapData;
+import org.ligoj.app.plugin.id.ldap.dao.CompanyLdapRepository;
+import org.ligoj.app.plugin.id.ldap.dao.GroupLdapRepository;
+import org.ligoj.app.plugin.id.ldap.dao.LdapCacheDao;
+import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository;
+import org.ligoj.app.plugin.id.ldap.dao.UserLdapRepository;
+import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository.LdapData;
 
 import net.sf.ehcache.CacheManager;
 

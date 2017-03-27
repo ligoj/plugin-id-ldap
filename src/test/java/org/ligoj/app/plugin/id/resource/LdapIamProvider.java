@@ -1,4 +1,4 @@
-package org.ligoj.app.ldap.resource;
+package org.ligoj.app.plugin.id.resource;
 
 import javax.cache.annotation.CacheResult;
 
@@ -26,7 +26,7 @@ public class LdapIamProvider implements IamProvider {
 	}
 
 	@Override
-	@CacheResult(cacheName = "iam-node-configuration")
+	@CacheResult(cacheName = "iam-ldap-configuration")
 	public IamConfiguration getConfiguration() {
 		return resource.getConfiguration("service:id:ldap:dig");
 	}

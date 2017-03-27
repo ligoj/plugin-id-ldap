@@ -1,4 +1,4 @@
-package org.ligoj.app.ldap.dao;
+package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.util.Collections;
 
@@ -9,6 +9,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.ligoj.app.api.CompanyOrg;
 import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.plugin.id.ldap.dao.CompanyLdapRepository;
+import org.ligoj.app.plugin.id.ldap.dao.UserLdapRepository;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;

@@ -1,4 +1,4 @@
-package org.ligoj.app.ldap.dao;
+package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.util.EnumMap;
 import java.util.Map;

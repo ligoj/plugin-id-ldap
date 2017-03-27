@@ -1,4 +1,4 @@
-package org.ligoj.app.ldap.dao;
+package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
@@ -37,8 +37,8 @@ import org.ligoj.app.api.SimpleUser;
 import org.ligoj.app.api.SimpleUserOrg;
 import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.IUserRepository;
-import org.ligoj.app.ldap.dao.LdapCacheRepository.LdapData;
-import org.ligoj.app.plugin.id.LdapUtils;
+import org.ligoj.app.plugin.id.DnUtils;
+import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository.LdapData;
 import org.ligoj.app.plugin.id.model.CompanyComparator;
 import org.ligoj.app.plugin.id.model.FirstNameComparator;
 import org.ligoj.app.plugin.id.model.LastNameComparator;
@@ -288,7 +288,7 @@ public class UserLdapRepository implements IUserRepository {
 		final String group = groupLdap.getId();
 		new ArrayList<>(groupLdap.getMembers()).forEach(dn -> {
 			// Extract the UID
-			final String uid = LdapUtils.toRdn(dn);
+			final String uid = DnUtils.toRdn(dn);
 
 			// Remove this DN from the members, it would be replaced by the RDN form
 			groupLdap.getMembers().remove(dn);

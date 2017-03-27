@@ -1,4 +1,4 @@
-package org.ligoj.app.ldap.dao;
+package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -12,9 +12,9 @@ import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.iam.ICompanyRepository;
 import org.ligoj.app.iam.dao.CacheCompanyRepository;
 import org.ligoj.app.iam.model.CacheCompany;
-import org.ligoj.app.ldap.dao.LdapCacheRepository.LdapData;
 import org.ligoj.app.model.ContainerType;
-import org.ligoj.app.plugin.id.LdapUtils;
+import org.ligoj.app.plugin.id.DnUtils;
+import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository.LdapData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
@@ -104,7 +104,7 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 	 */
 	private void buildHierarchy(final Map<String, CompanyOrg> companies, final CompanyOrg company) {
 		// Collect all parents and sorted from parent to the leaf
-		company.setCompanyTree(companies.values().stream().filter(c -> LdapUtils.equalsOrParentOf(c.getDn(), company.getDn()))
+		company.setCompanyTree(companies.values().stream().filter(c -> DnUtils.equalsOrParentOf(c.getDn(), company.getDn()))
 				.sorted(Comparator.comparing(CompanyOrg::getLdapName)).collect(Collectors.toList()));
 	}
 
@@ -114,7 +114,7 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 	 * @return The quarantine/isolated company identifier.
 	 */
 	public String getQuarantineCompany() {
-		return LdapUtils.toRdn(quarantineBaseDn);
+		return DnUtils.toRdn(quarantineBaseDn);
 	}
 
 	@Override
@@ -160,7 +160,7 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 		 * since we
 		 * are not rebuilding the cache from the LDAP. This save a lot of computations.
 		 */
-		findAll().values().stream().filter(g -> LdapUtils.equalsOrParentOf(container.getDn(), g.getDn())).collect(Collectors.toList())
+		findAll().values().stream().filter(g -> DnUtils.equalsOrParentOf(container.getDn(), g.getDn())).collect(Collectors.toList())
 				.forEach(this::removeFromJavaCache);
 
 		// Remove from LDAP the recursively the node. Anything that was not nicely cleaned will be deleted there.

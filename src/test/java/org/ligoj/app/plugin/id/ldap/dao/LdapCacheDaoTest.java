@@ -1,4 +1,4 @@
-package org.ligoj.app.ldap.dao;
+package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,7 +26,7 @@ import org.ligoj.app.iam.model.CacheCompany;
 import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.iam.model.CacheMembership;
 import org.ligoj.app.iam.model.CacheUser;
-import org.ligoj.app.ldap.dao.LdapCacheDao;
+import org.ligoj.app.plugin.id.ldap.dao.LdapCacheDao;
 
 /**
  * Test class of {@link LdapCacheDao}

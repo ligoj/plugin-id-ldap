@@ -1,4 +1,4 @@
-package org.ligoj.app.ldap.dao;
+package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,9 +22,9 @@ import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.iam.IGroupRepository;
 import org.ligoj.app.iam.dao.CacheGroupRepository;
 import org.ligoj.app.iam.model.CacheGroup;
-import org.ligoj.app.ldap.dao.LdapCacheRepository.LdapData;
 import org.ligoj.app.model.ContainerType;
-import org.ligoj.app.plugin.id.LdapUtils;
+import org.ligoj.app.plugin.id.DnUtils;
+import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository.LdapData;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
@@ -171,7 +171,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 		 * Remove from the managed groups, all groups within (sub LDAP DN) this group. This operation is needed since we
 		 * are not rebuilding the cache from the LDAP. This save a lot of computations.
 		 */
-		findAll().values().stream().filter(g -> LdapUtils.equalsOrParentOf(group.getDn(), g.getDn())).collect(Collectors.toList())
+		findAll().values().stream().filter(g -> DnUtils.equalsOrParentOf(group.getDn(), g.getDn())).collect(Collectors.toList())
 				.forEach(this::removeFromJavaCache);
 
 		// Remove from LDAP the recursively the node. Anything that was not nicely cleaned will be deleted there.

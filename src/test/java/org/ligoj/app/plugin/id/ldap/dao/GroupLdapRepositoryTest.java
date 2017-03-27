@@ -1,4 +1,4 @@
-package org.ligoj.app.ldap.dao;
+package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,8 +26,8 @@ import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.api.GroupOrg;
 import org.ligoj.app.api.UserOrg;
-import org.ligoj.app.ldap.dao.GroupLdapRepository;
-import org.ligoj.app.ldap.dao.LdapCacheRepository;
+import org.ligoj.app.plugin.id.ldap.dao.GroupLdapRepository;
+import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository;
 
 /**
  * Test class of {@link GroupLdapRepository}

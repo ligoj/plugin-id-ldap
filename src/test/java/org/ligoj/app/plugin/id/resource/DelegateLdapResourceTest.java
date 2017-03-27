@@ -1,4 +1,4 @@
-package org.ligoj.app.resource.delegate;
+package org.ligoj.app.plugin.id.resource;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -19,6 +19,9 @@ import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.iam.model.DelegateType;
 import org.ligoj.app.iam.model.ReceiverType;
 import org.ligoj.app.plugin.id.ldap.resource.AbstractLdapTest;
+import org.ligoj.app.resource.delegate.DelegateOrgEditionVo;
+import org.ligoj.app.resource.delegate.DelegateOrgLightVo;
+import org.ligoj.app.resource.delegate.DelegateOrgResource;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.mockito.Mockito;
