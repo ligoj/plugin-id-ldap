@@ -63,7 +63,7 @@ define(function () {
 		 */
 		registerIdParentGroupSelect2: function (configuration, id) {
 			configuration.validators[id] = current.validateIdGroupCreateMode;
-			current.$super('registerXServiceSelect2')(configuration, id, 'ldap/group', '?search[value]=');
+			current.$super('registerXServiceSelect2')(configuration, id, 'service/id/group', '?search[value]=');
 		},
 
 		/**
@@ -141,7 +141,7 @@ define(function () {
 			validationManager.addMessage($input, null, [], null, 'fa fa-refresh fa-spin');
 			$.ajax({
 				dataType: 'json',
-				url: REST_PATH + 'ldap/group/' + encodeURIComponent(fullName) + '/exists',
+				url: REST_PATH + 'service/id/group/' + encodeURIComponent(fullName) + '/exists',
 				type: 'GET',
 				success: function (data) {
 					if (data) {
