@@ -18,7 +18,7 @@ import org.ligoj.app.iam.dao.DelegateOrgRepository;
 import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.iam.model.DelegateType;
 import org.ligoj.app.iam.model.ReceiverType;
-import org.ligoj.app.ldap.resource.AbstractLdapTest;
+import org.ligoj.app.plugin.id.ldap.resource.AbstractLdapTest;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.mockito.Mockito;

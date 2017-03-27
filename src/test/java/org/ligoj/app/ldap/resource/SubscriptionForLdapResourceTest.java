@@ -24,6 +24,7 @@ import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.ldap.dao.LdapCacheRepository;
 import org.ligoj.app.model.DelegateNode;
 import org.ligoj.app.model.Subscription;
+import org.ligoj.app.plugin.id.ldap.resource.AbstractLdapTest;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.app.plugin.id.resource.IdentityResource;
 import org.ligoj.app.resource.node.ParameterValueEditionVo;
@@ -65,7 +66,6 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	@Autowired
 	private SubscriptionRepository repository;
 
-
 	@Autowired
 	private ParameterValueRepository parameterValueRepository;
 
@@ -87,8 +87,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	@Before
 	public void prepareSubscription() throws IOException {
 		this.subscription = getSubscription("MDA");
-		persistEntities("csv/app-test", new Class[] { DelegateOrg.class, ContainerScope.class, DelegateNode.class },
-				StandardCharsets.UTF_8.name());
+		persistEntities("csv/app-test", new Class[] { DelegateOrg.class, ContainerScope.class, DelegateNode.class }, StandardCharsets.UTF_8.name());
 		initSpringSecurityContext("fdaugan");
 	}
 
@@ -178,11 +177,10 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 
 		Assert.assertEquals("10074", parameterValueRepository.getSubscriptionParameterValue(subscription, JiraPluginResource.PARAMETER_PROJECT));
 		Assert.assertEquals("MDA", parameterValueRepository.getSubscriptionParameterValue(subscription, JiraPluginResource.PARAMETER_PKEY));
-		
+
 		// Rollback the creation in LDAP
 		resource.delete(subscription, true);
 	}
-
 
 	@Test
 	public void createCreateMode() throws Exception {
@@ -242,10 +240,10 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		// Rollback the creation in LDAP
 		resource.delete(subscription, true);
 		Assert.assertEquals(1, getMembers().length);
-}
+	}
 
 	private String[] getMembers() {
-		final DirContextAdapter groupContext = getTemplate().search("cn=gfi-gstack,ou=gfi,ou=project,dc=sample,dc=com", 
+		final DirContextAdapter groupContext = getTemplate().search("cn=gfi-gstack,ou=gfi,ou=project,dc=sample,dc=com",
 				new EqualsFilter("cn", "gfi-gStack").encode(), (Object ctx) -> (DirContextAdapter) ctx).get(0);
 		final String[] members = groupContext.getStringAttributes("uniqueMember");
 		return members;
