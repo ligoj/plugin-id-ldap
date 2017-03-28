@@ -504,9 +504,9 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 	public void findAllNotExistingGroup() {
 		initSpringSecurityContext("fdaugan");
 		final TableItem<UserOrgVo> tableItem = resource.findAll(null, "any", null, newUriInfoAsc("id"));
-		Assert.assertEquals(0, tableItem.getRecordsTotal());
-		Assert.assertEquals(0, tableItem.getRecordsFiltered());
-		Assert.assertEquals(0, tableItem.getData().size());
+		Assert.assertEquals(15, tableItem.getRecordsTotal());
+		Assert.assertEquals(15, tableItem.getRecordsFiltered());
+		Assert.assertEquals(15, tableItem.getData().size());
 	}
 
 	@Test
@@ -597,7 +597,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 	@Test
 	public void zcreateUserNoDelegateGroup() {
 		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("groups", BusinessException.KEY_UNKNOW_ID));
+		thrown.expect(MatcherUtil.validationMatcher("group", BusinessException.KEY_UNKNOW_ID));
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flastg");
 		user.setFirstName("FirstG");
@@ -958,7 +958,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 	@Test
 	public void updateUserGroupNotExists() {
 		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("groups", BusinessException.KEY_UNKNOW_ID));
+		thrown.expect(MatcherUtil.validationMatcher("group", BusinessException.KEY_UNKNOW_ID));
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast1");
 		user.setFirstName("FirstA");
@@ -1019,9 +1019,9 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void updateUserReadOnly() {
+	public void updateNotVisibleTargetCompany() {
 		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("groups", BusinessException.KEY_UNKNOW_ID));
+		thrown.expect(MatcherUtil.validationMatcher("company", BusinessException.KEY_UNKNOW_ID));
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("First0");
@@ -1095,7 +1095,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 	@Test
 	public void updateUserNoDelegateGroupForTarget() {
 		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("groups", BusinessException.KEY_UNKNOW_ID));
+		thrown.expect(MatcherUtil.validationMatcher("group", BusinessException.KEY_UNKNOW_ID));
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast1");
 		user.setFirstName("FirstA");

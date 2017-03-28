@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import javax.persistence.EntityNotFoundException;
-import javax.sql.DataSource;
 import javax.transaction.Transactional;
 import javax.ws.rs.ForbiddenException;
 
@@ -18,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.ligoj.app.api.GroupOrg;
 import org.ligoj.app.api.SubscriptionMode;
 import org.ligoj.app.dao.ParameterValueRepository;
-import org.ligoj.app.dao.ProjectRepository;
 import org.ligoj.app.dao.SubscriptionRepository;
 import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.model.DelegateNode;
@@ -26,10 +23,7 @@ import org.ligoj.app.model.Subscription;
 import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository;
 import org.ligoj.app.plugin.id.ldap.resource.AbstractLdapTest;
 import org.ligoj.app.plugin.id.model.ContainerScope;
-import org.ligoj.app.plugin.id.resource.IdentityResource;
 import org.ligoj.app.resource.node.ParameterValueEditionVo;
-import org.ligoj.app.resource.node.sample.BugTrackerResource;
-import org.ligoj.app.resource.node.sample.JiraPluginResource;
 import org.ligoj.app.resource.subscription.SubscriptionEditionVo;
 import org.ligoj.app.resource.subscription.SubscriptionResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,13 +45,6 @@ import net.sf.ehcache.CacheManager;
 public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 
 	@Autowired
-	protected ProjectRepository projectRepository;
-
-	protected static DataSource datasource;
-
-	protected int subscription;
-
-	@Autowired
 	private LdapCacheRepository cache;
 
 	@Autowired
@@ -73,7 +60,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	 * Return the subscription identifier of MDA. Assumes there is only one subscription for a service.
 	 */
 	protected int getSubscription(final String project) {
-		return getSubscription(project, BugTrackerResource.SERVICE_KEY);
+		return getSubscription(project, IdentityResource.SERVICE_KEY);
 	}
 
 	/**
@@ -81,45 +68,20 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	 */
 	protected int getSubscription(final String project, final String service) {
 		return em.createQuery("SELECT s.id FROM Subscription s WHERE s.project.name = ?1 AND s.node.id LIKE CONCAT(?2,'%')", Integer.class)
-				.setParameter(1, project).setParameter(2, service).getSingleResult();
+				.setParameter(1, project).setParameter(2, service).getResultList().get(0);
 	}
 
 	@Before
 	public void prepareSubscription() throws IOException {
-		this.subscription = getSubscription("MDA");
 		persistEntities("csv", new Class[] { DelegateOrg.class, ContainerScope.class, DelegateNode.class }, StandardCharsets.UTF_8.name());
 		initSpringSecurityContext("fdaugan");
-	}
-
-	@Test
-	public void delete() throws Exception {
-		final Subscription one = repository.findOne(subscription);
-		final int project = one.getProject().getId();
-		Assert.assertEquals(1, repository.findAllByProject(project).size());
-		em.clear();
-		resource.delete(subscription);
-		em.flush();
-		em.clear();
-
-		Assert.assertTrue(repository.findAllByProject(project).isEmpty());
-		Assert.assertNull(repository.findOne(subscription));
-	}
-
-	@Test(expected = EntityNotFoundException.class)
-	public void deleteNotVisibleProject() throws Exception {
-		final Subscription one = repository.findOne(subscription);
-		final int project = one.getProject().getId();
-		Assert.assertEquals(1, repository.findAllByProject(project).size());
-		em.clear();
-		initSpringSecurityContext("any");
-		resource.delete(subscription);
 	}
 
 	@Test(expected = ForbiddenException.class)
 	public void deleteNotManagedProject() throws Exception {
 		final Subscription one = repository.findOne(getSubscription("gStack"));
 		final int project = one.getProject().getId();
-		Assert.assertTrue(repository.findAllByProject(project).size() >= 6);
+		Assert.assertEquals(3,repository.findAllByProject(project).size());
 
 		// Ensure LDAP cache is loaded
 		CacheManager.getInstance().getCache("ldap").removeAll();
@@ -128,58 +90,6 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		em.clear();
 		initSpringSecurityContext("alongchu");
 		resource.delete(one.getId());
-	}
-
-	@Test(expected = EntityNotFoundException.class)
-	public void createNotVisibleProject() throws Exception {
-
-		// Test a creation by another user than the team leader and a manager
-		initSpringSecurityContext("any");
-		create();
-	}
-
-	@Test
-	public void createByAnotherManager() throws Exception {
-
-		// Test a creation by another user than the team leader
-		initSpringSecurityContext(DEFAULT_USER);
-		create();
-	}
-
-	@Test
-	public void create() throws Exception {
-		em.createQuery("DELETE Parameter WHERE id LIKE ?1").setParameter(1, "c_%").executeUpdate();
-
-		final SubscriptionEditionVo vo = new SubscriptionEditionVo();
-		final List<ParameterValueEditionVo> parameters = new ArrayList<>();
-		final ParameterValueEditionVo parameterValueEditionVo = new ParameterValueEditionVo();
-		parameterValueEditionVo.setParameter(JiraPluginResource.PARAMETER_PROJECT);
-		parameterValueEditionVo.setInteger(10074);
-		parameters.add(parameterValueEditionVo);
-		final ParameterValueEditionVo parameterValueEditionVo2 = new ParameterValueEditionVo();
-		parameterValueEditionVo2.setParameter(JiraPluginResource.PARAMETER_PKEY);
-		parameterValueEditionVo2.setText("MDA");
-		parameters.add(parameterValueEditionVo2);
-
-		vo.setParameters(parameters);
-		vo.setNode("service:bt:jira:4");
-		vo.setProject(em.createQuery("SELECT id FROM Project WHERE name='gStack'", Integer.class).getSingleResult());
-
-		// Ensure LDAP cache is loaded
-		CacheManager.getInstance().getCache("ldap").removeAll();
-		cache.getLdapData();
-		em.flush();
-		em.clear();
-
-		final int subscription = resource.create(vo);
-		em.flush();
-		em.clear();
-
-		Assert.assertEquals("10074", parameterValueRepository.getSubscriptionParameterValue(subscription, JiraPluginResource.PARAMETER_PROJECT));
-		Assert.assertEquals("MDA", parameterValueRepository.getSubscriptionParameterValue(subscription, JiraPluginResource.PARAMETER_PKEY));
-
-		// Rollback the creation in LDAP
-		resource.delete(subscription, true);
 	}
 
 	@Test

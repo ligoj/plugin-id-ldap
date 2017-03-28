@@ -43,7 +43,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void findAll() {
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "d"));
-		Assert.assertEquals(5, groups.getRecordsTotal());
+		Assert.assertEquals(6, groups.getRecordsTotal());
 
 		final ContainerCountVo group0 = groups.getData().get(0);
 		Assert.assertEquals("DIG", group0.getName());

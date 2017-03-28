@@ -34,8 +34,6 @@ import org.ligoj.app.dao.ProjectRepository;
 import org.ligoj.app.iam.ICompanyRepository;
 import org.ligoj.app.iam.IGroupRepository;
 import org.ligoj.app.iam.IUserRepository;
-import org.ligoj.app.iam.IamConfiguration;
-import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.iam.model.CacheCompany;
 import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.iam.model.CacheMembership;
@@ -117,30 +115,18 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 	private int subscription;
 
 	@Before
-	public void prepareData2() {
+	public void prepareData() throws IOException {
+		persistEntities(
+				"csv", new Class[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class, CacheGroup.class,
+						CacheMembership.class, Project.class, Node.class, Parameter.class, Subscription.class, ParameterValue.class },
+				StandardCharsets.UTF_8.name());
+		CacheManager.getInstance().getCache("container-scopes").removeAll();
+
 		// Only with Spring context
 		this.subscription = getSubscription("gStack");
 
 		// Coverage only
 		resource.getKey();
-	}
-
-	@Before
-	public void prepareData() throws IOException {
-		persistEntities("csv",
-				new Class[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class, CacheGroup.class, CacheMembership.class },
-				StandardCharsets.UTF_8.name());
-		CacheManager.getInstance().getCache("container-scopes").removeAll();
-
-		iamProvider = Mockito.mock(IamProvider.class);
-		final IamConfiguration configuration = Mockito.mock(IamConfiguration.class);
-		Mockito.when(iamProvider.getConfiguration()).thenReturn(configuration);
-		userRepository = Mockito.mock(IUserRepository.class);
-		groupRepository = Mockito.mock(IGroupRepository.class);
-		companyRepository = Mockito.mock(ICompanyRepository.class);
-		Mockito.when(configuration.getUserRepository()).thenReturn(userRepository);
-		Mockito.when(configuration.getCompanyRepository()).thenReturn(companyRepository);
-		Mockito.when(configuration.getGroupRepository()).thenReturn(groupRepository);
 	}
 
 	/**
@@ -154,8 +140,8 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 	 * Return the subscription identifier of a project. Assumes there is only one subscription for a service.
 	 */
 	private int getSubscription(final String project, final String service) {
-		return em.createQuery("SELECT s.id FROM Subscription s WHERE s.project.name = ?1 AND s.node.id LIKE CONCAT(?2,'%')", Integer.class)
-				.setParameter(1, project).setParameter(2, service).setMaxResults(1).getSingleResult();
+		return em.createQuery("SELECT id FROM Subscription WHERE project.name = ?1 AND node.id LIKE CONCAT(?2,'%')", Integer.class)
+				.setParameter(1, project).setParameter(2, service).setMaxResults(1).getResultList().get(0);
 	}
 
 	@Test
@@ -693,7 +679,7 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 		((StreamingOutput) resource.getProjectActivitiesCsv(subscription, "file1").getEntity()).write(output);
 
 		final List<String> csvLines = IOUtils.readLines(new ByteArrayInputStream(output.toByteArray()), StandardCharsets.UTF_8);
-		Assert.assertEquals(2, csvLines.size());
+		Assert.assertEquals(17, csvLines.size());
 		Assert.assertEquals("user;firstName;lastName;mail;JIRA 6", csvLines.get(0));
 		Assert.assertEquals("alongchu;Arnaud;Longchu;arnaud.longchu@sample.com;2015/01/01 00:00:00", csvLines.get(1));
 	}
@@ -773,7 +759,7 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 
 		final List<String> csvLines = IOUtils.readLines(new ByteArrayInputStream(output.toByteArray()), StandardCharsets.UTF_8);
 		Assert.assertEquals("user;firstName;lastName;mail;JIRA 6", csvLines.get(0));
-		Assert.assertEquals(1, csvLines.size());
+		Assert.assertEquals(17, csvLines.size());
 	}
 
 	/**
