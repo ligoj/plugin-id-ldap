@@ -87,7 +87,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	@Before
 	public void prepareSubscription() throws IOException {
 		this.subscription = getSubscription("MDA");
-		persistEntities("csv/app-test", new Class[] { DelegateOrg.class, ContainerScope.class, DelegateNode.class }, StandardCharsets.UTF_8.name());
+		persistEntities("csv", new Class[] { DelegateOrg.class, ContainerScope.class, DelegateNode.class }, StandardCharsets.UTF_8.name());
 		initSpringSecurityContext("fdaugan");
 	}
 

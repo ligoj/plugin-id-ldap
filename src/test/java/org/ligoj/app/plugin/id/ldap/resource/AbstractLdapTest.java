@@ -25,7 +25,7 @@ public abstract class AbstractLdapTest extends AbstractAppTest {
 	 */
 	@Before
 	public void setUp2() throws IOException {
-		persistEntities("csv/app-test", new Class[] { Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class },
+		persistEntities("csv", new Class[] { Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class },
 				StandardCharsets.UTF_8.name());
 	}
 

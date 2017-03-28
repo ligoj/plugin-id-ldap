@@ -2,6 +2,7 @@ package org.ligoj.app.plugin.id.ldap.resource;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.ligoj.app.AbstractAppTest;
 import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.api.Activity;
 import org.ligoj.app.api.GroupOrg;
@@ -29,10 +31,16 @@ import org.ligoj.app.api.UserOrg;
 import org.ligoj.app.dao.NodeRepository;
 import org.ligoj.app.dao.ParameterRepository;
 import org.ligoj.app.dao.ProjectRepository;
+import org.ligoj.app.iam.ICompanyRepository;
+import org.ligoj.app.iam.IGroupRepository;
+import org.ligoj.app.iam.IUserRepository;
+import org.ligoj.app.iam.IamConfiguration;
+import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.iam.model.CacheCompany;
 import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.iam.model.CacheMembership;
 import org.ligoj.app.iam.model.CacheUser;
+import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.model.Node;
 import org.ligoj.app.model.Parameter;
 import org.ligoj.app.model.ParameterValue;
@@ -40,7 +48,7 @@ import org.ligoj.app.model.Project;
 import org.ligoj.app.model.Subscription;
 import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository;
 import org.ligoj.app.plugin.id.ldap.dao.ProjectCustomerLdapRepository;
-import org.ligoj.app.plugin.id.resource.AbstractContainerResourceTest;
+import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.app.plugin.id.resource.IdentityResource;
 import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
 import org.ligoj.app.plugin.id.resource.UserOrgResource;
@@ -71,7 +79,7 @@ import net.sf.ehcache.CacheManager;
 @Rollback
 @Transactional
 @org.junit.FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class LdapPluginResourceTest extends AbstractContainerResourceTest {
+public class LdapPluginResourceTest extends AbstractAppTest {
 	@Autowired
 	private LdapPluginResource resource;
 
@@ -102,6 +110,10 @@ public class LdapPluginResourceTest extends AbstractContainerResourceTest {
 	@Autowired
 	private LdapCacheRepository cache;
 
+	protected IUserRepository userRepository;
+	protected IGroupRepository groupRepository;
+	protected ICompanyRepository companyRepository;
+
 	private int subscription;
 
 	@Before
@@ -111,6 +123,24 @@ public class LdapPluginResourceTest extends AbstractContainerResourceTest {
 
 		// Coverage only
 		resource.getKey();
+	}
+
+	@Before
+	public void prepareData() throws IOException {
+		persistEntities("csv",
+				new Class[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class, CacheGroup.class, CacheMembership.class },
+				StandardCharsets.UTF_8.name());
+		CacheManager.getInstance().getCache("container-scopes").removeAll();
+
+		iamProvider = Mockito.mock(IamProvider.class);
+		final IamConfiguration configuration = Mockito.mock(IamConfiguration.class);
+		Mockito.when(iamProvider.getConfiguration()).thenReturn(configuration);
+		userRepository = Mockito.mock(IUserRepository.class);
+		groupRepository = Mockito.mock(IGroupRepository.class);
+		companyRepository = Mockito.mock(ICompanyRepository.class);
+		Mockito.when(configuration.getUserRepository()).thenReturn(userRepository);
+		Mockito.when(configuration.getCompanyRepository()).thenReturn(companyRepository);
+		Mockito.when(configuration.getGroupRepository()).thenReturn(groupRepository);
 	}
 
 	/**

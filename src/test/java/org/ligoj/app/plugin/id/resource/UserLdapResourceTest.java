@@ -121,7 +121,7 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 
 	@Before
 	public void prepareData() throws IOException {
-		persistEntities("csv/app-test", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
+		persistEntities("csv", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
 		CacheManager.getInstance().getCache("ldap").removeAll();
 
 		// Force the cache to be created

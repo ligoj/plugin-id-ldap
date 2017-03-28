@@ -53,7 +53,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 
 	@Before
 	public void setUpEntities() throws IOException {
-		persistEntities("csv/app-test", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
+		persistEntities("csv", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
 		em.flush();
 		em.clear();
 		expected = repository.findByName("dig rha");

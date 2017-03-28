@@ -54,7 +54,7 @@ public abstract class AbstractContainerLdapResourceTest extends AbstractLdapTest
 
 	@Before
 	public void prepareData() throws IOException {
-		persistEntities("csv/app-test", new Class[] { DelegateOrg.class, ContainerScope.class }, StandardCharsets.UTF_8.name());
+		persistEntities("csv", new Class[] { DelegateOrg.class, ContainerScope.class }, StandardCharsets.UTF_8.name());
 		CacheManager.getInstance().getCache("container-scopes").removeAll();
 		CacheManager.getInstance().getCache("ldap").removeAll();
 		CacheManager.getInstance().getCache("ldap-user-repository").removeAll();

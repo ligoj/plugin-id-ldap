@@ -1,0 +1,4 @@
+id;name;refined.id;mode;uiClasses;tag;tagUiClasses
+service:id;Identity management;;CREATE;fa fa-key;functional;fa fa-suitcase
+service:id:ldap;LDAP;service:id;CREATE;;;
+service:id:ldap:dig;OpenLDAP;service:id:ldap;CREATE;;;
