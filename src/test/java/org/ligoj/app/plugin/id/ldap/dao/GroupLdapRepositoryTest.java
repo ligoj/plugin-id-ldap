@@ -55,7 +55,8 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 		groupRepository.setTemplate(ldapTemplate);
 		addUser(groupRepository);
 
-		Mockito.verify(cacheRepository, VerificationModeFactory.times(1)).addUserToGroup(ArgumentMatchers.any(UserOrg.class), ArgumentMatchers.any(GroupOrg.class));
+		Mockito.verify(cacheRepository, VerificationModeFactory.times(1)).addUserToGroup(ArgumentMatchers.any(UserOrg.class),
+				ArgumentMatchers.any(GroupOrg.class));
 	}
 
 	@Test

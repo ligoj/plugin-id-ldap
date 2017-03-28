@@ -255,6 +255,9 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 
 		// Check the new status of the deleted child
 		Assert.assertFalse(resource.checkSubscriptionStatus(childParameters).getStatus().isUp());
+		
+		// Rollback the creation of the parent
+		resource.delete(parentSubscription.getId(), true);
 	}
 
 	@Test
@@ -341,7 +344,7 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 	 */
 	@Test
 	public void create() throws Exception {
-		create("sea-new-project");
+		resource.delete(create("sea-new-project").getId(), true);
 	}
 
 	/**
@@ -536,6 +539,8 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 		Assert.assertEquals("cn=some-new-project,ou=some,ou=project,dc=sample,dc=com", groupLdap.getDn());
 		Assert.assertEquals("some-new-project", groupLdap.getId());
 		Assert.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("some"));
+
+		resource.delete(subscription2.getId(), true);
 	}
 
 	@Test
@@ -578,6 +583,7 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 		// Invoke link for an already linkd entity, since for now
 		basicLink(subscription2);
 		// Nothing to validate for now...
+		resource.delete(subscription2.getId(), false);
 	}
 
 	@Test(expected = EntityNotFoundException.class)
@@ -681,7 +687,7 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 		final List<String> csvLines = IOUtils.readLines(new ByteArrayInputStream(output.toByteArray()), StandardCharsets.UTF_8);
 		Assert.assertEquals(17, csvLines.size());
 		Assert.assertEquals("user;firstName;lastName;mail;JIRA 6", csvLines.get(0));
-		Assert.assertEquals("alongchu;Arnaud;Longchu;arnaud.longchu@sample.com;2015/01/01 00:00:00", csvLines.get(1));
+		Assert.assertEquals("alongchu;Arnaud;Longchu;arnaud.longchu@sample.com;2015/01/01 00:00:00", csvLines.get(9));
 	}
 
 	@Test

@@ -283,10 +283,10 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 				// Even if the membership update failed, the user does not exist anymore. A broken reference can remains
 				// in LDAP, but this case is well managed.
 				log.info("Unable to remove user {} from the group {} : {}", uniqueMember.getDn(), group, aiue);
-			} catch (final org.springframework.ldap.SchemaViolationException sve) {
+			} catch (final org.springframework.ldap.SchemaViolationException sve) { // NOSONAR - Exception is logged
 				// Occurs when there is a LDAP schema violation such as as last member removed
 				log.warn("Unable to remove user {} from the group {}", uniqueMember.getDn(), group, sve);
-				throw new ValidationJsonException("groups", "last-member-of-group", "user", uniqueMember.getId(), "group", group, sve);
+				throw new ValidationJsonException("groups", "last-member-of-group", "user", uniqueMember.getId(), "group", group);
 			}
 		}
 		return groupLdap;
