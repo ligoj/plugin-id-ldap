@@ -10,11 +10,11 @@ import org.springframework.context.ApplicationContext;
 
 import org.ligoj.bootstrap.AbstractDataGeneratorTest;
 import org.ligoj.bootstrap.core.SpringUtils;
-import org.ligoj.app.api.CompanyOrg;
-import org.ligoj.app.api.GroupOrg;
-import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.CompanyOrg;
+import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.IamConfiguration;
 import org.ligoj.app.iam.IamProvider;
+import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.plugin.id.ldap.dao.CompanyLdapRepository;
 import org.ligoj.app.plugin.id.ldap.dao.GroupLdapRepository;
 import org.ligoj.app.plugin.id.ldap.dao.LdapCacheDao;

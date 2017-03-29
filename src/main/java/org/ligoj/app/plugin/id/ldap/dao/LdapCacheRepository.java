@@ -5,11 +5,11 @@ import java.util.Map;
 
 import javax.cache.annotation.CacheResult;
 
-import org.ligoj.app.api.CompanyOrg;
-import org.ligoj.app.api.GroupOrg;
 import org.ligoj.app.api.Normalizer;
-import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.CompanyOrg;
+import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.IamProvider;
+import org.ligoj.app.iam.UserOrg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

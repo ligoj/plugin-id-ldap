@@ -3,8 +3,8 @@ package org.ligoj.app.plugin.id.ldap.resource;
 import java.util.Collection;
 import java.util.Map;
 
-import org.ligoj.app.api.Activity;
 import org.ligoj.app.api.ServicePlugin;
+import org.ligoj.app.iam.Activity;
 import org.ligoj.app.resource.ActivitiesProvider;
 
 public class SampleActivityProvider implements ActivitiesProvider, ServicePlugin {

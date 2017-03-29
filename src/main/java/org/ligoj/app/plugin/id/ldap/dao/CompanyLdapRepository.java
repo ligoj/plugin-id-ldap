@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 
 import javax.naming.ldap.LdapName;
 
-import org.ligoj.app.api.CompanyOrg;
 import org.ligoj.app.api.Normalizer;
+import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.ICompanyRepository;
 import org.ligoj.app.iam.dao.CacheCompanyRepository;
 import org.ligoj.app.iam.model.CacheCompany;

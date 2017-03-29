@@ -27,15 +27,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
-import org.ligoj.app.api.Activity;
-import org.ligoj.app.api.GroupOrg;
 import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.api.ServicePlugin;
 import org.ligoj.app.api.SubscriptionStatusWithData;
-import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.Activity;
+import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.IamConfiguration;
 import org.ligoj.app.iam.IamConfigurationProvider;
 import org.ligoj.app.iam.IamProvider;
+import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.model.Node;
 import org.ligoj.app.model.Subscription;

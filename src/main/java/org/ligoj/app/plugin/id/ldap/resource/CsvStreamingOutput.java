@@ -11,8 +11,8 @@ import java.util.Map;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.lang3.time.FastDateFormat;
-import org.ligoj.app.api.Activity;
-import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.Activity;
+import org.ligoj.app.iam.UserOrg;
 import org.ligoj.bootstrap.core.INamableBean;
 
 /**

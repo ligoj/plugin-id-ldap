@@ -21,7 +21,7 @@
 			<exclusions>
 				<exclusion>
 					<groupId>org.ligoj.api</groupId>
-					<artifactId>plugin-iam-public</artifactId>
+					<artifactId>plugin-iam-empty</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -29,6 +29,7 @@
 			<groupId>org.ligoj.plugin</groupId>
 			<artifactId>plugin-id</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

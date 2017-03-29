@@ -3,15 +3,12 @@ package org.ligoj.app.resource.node.sample;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import org.springframework.stereotype.Component;
-
 import org.ligoj.app.api.ConfigurablePlugin;
 import org.ligoj.app.resource.plugin.AbstractServicePlugin;
 
 /**
  * The bug tracker service.
  */
-@Component
 public class BugTrackerResource extends AbstractServicePlugin implements ConfigurablePlugin {
 
 	/**

@@ -15,11 +15,11 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.ligoj.app.api.GroupOrg;
-import org.ligoj.app.api.ResourceOrg;
 import org.ligoj.app.api.Normalizer;
-import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.IGroupRepository;
+import org.ligoj.app.iam.ResourceOrg;
+import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.iam.dao.CacheGroupRepository;
 import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.model.ContainerType;

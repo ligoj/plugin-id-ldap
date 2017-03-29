@@ -19,9 +19,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import org.ligoj.bootstrap.AbstractJpaTest;
-import org.ligoj.app.api.CompanyOrg;
-import org.ligoj.app.api.GroupOrg;
-import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.CompanyOrg;
+import org.ligoj.app.iam.GroupOrg;
+import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.iam.model.CacheCompany;
 import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.iam.model.CacheMembership;

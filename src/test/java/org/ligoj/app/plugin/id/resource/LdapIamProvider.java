@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 /**
  * LDAP IAM provider.
  */
-@Component
 public class LdapIamProvider implements IamProvider {
 
 	@Autowired

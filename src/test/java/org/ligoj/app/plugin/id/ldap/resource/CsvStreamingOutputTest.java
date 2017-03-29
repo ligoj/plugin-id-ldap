@@ -15,8 +15,8 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.ligoj.app.api.Activity;
-import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.Activity;
+import org.ligoj.app.iam.UserOrg;
 import org.ligoj.bootstrap.core.INamableBean;
 import org.ligoj.bootstrap.core.NamedBean;
 

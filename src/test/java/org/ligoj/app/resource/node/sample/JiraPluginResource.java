@@ -1,11 +1,8 @@
 package org.ligoj.app.resource.node.sample;
 
-import org.springframework.stereotype.Component;
-
 /**
  * Basic JIRA business features
  */
-@Component
 public class JiraPluginResource extends AbstractToolPluginResource {
 
 	/**

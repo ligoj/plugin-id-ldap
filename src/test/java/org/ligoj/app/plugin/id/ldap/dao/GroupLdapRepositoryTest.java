@@ -24,8 +24,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.ligoj.bootstrap.AbstractDataGeneratorTest;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.ligoj.app.MatcherUtil;
-import org.ligoj.app.api.GroupOrg;
-import org.ligoj.app.api.UserOrg;
+import org.ligoj.app.iam.GroupOrg;
+import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.plugin.id.ldap.dao.GroupLdapRepository;
 import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository;
 
