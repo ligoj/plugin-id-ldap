@@ -7,7 +7,6 @@ import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.plugin.id.ldap.resource.LdapPluginResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
 
 /**
  * LDAP IAM provider.
