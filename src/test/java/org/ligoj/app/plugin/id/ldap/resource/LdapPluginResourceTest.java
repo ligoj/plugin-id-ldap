@@ -136,14 +136,6 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 		return getSubscription(project, IdentityResource.SERVICE_KEY);
 	}
 
-	/**
-	 * Return the subscription identifier of a project. Assumes there is only one subscription for a service.
-	 */
-	private int getSubscription(final String project, final String service) {
-		return em.createQuery("SELECT id FROM Subscription WHERE project.name = ?1 AND node.id LIKE CONCAT(?2,'%')", Integer.class)
-				.setParameter(1, project).setParameter(2, service).setMaxResults(1).getResultList().get(0);
-	}
-
 	@Test
 	public void deleteNoMoreGroup() throws Exception {
 		final Subscription subscription = new Subscription();

@@ -63,14 +63,6 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		return getSubscription(project, IdentityResource.SERVICE_KEY);
 	}
 
-	/**
-	 * Return the subscription identifier of MDA. Assumes there is only one subscription for a service.
-	 */
-	protected int getSubscription(final String project, final String service) {
-		return em.createQuery("SELECT s.id FROM Subscription s WHERE s.project.name = ?1 AND s.node.id LIKE CONCAT(?2,'%')", Integer.class)
-				.setParameter(1, project).setParameter(2, service).getResultList().get(0);
-	}
-
 	@Before
 	public void prepareSubscription() throws IOException {
 		persistEntities("csv", new Class[] { DelegateOrg.class, ContainerScope.class, DelegateNode.class }, StandardCharsets.UTF_8.name());
