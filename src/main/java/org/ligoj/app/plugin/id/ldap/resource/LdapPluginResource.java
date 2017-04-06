@@ -495,10 +495,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 		final Set<INamableBean<String>> nodes = new LinkedHashSet<>();
 		for (final Subscription projectSubscription : subscriptions) {
 			final ServicePlugin resource = servicePluginLocator.getResource(projectSubscription.getNode().getId());
-			if (resource != null) {
-				// Plug-in is resolved and enabled
-				addSubscriptionActivities(activities, userLogins, projectSubscription, resource, nodes);
-			}
+			addSubscriptionActivities(activities, userLogins, projectSubscription, resource, nodes);
 		}
 		result.setNodes(nodes);
 		result.setActivities(activities);
