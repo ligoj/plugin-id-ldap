@@ -75,6 +75,11 @@ public class UserLdapRepository implements IUserRepository {
 	private static final Random RANDOM = new SecureRandom();
 
 	/**
+	 * User password LDAP attribute.
+	 */
+	private static final String PASSWORD_ATTRIBUTE = "userPassword";
+
+	/**
 	 * LDAP class filter.
 	 */
 	public static final String OBJECT_CLASS = "objectClass";
@@ -354,10 +359,6 @@ public class UserLdapRepository implements IUserRepository {
 	}
 
 	private class Mapper extends AbstractContextMapper<UserOrg> {
-		/**
-		 * User password LDAP attribute.
-		 */
-		private static final String PASSWORD_ATTRIBUTE = "userPassword";
 
 		@Override
 		public UserOrg doMapFromContext(final DirContextOperations context) {
@@ -613,7 +614,7 @@ public class UserLdapRepository implements IUserRepository {
 			final long timeInMillis = DateUtils.newCalendar().getTimeInMillis();
 			mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(lockedAttribute,
 					String.format("%s|%s|%s|%s|", lockedValue, timeInMillis, principal, isolate ? user.getCompany() : "")));
-			mods[1] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", null));
+			mods[1] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_ATTRIBUTE, null));
 			template.modifyAttributes(org.springframework.ldap.support.LdapUtils.newLdapName(user.getDn()), mods);
 
 			// Also update the disabled date
@@ -666,7 +667,7 @@ public class UserLdapRepository implements IUserRepository {
 			@Override
 			public String doMapFromContext(final DirContextOperations context) {
 				// Get the password
-				return new String(ObjectUtils.defaultIfNull((byte[]) context.getObjectAttribute("userPassword"), new byte[0]),
+				return new String(ObjectUtils.defaultIfNull((byte[]) context.getObjectAttribute(PASSWORD_ATTRIBUTE), new byte[0]),
 						StandardCharsets.UTF_8);
 			}
 		}).stream().findFirst().orElse(null);
@@ -697,6 +698,6 @@ public class UserLdapRepository implements IUserRepository {
 
 	@Override
 	public void setPassword(final UserOrg userLdap, final String password) {
-		set(userLdap, "userPassword", digest(password));
+		set(userLdap, PASSWORD_ATTRIBUTE, digest(password));
 	}
 }
