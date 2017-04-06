@@ -44,6 +44,7 @@ import org.ligoj.app.model.Parameter;
 import org.ligoj.app.model.ParameterValue;
 import org.ligoj.app.model.Project;
 import org.ligoj.app.model.Subscription;
+import org.ligoj.app.plugin.id.ldap.dao.GroupLdapRepository;
 import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository;
 import org.ligoj.app.plugin.id.ldap.dao.ProjectCustomerLdapRepository;
 import org.ligoj.app.plugin.id.model.ContainerScope;
@@ -174,18 +175,6 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void zzdelete() throws Exception {
-		initSpringSecurityContext("fdaugan");
-		final Map<String, String> parameters = subscriptionResource.getParameters(subscription);
-		Assert.assertTrue(resource.checkSubscriptionStatus(parameters).getStatus().isUp());
-		resource.delete(subscription, true);
-		em.flush();
-		em.clear();
-		Assert.assertFalse(resource.checkSubscriptionStatus(parameters).getStatus().isUp());
-		subscriptionResource.getParameters(subscription).isEmpty();
-	}
-
-	@Test
 	public void zzdeleteWithSubGroup() throws Exception {
 		// Create the data
 		initSpringSecurityContext("fdaugan");
@@ -245,13 +234,20 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 		Assert.assertFalse(subscriptionResource.getParameters(parentSubscription.getId()).isEmpty());
 		Assert.assertEquals(1, resource.findGroupsByName("sea-parent-for-2deletion").size());
 		Assert.assertTrue(getGroup().findAll().get("sea-parent-for-2deletion").getSubGroups().isEmpty());
+		Assert.assertNull(getGroup().findAll().get("sea-parent-for-2deletion-sub"));
 		Assert.assertEquals("sea-parent-for-2deletion", resource.findGroupsByName("sea-parent-for-2deletion").get(0).getId());
+		Assert.assertNull(((GroupLdapRepository) getGroup()).findAllNoCache().get("sea-parent-for-2deletion-sub"));
 
 		// Check the new status of the deleted child
 		Assert.assertFalse(resource.checkSubscriptionStatus(childParameters).getStatus().isUp());
-		
+
 		// Rollback the creation of the parent
 		resource.delete(parentSubscription.getId(), true);
+		Assert.assertEquals(0, resource.findGroupsByName("sea-parent-for-2deletion").size());
+		Assert.assertNull(getGroup().findAll().get("sea-parent-for-2deletion"));
+
+		// Check the LDAP content
+		Assert.assertNull(((GroupLdapRepository) getGroup()).findAllNoCache().get("sea-parent-for-2deletion"));
 	}
 
 	@Test
