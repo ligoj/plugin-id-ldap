@@ -14,6 +14,7 @@ import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.IamConfiguration;
 import org.ligoj.app.iam.IamProvider;
+import org.ligoj.app.iam.ResourceOrg;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.plugin.id.ldap.dao.CompanyLdapRepository;
 import org.ligoj.app.plugin.id.ldap.dao.GroupLdapRepository;
@@ -102,7 +103,7 @@ public class LdapCacheRepositoryTest extends AbstractDataGeneratorTest {
 		LdapData.values();
 		LdapData.valueOf(LdapData.COMPANY.name());
 
-		final Map<LdapData, Map<String, ?>> ldapData = repository.getLdapData();
+		final Map<LdapData, Map<String, ? extends ResourceOrg>> ldapData = repository.getLdapData();
 
 		Assert.assertEquals("Company", ((CompanyOrg) ldapData.get(LdapData.COMPANY).get("company")).getName());
 		Assert.assertEquals("dnc", ((CompanyOrg) ldapData.get(LdapData.COMPANY).get("company")).getDn());

@@ -9,6 +9,7 @@ import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.IamProvider;
+import org.ligoj.app.iam.ResourceOrg;
 import org.ligoj.app.iam.UserOrg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -42,8 +43,8 @@ public class LdapCacheRepository {
 	 * Reset the database cache with the LDAP data.
 	 */
 	@CacheResult(cacheName = "ldap")
-	public Map<LdapData, Map<String, ?>> getLdapData() {
-		final Map<LdapData, Map<String, ?>> result = new EnumMap<>(LdapData.class);
+	public Map<LdapData, Map<String, ? extends ResourceOrg>> getLdapData() {
+		final Map<LdapData, Map<String, ? extends ResourceOrg>> result = new EnumMap<>(LdapData.class);
 
 		// Fetch LDAP data
 		log.info("Fetching LDAP data ...");
