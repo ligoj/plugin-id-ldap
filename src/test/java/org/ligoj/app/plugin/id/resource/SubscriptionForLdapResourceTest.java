@@ -60,7 +60,9 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	 * Return the subscription identifier of MDA. Assumes there is only one subscription for a service.
 	 */
 	protected int getSubscription(final String project) {
-		return getSubscription(project, IdentityResource.SERVICE_KEY);
+		// TODO Replace this call when api-test/1.0.1 released
+		return em.createQuery("SELECT id FROM Subscription WHERE project.name = ?1 AND node.id LIKE CONCAT(?2,'%')", Integer.class)
+				.setParameter(1, project).setParameter(2, IdentityResource.SERVICE_KEY).setMaxResults(1).getSingleResult();
 	}
 
 	@Before
@@ -73,7 +75,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	public void deleteNotManagedProject() throws Exception {
 		final Subscription one = repository.findOne(getSubscription("gStack"));
 		final int project = one.getProject().getId();
-		Assert.assertEquals(3,repository.findAllByProject(project).size());
+		Assert.assertEquals(3, repository.findAllByProject(project).size());
 
 		// Ensure LDAP cache is loaded
 		CacheManager.getInstance().getCache("ldap").removeAll();

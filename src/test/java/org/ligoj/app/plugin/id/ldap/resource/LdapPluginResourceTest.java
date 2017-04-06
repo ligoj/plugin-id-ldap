@@ -133,7 +133,9 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 	 * Return the subscription identifier of MDA. Assumes there is only one subscription for a service.
 	 */
 	private int getSubscription(final String project) {
-		return getSubscription(project, IdentityResource.SERVICE_KEY);
+		// TODO Replace this call when api-test/1.0.1 released
+		return em.createQuery("SELECT id FROM Subscription WHERE project.name = ?1 AND node.id LIKE CONCAT(?2,'%')", Integer.class)
+				.setParameter(1, project).setParameter(2, IdentityResource.SERVICE_KEY).setMaxResults(1).getSingleResult();
 	}
 
 	@Test
