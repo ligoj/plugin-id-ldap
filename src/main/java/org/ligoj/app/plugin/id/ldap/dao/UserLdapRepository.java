@@ -354,13 +354,18 @@ public class UserLdapRepository implements IUserRepository {
 	}
 
 	private class Mapper extends AbstractContextMapper<UserOrg> {
+		/**
+		 * User password LDAP attribute.
+		 */
+		private static final String PASSWORD_ATTRIBUTE = "userPassword";
+
 		@Override
 		public UserOrg doMapFromContext(final DirContextOperations context) {
 			final UserOrg user = new UserOrg();
 			user.setDn(context.getDn().toString());
 			user.setLastName(context.getStringAttribute("sn"));
 			user.setFirstName(context.getStringAttribute("givenName"));
-			user.setSecured(context.getObjectAttribute("userPassword") != null);
+			user.setSecured(context.getObjectAttribute(PASSWORD_ATTRIBUTE) != null);
 			user.setId(Normalizer.normalize(context.getStringAttribute(uidAttribute)));
 
 			// Special and also optional attributes
