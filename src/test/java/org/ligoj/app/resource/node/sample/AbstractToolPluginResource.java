@@ -2,8 +2,6 @@ package org.ligoj.app.resource.node.sample;
 
 import java.util.Map;
 
-import org.ligoj.app.api.SubscriptionStatusWithData;
-
 /**
  * Sonar resource.
  */
@@ -17,17 +15,6 @@ public abstract class AbstractToolPluginResource extends org.ligoj.app.resource.
 	@Override
 	public String getLastVersion() {
 		return "1";
-	}
-
-	@Override
-	public boolean checkStatus(final String node, final Map<String, String> parameters) throws Exception {
-		return true;
-	}
-
-	@Override
-	public SubscriptionStatusWithData checkSubscriptionStatus(final String node, final Map<String, String> parameters)
-			throws Exception {
-		return new SubscriptionStatusWithData();
 	}
 
 	@Override

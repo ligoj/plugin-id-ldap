@@ -92,7 +92,7 @@ public class LdapCacheRepositoryTest extends AbstractDataGeneratorTest {
 		CacheManager.getInstance().getCache("ldap").removeAll();
 		
 		repository = new LdapCacheRepository();
-		repository.iamProvider = iamProvider;
+		repository.iamProvider = new IamProvider[] { iamProvider };
 		repository.ldapCacheDao = Mockito.mock(LdapCacheDao.class);
 	}
 

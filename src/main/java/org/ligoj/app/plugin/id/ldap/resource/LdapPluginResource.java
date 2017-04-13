@@ -195,7 +195,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	private ContainerScopeResource containerScopeResource;
 
 	@Autowired
-	private IamProvider iamProvider;
+	private IamProvider[] iamProvider;
 
 	@Autowired
 	protected ServicePluginLocator servicePluginLocator;
@@ -686,7 +686,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	}
 
 	@Override
-	public SubscriptionStatusWithData checkSubscriptionStatus(final String node, final Map<String, String> parameters) throws Exception {
+	public SubscriptionStatusWithData checkSubscriptionStatus(final Map<String, String> parameters) throws Exception {
 		final GroupOrg groupLdap = getGroup().findById(parameters.get(IdentityResource.PARAMETER_GROUP));
 		if (groupLdap == null) {
 			return new SubscriptionStatusWithData(false);
@@ -716,7 +716,7 @@ public class LdapPluginResource extends AbstractToolPluginResource implements Id
 	 * @return Group repository provider.
 	 */
 	private GroupLdapRepository getGroup() {
-		return (GroupLdapRepository) iamProvider.getConfiguration().getGroupRepository();
+		return (GroupLdapRepository) iamProvider[0].getConfiguration().getGroupRepository();
 	}
 
 	@Override

@@ -26,7 +26,7 @@ public class ProjectCustomerLdapRepository {
 	private static final String CUSTOMER_OF_PROJECT = "organizationalUnit";
 
 	@Autowired
-	private IamProvider iamProvider;
+	private IamProvider[] iamProvider;
 
 	/**
 	 * Fetch and return all normalized customers for projects. Note the result use cache, so does not reflect the LDAP.
@@ -91,6 +91,6 @@ public class ProjectCustomerLdapRepository {
 	 * @return User repository provider.
 	 */
 	private UserLdapRepository getUser() {
-		return (UserLdapRepository) iamProvider.getConfiguration().getUserRepository();
+		return (UserLdapRepository) iamProvider[0].getConfiguration().getUserRepository();
 	}
 }

@@ -1683,6 +1683,6 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 	@Test
 	public void setIamProviderForTest() {
 		// There for test by other plugin/application
-		new UserOrgResource().setIamProvider(Mockito.mock(IamProvider.class));
+		new UserOrgResource().setIamProvider(new IamProvider[] { Mockito.mock(IamProvider.class) });
 	}
 }

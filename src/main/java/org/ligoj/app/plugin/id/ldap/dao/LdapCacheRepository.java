@@ -37,7 +37,7 @@ public class LdapCacheRepository {
 	 * IAM provider.
 	 */
 	@Autowired
-	protected IamProvider iamProvider;
+	protected IamProvider[] iamProvider;
 
 	/**
 	 * Reset the database cache with the LDAP data.
@@ -241,7 +241,7 @@ public class LdapCacheRepository {
 	 * @return User repository provider.
 	 */
 	private UserLdapRepository getUser() {
-		return (UserLdapRepository) iamProvider.getConfiguration().getUserRepository();
+		return (UserLdapRepository) iamProvider[0].getConfiguration().getUserRepository();
 	}
 
 	/**
@@ -250,7 +250,7 @@ public class LdapCacheRepository {
 	 * @return Company repository provider.
 	 */
 	private CompanyLdapRepository getCompany() {
-		return (CompanyLdapRepository) iamProvider.getConfiguration().getCompanyRepository();
+		return (CompanyLdapRepository) iamProvider[0].getConfiguration().getCompanyRepository();
 	}
 
 	/**
@@ -259,6 +259,6 @@ public class LdapCacheRepository {
 	 * @return Group repository provider.
 	 */
 	private GroupLdapRepository getGroup() {
-		return (GroupLdapRepository) iamProvider.getConfiguration().getGroupRepository();
+		return (GroupLdapRepository) iamProvider[0].getConfiguration().getGroupRepository();
 	}
 }
