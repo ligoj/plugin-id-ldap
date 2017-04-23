@@ -1,4 +1,4 @@
-## :link: Ligoj Identity LDAP plugin [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.ligoj.app.plugin/plugin-id-ldap/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.ligoj.api/root)
+## :link: Ligoj Identity LDAP plugin [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-id-ldap/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-id-ldap)
 API plugin used for compatibility check
 
 [![Build Status](https://travis-ci.org/ligoj/plugin-id-ldap.svg?branch=master)](https://travis-ci.org/ligoj/plugin-id-ldap)
