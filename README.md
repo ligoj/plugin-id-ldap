@@ -1,5 +1,4 @@
 ## :link: Ligoj Identity LDAP plugin [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-id-ldap/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-id-ldap) [![Download](https://api.bintray.com/packages/ligoj/maven-repo/plugin-id-ldap/images/download.svg) ](https://bintray.com/ligoj/maven-repo/plugin-id-ldap/_latestVersion)
-API plugin used for compatibility check
 
 [![Build Status](https://travis-ci.org/ligoj/plugin-id-ldap.svg?branch=master)](https://travis-ci.org/ligoj/plugin-id-ldap)
 [![Build Status](https://circleci.com/gh/ligoj/plugin-id-ldap.svg?style=svg)](https://circleci.com/gh/ligoj/plugin-id-ldap)
@@ -13,3 +12,8 @@ API plugin used for compatibility check
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/abf810c094e44c0691f71174c707d6ed)](https://www.codacy.com/app/ligoj/plugin-id-ldap?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ligoj/plugin-id-ldap&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/ligoj/plugin-id-ldap/badge)](https://www.codefactor.io/repository/github/ligoj/plugin-id-ldap)
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://gus.mit-license.org/)
+
+[Ligoj](https://github.com/ligoj/ligoj) LDAP identity plugin, and extending [Identity plugin](https://github.com/ligoj/plugin-id)
+Provides the following features :
+- LDAP synchronization and caching
+- User activity contribution
