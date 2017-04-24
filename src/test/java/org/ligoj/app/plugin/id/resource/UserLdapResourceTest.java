@@ -146,12 +146,6 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void authenticate() {
-		Assert.assertTrue(resource.authenticate("fdaugan", "Azerty01"));
-		Assert.assertFalse(resource.authenticate("fdaugan", "-bad-"));
-	}
-
-	@Test
 	public void findByIdCaseInsensitive() {
 		final UserOrg userLdap = resource.findById("fdaugan");
 		findById(userLdap);
