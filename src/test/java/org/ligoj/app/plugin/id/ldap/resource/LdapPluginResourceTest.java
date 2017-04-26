@@ -653,7 +653,7 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 		final Activity activity = new Activity();
 		activity.setLastConnection(getDate(2015, 1, 1));
 		activities.put("alongchu", activity);
-		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any(Collection.class))).thenReturn(activities);
+		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any())).thenReturn(activities);
 
 		// Stub service locator
 		final ServicePluginLocator servicePluginLocator = Mockito.mock(ServicePluginLocator.class);
@@ -691,7 +691,7 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 		final Activity activity = new Activity();
 		activity.setLastConnection(getDate(2015, 1, 1));
 		activities.put("alongchu", activity);
-		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any(Collection.class))).thenReturn(activities);
+		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any())).thenReturn(activities);
 
 		// Stub service locator
 		final ServicePluginLocator servicePluginLocator = Mockito.mock(ServicePluginLocator.class);
@@ -729,7 +729,7 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 		final Activity activity = new Activity();
 		activity.setLastConnection(getDate(2015, 1, 1));
 		activities.put("alongchu", activity);
-		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any(Collection.class))).thenReturn(activities);
+		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any())).thenReturn(activities);
 
 		// Stub service locator
 		final ServicePluginLocator servicePluginLocator = Mockito.mock(ServicePluginLocator.class);
