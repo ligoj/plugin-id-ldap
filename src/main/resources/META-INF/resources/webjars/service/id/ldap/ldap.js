@@ -8,20 +8,11 @@ define(function () {
 		},
 
 		/**
-		 * Render LDAP group.
-		 */
-		renderKey: function (subscription) {
-			return current.$super('renderKey')(subscription, 'service:id:group');
-		},
-
-		/**
 		 * Render LDAP.
 		 */
 		renderFeatures: function (subscription) {
 			var result = '';
 			var now = moment();
-			// Add LDAP group link
-			result += current.$super('renderServicelink')('users', '#/home/project/' + subscription.project + '/subscription/' + subscription.id, 'service:id:group-manage');
 
 			// Add activity export
 			result += '<div class="btn-group btn-link" data-container="body" data-toggle="tooltip" title="' + current.$messages['export'] + '">';
@@ -30,25 +21,7 @@ define(function () {
 			result += current.$super('renderServicelink')('file-excel-o', REST_PATH + 'service/id/ldap/activity/' + subscription.id + '/group-' + subscription.parameters['service:id:group'] + '-' + now.format('YYYY-MM-DD') + '.csv', undefined, 'service:id:activity-group', ' download');
 			result += current.$super('renderServicelink')('file-excel-o', REST_PATH + 'service/id/ldap/activity/' + subscription.id + '/project-' + subscription.parameters['service:id:group'] + '-' + now.format('YYYY-MM-DD') + '.csv', undefined, 'service:id:activity-project', ' download');
 			result += '</li></ul></div>';
-			// Help
-			result += current.$super('renderServiceHelpLink')(subscription.parameters, 'service:id:help');
 			return result;
-		},
-
-		/**
-		 * Display the amount of members
-		 */
-		renderDetailsFeatures: function (subscription) {
-			if (subscription.data.members) {
-				return '<span data-toggle="tooltip" title="' + current.$messages.members + '" class="label label-default">' + subscription.data.members + '</span>';
-			}
-		},
-
-		/**
-		 * Render LDAP details : id and amount of members.
-		 */
-		renderDetailsKey: function (subscription) {
-			return current.renderKey(subscription);
 		},
 
 		/**
