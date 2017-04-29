@@ -177,7 +177,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		final ContainerScope typeLdap = containerScopeRepository.findByName("France");
 		final ContainerEditionVo group = new ContainerEditionVo();
 		group.setName("New-Ax-1-z:Z 0");
-		group.setType(typeLdap.getId());
+		group.setScope(typeLdap.getId());
 		initSpringSecurityContext("mmartin");
 		resource.create(group);
 	}
@@ -226,7 +226,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		final ContainerScope typeLdap = containerScopeRepository.findByName("France");
 		final ContainerEditionVo group = new ContainerEditionVo();
 		group.setName("orange");
-		group.setType(typeLdap.getId());
+		group.setScope(typeLdap.getId());
 		resource.create(group);
 	}
 
@@ -235,7 +235,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		final ContainerScope typeLdap = containerScopeRepository.findByName("Fonction");
 		final ContainerEditionVo company = new ContainerEditionVo();
 		company.setName("New-Ax-1-z:Z 0");
-		company.setType(typeLdap.getId());
+		company.setScope(typeLdap.getId());
 		resource.create(company);
 	}
 
@@ -254,7 +254,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		final ContainerScope typeLdap = containerScopeRepository.findByName("France");
 		final ContainerEditionVo company = new ContainerEditionVo();
 		company.setName("New-Ax-1-z:Z 0");
-		company.setType(typeLdap.getId());
+		company.setScope(typeLdap.getId());
 		resource.create(company);
 
 		// Check the creation from cache

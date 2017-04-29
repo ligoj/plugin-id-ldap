@@ -212,7 +212,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		final ContainerScope typeLdap = containerScopeRepository.findByName("Fonction");
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setName("New-Ax-1-z:Z 0");
-		group.setType(typeLdap.getId());
+		group.setScope(typeLdap.getId());
 		initSpringSecurityContext("mmartin");
 		resource.create(group);
 	}
@@ -222,7 +222,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setName("DIG");
-		group.setType(scope.getId());
+		group.setScope(scope.getId());
 		resource.create(group);
 	}
 
@@ -328,7 +328,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	private void createInternal(final GroupEditionVo group, final String expected) {
 		final ContainerScope typeLdap = containerScopeRepository.findByName("Fonction");
 		group.setName("New-Ax-1-z:Z 0");
-		group.setType(typeLdap.getId());
+		group.setScope(typeLdap.getId());
 		resource.create(group);
 
 		// Check the creation from cache
