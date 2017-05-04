@@ -56,15 +56,6 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	@Autowired
 	private ParameterValueRepository parameterValueRepository;
 
-	/**
-	 * Return the subscription identifier of MDA. Assumes there is only one subscription for a service.
-	 */
-	protected int getSubscription(final String project) {
-		// TODO Replace this call when api-test/1.0.1 released
-		return em.createQuery("SELECT id FROM Subscription WHERE project.name = ?1 AND node.id LIKE CONCAT(?2,'%')", Integer.class)
-				.setParameter(1, project).setParameter(2, IdentityResource.SERVICE_KEY).setMaxResults(1).getSingleResult();
-	}
-
 	@Before
 	public void prepareSubscription() throws IOException {
 		persistEntities("csv", new Class[] { DelegateOrg.class, ContainerScope.class, DelegateNode.class }, StandardCharsets.UTF_8.name());
@@ -73,7 +64,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 
 	@Test(expected = ForbiddenException.class)
 	public void deleteNotManagedProject() throws Exception {
-		final Subscription one = repository.findOne(getSubscription("gStack"));
+		final Subscription one = repository.findOne(getSubscription("gStack", IdentityResource.SERVICE_KEY));
 		final int project = one.getProject().getId();
 		Assert.assertEquals(3, repository.findAllByProject(project).size());
 
