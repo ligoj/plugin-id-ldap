@@ -19,6 +19,12 @@
 		<spring-ldap.version>2.3.1.RELEASE</spring-ldap.version>
 	</properties>
 
+	<scm>
+		<connection>scm:git:https://github.com/ligoj/plugin-id-ldap</connection>
+		<developerConnection>scm:git:https://github.com/ligoj/plugin-id-ldap</developerConnection>
+		<url>https://github.com/ligoj/plugin-id-ldap.git</url>
+	</scm>
+
 	<dependencyManagement>
 		<dependencies>
 			<!-- LDAP -->
