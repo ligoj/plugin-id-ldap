@@ -23,7 +23,7 @@ import org.ligoj.app.model.Subscription;
 import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository;
 import org.ligoj.app.plugin.id.ldap.resource.AbstractLdapTest;
 import org.ligoj.app.plugin.id.model.ContainerScope;
-import org.ligoj.app.resource.node.ParameterValueEditionVo;
+import org.ligoj.app.resource.node.ParameterValueCreateVo;
 import org.ligoj.app.resource.subscription.SubscriptionEditionVo;
 import org.ligoj.app.resource.subscription.SubscriptionResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,16 +89,16 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		}
 
 		final SubscriptionEditionVo vo = new SubscriptionEditionVo();
-		final List<ParameterValueEditionVo> parameters = new ArrayList<>();
-		final ParameterValueEditionVo parameterValueEditionVo = new ParameterValueEditionVo();
+		final List<ParameterValueCreateVo> parameters = new ArrayList<>();
+		final ParameterValueCreateVo parameterValueEditionVo = new ParameterValueCreateVo();
 		parameterValueEditionVo.setParameter(IdentityResource.PARAMETER_OU);
 		parameterValueEditionVo.setText("gfi");
 		parameters.add(parameterValueEditionVo);
-		final ParameterValueEditionVo parameterValueEditionVo2 = new ParameterValueEditionVo();
+		final ParameterValueCreateVo parameterValueEditionVo2 = new ParameterValueCreateVo();
 		parameterValueEditionVo2.setParameter(IdentityResource.PARAMETER_PARENT_GROUP);
 		parameterValueEditionVo2.setText("gfi-gstack");
 		parameters.add(parameterValueEditionVo2);
-		final ParameterValueEditionVo parameterValueEditionVo3 = new ParameterValueEditionVo();
+		final ParameterValueCreateVo parameterValueEditionVo3 = new ParameterValueCreateVo();
 		parameterValueEditionVo3.setParameter(IdentityResource.PARAMETER_GROUP);
 		parameterValueEditionVo3.setText("gfi-gstack-client");
 		parameters.add(parameterValueEditionVo3);
@@ -159,16 +159,16 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		}
 
 		final SubscriptionEditionVo vo = new SubscriptionEditionVo();
-		final List<ParameterValueEditionVo> parameters = new ArrayList<>();
-		final ParameterValueEditionVo parameterValueEditionVo = new ParameterValueEditionVo();
+		final List<ParameterValueCreateVo> parameters = new ArrayList<>();
+		final ParameterValueCreateVo parameterValueEditionVo = new ParameterValueCreateVo();
 		parameterValueEditionVo.setParameter(IdentityResource.PARAMETER_OU);
 		parameterValueEditionVo.setText("gfi");
 		parameters.add(parameterValueEditionVo);
-		final ParameterValueEditionVo parameterValueEditionVo2 = new ParameterValueEditionVo();
+		final ParameterValueCreateVo parameterValueEditionVo2 = new ParameterValueCreateVo();
 		parameterValueEditionVo2.setParameter(IdentityResource.PARAMETER_PARENT_GROUP);
 		parameterValueEditionVo2.setText("");
 		parameters.add(parameterValueEditionVo2);
-		final ParameterValueEditionVo parameterValueEditionVo3 = new ParameterValueEditionVo();
+		final ParameterValueCreateVo parameterValueEditionVo3 = new ParameterValueCreateVo();
 		parameterValueEditionVo3.setParameter(IdentityResource.PARAMETER_GROUP);
 		parameterValueEditionVo3.setText("gfi-gstack-client2");
 		parameters.add(parameterValueEditionVo3);
