@@ -1,7 +1,11 @@
 package org.ligoj.app.plugin.id.ldap.dao;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -10,16 +14,22 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.ligoj.app.dao.CacheProjectGroupRepository;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.ContainerOrg;
 import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.UserOrg;
+import org.ligoj.app.iam.dao.DelegateOrgRepository;
 import org.ligoj.app.iam.model.CacheCompany;
 import org.ligoj.app.iam.model.CacheContainer;
 import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.iam.model.CacheMembership;
 import org.ligoj.app.iam.model.CacheUser;
+import org.ligoj.app.iam.model.ReceiverType;
+import org.ligoj.app.model.CacheProjectGroup;
+import org.ligoj.app.model.Project;
 import org.ligoj.bootstrap.core.DescribedBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +45,12 @@ public class LdapCacheDao {
 	@PersistenceContext(type = PersistenceContextType.TRANSACTION, unitName = "pu")
 	private EntityManager em;
 
+	@Autowired
+	private CacheProjectGroupRepository cacheProjectGroupRepository;
+
+	@Autowired
+	private DelegateOrgRepository delegateOrgRepository;
+
 	/**
 	 * Reset the database cache with the LDAP data.
 	 * 
@@ -45,7 +61,8 @@ public class LdapCacheDao {
 	 * @param companies
 	 *            All companies.
 	 */
-	public void reset(final Map<String, CompanyOrg> companies, final Map<String, GroupOrg> groups, final Map<String, UserOrg> users) {
+	public void reset(final Map<String, CompanyOrg> companies, final Map<String, GroupOrg> groups,
+			final Map<String, UserOrg> users) {
 		final long start = System.currentTimeMillis();
 
 		// Remove all CACHE_* entries
@@ -54,18 +71,45 @@ public class LdapCacheDao {
 
 		// Insert data into database
 		log.info("Inserting data ...");
-		persistCompanies(companies);
+		final Map<String, CacheCompany> cacheCompanies = persistCompanies(companies);
+		em.flush();
+		final Map<String, CacheGroup> cacheGroups = persistGroups(groups);
+		em.flush();
+		final int memberships = persistMemberships(users, cacheGroups, cacheCompanies);
+		em.flush();
+		final int subscribedProjects = persistProjectGroups(cacheGroups);
+		em.flush();
+		final long updatedDelegate = updateDelegateDn(cacheGroups, cacheCompanies);
 		em.flush();
 		em.clear();
-		persistGroups(groups);
-		em.flush();
-		em.clear();
-		final int memberships = persistMemberships(users, groups);
-		em.flush();
-		em.clear();
-		log.info("Synchronization finished in {} : {} groups, {} companies, {} users, {} memberships",
-				DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - start), groups.size(), companies.size(), users.size(),
-				memberships);
+		log.info(
+				"Done in {} : {} groups, {} companies, {} users, {} memberships, {} project groups, {} updated delegates",
+				DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - start), cacheGroups.size(),
+				cacheCompanies.size(), users.size(), memberships, subscribedProjects, updatedDelegate);
+	}
+
+	/**
+	 * Update the receiver DN of delegates with receiver are containers.
+	 */
+	private long updateDelegateDn(final Map<String, CacheGroup> groups, final Map<String, CacheCompany> companies) {
+		return updateDelegateDn(groups, ReceiverType.GROUP) + updateDelegateDn(companies, ReceiverType.COMPANY);
+	}
+
+	/**
+	 * Update the receiver DN of delegates with receiver are containers.
+	 */
+	private long updateDelegateDn(final Map<String, ? extends CacheContainer> groups, final ReceiverType type) {
+		final AtomicInteger updated = new AtomicInteger();
+		delegateOrgRepository.findAllBy("receiverType", type).stream().map(d -> {
+			final String dn = Optional.ofNullable(groups.get(d.getReceiver())).map(CacheContainer::getDescription)
+					.orElse(null);
+			if (!dn.equalsIgnoreCase(d.getReceiverDn())) {
+				d.setReceiverDn(dn);
+				updated.incrementAndGet();
+			}
+			return d;
+		}).filter(d -> d.getReceiverDn() == null).forEach(delegateOrgRepository::delete);
+		return updated.get();
 	}
 
 	/**
@@ -73,18 +117,19 @@ public class LdapCacheDao {
 	 * 
 	 * @param users
 	 *            The LDAP users.
-	 * @param allGroups
+	 * @param cacheGroups
 	 *            The groups already persisted in database.
 	 * @return the amount of persisted relations.
 	 */
-	private int persistMemberships(final Map<String, UserOrg> users, final Map<String, GroupOrg> allGroups) {
+	private int persistMemberships(final Map<String, UserOrg> users, final Map<String, CacheGroup> cacheGroups,
+			final Map<String, CacheCompany> cacheCompanies) {
 		int memberships = 0;
 		for (final UserOrg user : users.values()) {
 
 			// Persist users
-			final CacheUser entity = createInternal(user);
+			final CacheUser entity = createInternal(user, cacheCompanies);
 			for (final String group : user.getGroups()) {
-				addUserToGroupInternal(entity, allGroups.get(group));
+				addUserToGroupInternal(entity, cacheGroups.get(group));
 				memberships++;
 			}
 		}
@@ -92,23 +137,46 @@ public class LdapCacheDao {
 	}
 
 	/**
+	 * Persist association between project and groups.
+	 * 
+	 * @param groups
+	 *            The groups already persisted in database.
+	 * @return the amount of persisted relations.
+	 */
+	private int persistProjectGroups(final Map<String, CacheGroup> groups) {
+		final List<Object[]> allProjectGroup = cacheProjectGroupRepository.findAllProjectGroup();
+		for (final Object[] projectGroup : allProjectGroup) {
+			final Project project = new Project();
+			project.setId((int) projectGroup[0]);
+			final CacheProjectGroup entity = new CacheProjectGroup();
+			entity.setProject(project);
+			entity.setGroup(groups.get(projectGroup[1]));
+			em.persist(entity);
+		}
+		return allProjectGroup.size();
+	}
+
+	/**
 	 * Persist groups and return saved entities
 	 */
-	private void persistGroups(final Map<String, GroupOrg> groups) {
-		groups.values().forEach(this::create);
+	private Map<String, CacheGroup> persistGroups(final Map<String, GroupOrg> groups) {
+		return groups.values().stream().map(this::create)
+				.collect(Collectors.toMap(CacheGroup::getId, Function.identity()));
 	}
 
 	/**
 	 * Persist companies and return saved entities
 	 */
-	private void persistCompanies(final Map<String, CompanyOrg> companies) {
-		companies.values().forEach(this::create);
+	private Map<String, CacheCompany> persistCompanies(final Map<String, CompanyOrg> companies) {
+		return companies.values().stream().map(this::create)
+				.collect(Collectors.toMap(CacheCompany::getId, Function.identity()));
 	}
 
 	/**
 	 * Remove all data from database.
 	 */
 	public void clear() {
+		em.createQuery("DELETE FROM CacheProjectGroup").executeUpdate();
 		em.createQuery("DELETE FROM CacheMembership").executeUpdate();
 		em.createQuery("DELETE FROM CacheUser").executeUpdate();
 		em.createQuery("DELETE FROM CacheGroup").executeUpdate();
@@ -118,17 +186,21 @@ public class LdapCacheDao {
 	}
 
 	/**
-	 * Persist a new group
+	 * Persist a new group and return it.
 	 */
-	private void createInternal(final GroupOrg group) {
-		em.persist(toCacheGroup(group));
+	private CacheGroup createInternal(final GroupOrg group) {
+		final CacheGroup entity = toCacheGroup(group);
+		em.persist(entity);
+		return entity;
 	}
 
 	/**
 	 * Persist a new company
 	 */
-	private void createInternal(final CompanyOrg company) {
-		em.persist(toCacheCompany(company));
+	private CacheCompany createInternal(final CompanyOrg company) {
+		final CacheCompany cacheCompany = toCacheCompany(company);
+		em.persist(cacheCompany);
+		return cacheCompany;
 	}
 
 	/**
@@ -158,11 +230,10 @@ public class LdapCacheDao {
 	 * 
 	 * @param group
 	 *            the group to persist.
+	 * @return The persisted {@link CacheGroup}
 	 */
-	public void create(final GroupOrg group) {
-		createInternal(group);
-		em.flush();
-		em.clear();
+	public CacheGroup create(final GroupOrg group) {
+		return createInternal(group);
 	}
 
 	/**
@@ -170,18 +241,20 @@ public class LdapCacheDao {
 	 * 
 	 * @param company
 	 *            the company to persist.
+	 * @return The persisted {@link CacheCompany}
 	 */
-	public void create(final CompanyOrg company) {
-		createInternal(company);
-		em.flush();
-		em.clear();
+	public CacheCompany create(final CompanyOrg company) {
+		return createInternal(company);
 	}
 
 	/**
 	 * Persist a new user
 	 */
-	private CacheUser createInternal(final UserOrg user) {
-		final CacheUser entity = toCacheUser(user);
+	private CacheUser createInternal(final UserOrg user, final Map<String, CacheCompany> companies) {
+		final CacheUser entity = toCacheUserInternal(user);
+
+		// Set the company if defined
+		entity.setCompany(Optional.ofNullable(user.getCompany()).map(companies::get).orElse(null));
 		em.persist(entity);
 		return entity;
 	}
@@ -190,13 +263,7 @@ public class LdapCacheDao {
 	 * Transform user to JPA.
 	 */
 	private CacheUser toCacheUser(final UserOrg user) {
-		final CacheUser entity = new CacheUser();
-		entity.setId(user.getId());
-		entity.setFirstName(user.getFirstName());
-		entity.setLastName(user.getLastName());
-		if (CollectionUtils.isNotEmpty(user.getMails())) {
-			entity.setMails(user.getMails().get(0));
-		}
+		final CacheUser entity = toCacheUserInternal(user);
 
 		// Set the company if defined
 		entity.setCompany(Optional.ofNullable(user.getCompany()).map(c -> {
@@ -208,13 +275,35 @@ public class LdapCacheDao {
 	}
 
 	/**
+	 * Transform user to JPA.
+	 */
+	private CacheUser toCacheUserInternal(final UserOrg user) {
+		final CacheUser entity = new CacheUser();
+		entity.setId(user.getId());
+		entity.setFirstName(user.getFirstName());
+		entity.setLastName(user.getLastName());
+		if (CollectionUtils.isNotEmpty(user.getMails())) {
+			entity.setMails(user.getMails().get(0));
+		}
+		return entity;
+	}
+
+	/**
 	 * Persist a new user and flush
 	 * 
 	 * @param user
 	 *            the user to persist.
 	 */
 	public void create(final UserOrg user) {
-		createInternal(user);
+		final CacheUser entity = toCacheUser(user);
+
+		// Set the company if defined
+		entity.setCompany(Optional.ofNullable(user.getCompany()).map(c -> {
+			final CacheCompany company = new CacheCompany();
+			company.setId(user.getCompany());
+			return company;
+		}).orElse(null));
+		em.persist(entity);
 		em.flush();
 		em.clear();
 	}
@@ -239,7 +328,10 @@ public class LdapCacheDao {
 	 *            the group to delete.
 	 */
 	public void delete(final GroupOrg group) {
-		em.createQuery("DELETE FROM CacheMembership WHERE group.id=:id OR subGroup.id=:id").setParameter("id", group.getId()).executeUpdate();
+		em.createQuery("DELETE FROM CacheProjectGroup WHERE group.id=:id").setParameter("id", group.getId())
+				.executeUpdate();
+		em.createQuery("DELETE FROM CacheMembership WHERE group.id=:id OR subGroup.id=:id")
+				.setParameter("id", group.getId()).executeUpdate();
 		em.createQuery("DELETE FROM CacheGroup WHERE id=:id").setParameter("id", group.getId()).executeUpdate();
 		em.flush();
 		em.clear();
@@ -252,13 +344,15 @@ public class LdapCacheDao {
 	 *            the group to empty.
 	 */
 	public void empty(final GroupOrg group) {
-		em.createQuery("DELETE FROM CacheMembership WHERE group.id=:id").setParameter("id", group.getId()).executeUpdate();
+		em.createQuery("DELETE FROM CacheMembership WHERE group.id=:id").setParameter("id", group.getId())
+				.executeUpdate();
 		em.flush();
 		em.clear();
 	}
 
 	/**
-	 * Delete a company. Warning, it is assumed there is no more user associated to the deleted company.
+	 * Delete a company. Warning, it is assumed there is no more user associated to
+	 * the deleted company.
 	 * 
 	 * @param company
 	 *            the company to delete.
@@ -276,7 +370,8 @@ public class LdapCacheDao {
 	 *            the user to delete.
 	 */
 	public void delete(final UserOrg user) {
-		em.createQuery("DELETE FROM CacheMembership WHERE user.id=:id").setParameter("id", user.getId()).executeUpdate();
+		em.createQuery("DELETE FROM CacheMembership WHERE user.id=:id").setParameter("id", user.getId())
+				.executeUpdate();
 		em.createQuery("DELETE FROM CacheUser WHERE id=:id").setParameter("id", user.getId()).executeUpdate();
 		em.flush();
 		em.clear();
@@ -291,8 +386,8 @@ public class LdapCacheDao {
 	 *            the group to update.
 	 */
 	public void removeUserFromGroup(final UserOrg user, final GroupOrg group) {
-		em.createQuery("DELETE FROM CacheMembership WHERE user.id=:user AND group.id=:group").setParameter("group", group.getId())
-				.setParameter("user", user.getId()).executeUpdate();
+		em.createQuery("DELETE FROM CacheMembership WHERE user.id=:user AND group.id=:group")
+				.setParameter("group", group.getId()).setParameter("user", user.getId()).executeUpdate();
 	}
 
 	/**
@@ -304,8 +399,8 @@ public class LdapCacheDao {
 	 *            the group to update.
 	 */
 	public void removeGroupFromGroup(final GroupOrg subGroup, final GroupOrg group) {
-		em.createQuery("DELETE FROM CacheMembership WHERE subGroup.id=:subGroup AND group.id=:group").setParameter("group", group.getId())
-				.setParameter("subGroup", subGroup.getId()).executeUpdate();
+		em.createQuery("DELETE FROM CacheMembership WHERE subGroup.id=:subGroup AND group.id=:group")
+				.setParameter("group", group.getId()).setParameter("subGroup", subGroup.getId()).executeUpdate();
 	}
 
 	/**
@@ -317,7 +412,7 @@ public class LdapCacheDao {
 	 *            the group to update.
 	 */
 	public void addUserToGroup(final UserOrg user, final GroupOrg group) {
-		addUserToGroupInternal(em.find(CacheUser.class, user.getId()), group);
+		addUserToGroupInternal(em.find(CacheUser.class, user.getId()), em.find(CacheGroup.class, group.getId()));
 	}
 
 	/**
@@ -335,12 +430,10 @@ public class LdapCacheDao {
 	/**
 	 * Associate a user to a group.
 	 */
-	private void addUserToGroupInternal(final CacheUser entity, final GroupOrg groupLdap) {
+	private void addUserToGroupInternal(final CacheUser entity, final CacheGroup groupLdap) {
 		final CacheMembership membership = new CacheMembership();
-		final CacheGroup cacheGroup = new CacheGroup();
-		cacheGroup.setId(groupLdap.getId());
 		membership.setUser(entity);
-		membership.setGroup(cacheGroup);
+		membership.setGroup(groupLdap);
 		em.persist(membership);
 	}
 

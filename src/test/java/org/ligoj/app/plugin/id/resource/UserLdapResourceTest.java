@@ -20,7 +20,6 @@ import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.iam.SimpleUserOrg;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.iam.model.DelegateOrg;
-import org.ligoj.app.iam.model.DelegateType;
 import org.ligoj.app.plugin.id.ldap.dao.GroupLdapRepository;
 import org.ligoj.app.plugin.id.ldap.dao.UserLdapRepository;
 import org.ligoj.app.plugin.id.ldap.resource.AbstractLdapTest;
@@ -1569,53 +1568,6 @@ public class UserLdapResourceTest extends AbstractLdapTest {
 		user.setId("flast1");
 		user.setCompany("ing");
 		repository.updateMembership(groups, user);
-	}
-
-	@Test
-	public void isGrantedNotSameType() {
-		final DelegateOrg delegate = new DelegateOrg();
-		delegate.setType(DelegateType.GROUP);
-		Assert.assertFalse(resource.isGrantedAccess(delegate, null, DelegateType.COMPANY, true));
-	}
-
-	@Test
-	public void isGrantedSameTypeNoRight() {
-		final DelegateOrg delegate = new DelegateOrg();
-		delegate.setType(DelegateType.GROUP);
-		Assert.assertFalse(resource.isGrantedAccess(delegate, null, DelegateType.GROUP, true));
-	}
-
-	@Test
-	public void isGrantedSameTypeNotSameDn() {
-		final DelegateOrg delegate = new DelegateOrg();
-		delegate.setType(DelegateType.GROUP);
-		Assert.assertFalse(resource.isGrantedAccess(delegate, null, DelegateType.GROUP, false));
-	}
-
-	@Test
-	public void isGranted() {
-		final DelegateOrg delegate = new DelegateOrg();
-		delegate.setType(DelegateType.GROUP);
-		delegate.setDn("rightdn");
-		Assert.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateType.GROUP, false));
-	}
-
-	@Test
-	public void isGrantedAsAdmin() {
-		final DelegateOrg delegate = new DelegateOrg();
-		delegate.setType(DelegateType.GROUP);
-		delegate.setCanAdmin(true);
-		delegate.setDn("rightdn");
-		Assert.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateType.GROUP, true));
-	}
-
-	@Test
-	public void isGrantedAsWriter() {
-		final DelegateOrg delegate = new DelegateOrg();
-		delegate.setType(DelegateType.GROUP);
-		delegate.setCanWrite(true);
-		delegate.setDn("rightdn");
-		Assert.assertTrue(resource.isGrantedAccess(delegate, "rightdn", DelegateType.GROUP, true));
 	}
 
 	@Test

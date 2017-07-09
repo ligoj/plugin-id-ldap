@@ -143,7 +143,7 @@ public abstract class AbstractContainerLdaRepository<T extends ContainerOrg, C e
 	 * Check the pattern against the given group.
 	 */
 	private void addFilteredByPattern(final String criteria, final Set<T> result, final T group) {
-		if (criteria == null || matchPattern(group, criteria)) {
+		if (StringUtils.isEmpty(criteria) || matchPattern(group, criteria)) {
 			// Pattern match
 			result.add(group);
 		}

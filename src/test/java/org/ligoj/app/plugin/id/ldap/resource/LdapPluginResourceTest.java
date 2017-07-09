@@ -39,6 +39,7 @@ import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.iam.model.CacheMembership;
 import org.ligoj.app.iam.model.CacheUser;
 import org.ligoj.app.iam.model.DelegateOrg;
+import org.ligoj.app.model.CacheProjectGroup;
 import org.ligoj.app.model.Node;
 import org.ligoj.app.model.Parameter;
 import org.ligoj.app.model.ParameterValue;
@@ -119,7 +120,8 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 	public void prepareData() throws IOException {
 		persistEntities(
 				"csv", new Class[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class, CacheGroup.class,
-						CacheMembership.class, Project.class, Node.class, Parameter.class, Subscription.class, ParameterValue.class },
+						CacheMembership.class, Project.class, Node.class, Parameter.class, Subscription.class, ParameterValue.class, 
+						CacheProjectGroup.class },
 				StandardCharsets.UTF_8.name());
 		CacheManager.getInstance().getCache("container-scopes").removeAll();
 
