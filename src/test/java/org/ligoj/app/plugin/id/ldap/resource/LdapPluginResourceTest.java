@@ -53,7 +53,7 @@ import org.ligoj.app.plugin.id.resource.IdentityResource;
 import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
 import org.ligoj.app.plugin.id.resource.UserOrgResource;
 import org.ligoj.app.resource.ServicePluginLocator;
-import org.ligoj.app.resource.node.NodeResource;
+import org.ligoj.app.resource.node.ParameterValueResource;
 import org.ligoj.app.resource.subscription.SubscriptionResource;
 import org.ligoj.bootstrap.core.INamableBean;
 import org.ligoj.bootstrap.core.resource.BusinessException;
@@ -84,7 +84,7 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 	private LdapPluginResource resource;
 
 	@Autowired
-	private NodeResource nodeResource;
+	private ParameterValueResource pvResource;
 
 	@Autowired
 	private ParameterRepository parameterRepository;
@@ -260,7 +260,7 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher(IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOW_ID));
 
-		final Map<String, String> parameters = nodeResource.getParametersAsMap("service:id:ldap:dig");
+		final Map<String, String> parameters = pvResource.getNodeParameters("service:id:ldap:dig");
 		parameters.put(IdentityResource.PARAMETER_GROUP, "broken");
 		resource.validateGroup(parameters);
 	}
@@ -270,14 +270,14 @@ public class LdapPluginResourceTest extends AbstractAppTest {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher(IdentityResource.PARAMETER_GROUP, "group-type"));
 
-		final Map<String, String> parameters = nodeResource.getParametersAsMap("service:id:ldap:dig");
+		final Map<String, String> parameters = pvResource.getNodeParameters("service:id:ldap:dig");
 		parameters.put(IdentityResource.PARAMETER_GROUP, "vigireport");
 		resource.validateGroup(parameters);
 	}
 
 	@Test
 	public void validateGroup() {
-		final Map<String, String> parameters = nodeResource.getParametersAsMap("service:id:ldap:dig");
+		final Map<String, String> parameters = pvResource.getNodeParameters("service:id:ldap:dig");
 		parameters.put(IdentityResource.PARAMETER_GROUP, "gfi-gstack");
 
 		final INamableBean<String> group = resource.validateGroup(parameters);

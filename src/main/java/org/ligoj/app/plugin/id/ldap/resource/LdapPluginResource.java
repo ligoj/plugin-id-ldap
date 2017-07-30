@@ -224,7 +224,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	@CacheResult(cacheName = "ldap-user-repository")
 	public UserLdapRepository getUserLdapRepository(@CacheKey final String node) {
 		log.info("Build ldap template for node {}", node);
-		final Map<String, String> parameters = nodeResource.getParametersAsMap(node);
+		final Map<String, String> parameters = pvResource.getNodeParameters(node);
 		final LdapContextSource contextSource = new LdapContextSource();
 		contextSource.setReferral(parameters.get(PARAMETER_REFERRAL));
 		contextSource.setPassword(parameters.get(PARAMETER_PASSWORD));
@@ -266,7 +266,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	 * @return The {@link UserLdapRepository} instance. Cache is involved.
 	 */
 	public GroupLdapRepository newGroupLdapRepository(final String node, final LdapTemplate template) {
-		final Map<String, String> parameters = nodeResource.getParametersAsMap(node);
+		final Map<String, String> parameters = pvResource.getNodeParameters(node);
 
 		// A new repository instance
 		final GroupLdapRepository repository = new GroupLdapRepository();
@@ -288,7 +288,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	 * @return The {@link UserLdapRepository} instance. Cache is involved.
 	 */
 	public CompanyLdapRepository newCompanyLdapRepository(final String node, final LdapTemplate template) {
-		final Map<String, String> parameters = nodeResource.getParametersAsMap(node);
+		final Map<String, String> parameters = pvResource.getNodeParameters(node);
 
 		// A new repository instance
 		final CompanyLdapRepository repository = new CompanyLdapRepository();
@@ -314,7 +314,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	@Override
 	public boolean accept(final Authentication authentication, final String node) {
-		final Map<String, String> parameters = nodeResource.getParametersAsMap(node);
+		final Map<String, String> parameters = pvResource.getNodeParameters(node);
 		return !parameters.isEmpty() && authentication.getName()
 				.matches(StringUtils.defaultString(parameters.get(IdentityResource.PARAMETER_UID_PATTERN), ".*"));
 	}

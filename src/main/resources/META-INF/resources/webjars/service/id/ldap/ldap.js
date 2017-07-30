@@ -47,7 +47,7 @@ define(function () {
 		registerIdGroupSelect2: function (configuration, id) {
 			var cProviders = configuration.providers['form-group'];
 			var previousProvider = cProviders[id] || cProviders.standard;
-			if (current.$super('isSubscriptionCreateMode')()) {
+			if (configuration.mode === 'create') {
 				cProviders[id] = function (parameter, container, $input) {
 					// Register a live validation of group
 					var simpleGroupId = 'service:id:group-simple-name';
