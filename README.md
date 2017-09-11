@@ -7,7 +7,7 @@
 [![Build Status](https://ci.appveyor.com/api/projects/status/5926fmf0p5qp9j16/branch/master?svg=true)](https://ci.appveyor.com/project/ligoj/plugin-id-ldap/branch/master)
 [![Coverage Status](https://coveralls.io/repos/github/ligoj/plugin-id-ldap/badge.svg?branch=master)](https://coveralls.io/github/ligoj/plugin-id-ldap?branch=master)
 [![Dependency Status](https://www.versioneye.com/user/projects/58caeda8dcaf9e0041b5b978/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/58caeda8dcaf9e0041b5b978)
-[![Quality Gate](https://sonarqube.com/api/badges/gate?key=org.ligoj.plugin:plugin-id-ldap)](https://sonarqube.com/dashboard/index/org.ligoj.plugin:plugin-id-ldap)
+[![Quality Gate](https://sonarcloud.io/api/badges/gate?key=org.ligoj.plugin:plugin-id-ldap)](https://sonarcloud.io/dashboard/index/org.ligoj.plugin:plugin-id-ldap)
 [![Sourcegraph Badge](https://sourcegraph.com/github.com/ligoj/plugin-id-ldap/-/badge.svg)](https://sourcegraph.com/github.com/ligoj/plugin-id-ldap?badge)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/abf810c094e44c0691f71174c707d6ed)](https://www.codacy.com/app/ligoj/plugin-id-ldap?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ligoj/plugin-id-ldap&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/ligoj/plugin-id-ldap/badge)](https://www.codefactor.io/repository/github/ligoj/plugin-id-ldap)
