@@ -18,8 +18,8 @@ define(function () {
 			result += '<div class="btn-group btn-link" data-container="body" data-toggle="tooltip" title="' + current.$messages['export'] + '">';
 			result += ' <i class="fa fa-download" data-toggle="dropdown"></i>';
 			result += ' <ul class="dropdown-menu dropdown-menu-right"><li>';
-			result += current.$super('renderServicelink')('file-excel-o', REST_PATH + 'service/id/ldap/activity/' + subscription.id + '/group-' + subscription.parameters['service:id:group'] + '-' + now.format('YYYY-MM-DD') + '.csv', undefined, 'service:id:activity-group', ' download');
-			result += current.$super('renderServicelink')('file-excel-o', REST_PATH + 'service/id/ldap/activity/' + subscription.id + '/project-' + subscription.parameters['service:id:group'] + '-' + now.format('YYYY-MM-DD') + '.csv', undefined, 'service:id:activity-project', ' download');
+			result += current.$super('renderServicelink')('file-excel-o', REST_PATH + 'service/id/ldap/activity/' + subscription.id + '/group-' + subscription.parameters['service:id:group'] + '-' + now.format('YYYY-MM-DD') + '.csv', null, 'service:id:activity-group', ' download');
+			result += current.$super('renderServicelink')('file-excel-o', REST_PATH + 'service/id/ldap/activity/' + subscription.id + '/project-' + subscription.parameters['service:id:group'] + '-' + now.format('YYYY-MM-DD') + '.csv', null, 'service:id:activity-project', ' download');
 			result += '</li></ul></div>';
 			return result;
 		},
@@ -29,7 +29,7 @@ define(function () {
 		 */
 		registerIdOuSelect2: function (configuration, id) {
 			configuration.validators[id] = current.validateIdOuCreateMode;
-			current.$super('registerXServiceSelect2')(configuration, id, 'service/id/ldap/customer/', undefined, true);
+			current.$super('registerXServiceSelect2')(configuration, id, 'service/id/ldap/customer/', null, true);
 		},
 		/**
 		 * Replace the default text rendering by a Select2 for ParentGroup.
