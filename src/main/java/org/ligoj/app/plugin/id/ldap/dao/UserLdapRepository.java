@@ -1,7 +1,6 @@
 package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -57,7 +55,6 @@ import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.AbstractContextMapper;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
-import org.springframework.security.authentication.encoding.LdapShaPasswordEncoder;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -68,11 +65,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class UserLdapRepository implements IUserRepository {
-
-	/**
-	 * Shared Random instance.
-	 */
-	private static final Random RANDOM = new SecureRandom();
 
 	/**
 	 * User password LDAP attribute.
@@ -690,10 +682,9 @@ public class UserLdapRepository implements IUserRepository {
 	 *            the clear password to digest.
 	 * @return a SSHA digest.
 	 */
+	@SuppressWarnings("deprecation")
 	private String digest(final String password) {
-		final byte[] bytes = new byte[4];
-		RANDOM.nextBytes(bytes);
-		return new LdapShaPasswordEncoder().encodePassword(password, bytes);
+		return new org.springframework.security.crypto.password.LdapShaPasswordEncoder().encode(password);
 	}
 
 	@Override
