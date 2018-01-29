@@ -16,3 +16,5 @@
 Provides the following features :
 - LDAP synchronization and caching
 - User activity contribution
+
+Requires [IAM Node plugin](https://github.com/ligoj/plugin-iam-node) to select the LDAP node used for authentication.
