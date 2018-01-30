@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.ligoj.app.iam.Activity;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.bootstrap.core.INamableBean;
@@ -72,10 +72,10 @@ public class CsvStreamingOutputTest {
 		final List<String> lines = IOUtils.readLines(new ByteArrayInputStream(out.toByteArray()), StandardCharsets.UTF_8);
 
 		// Check
-		Assert.assertEquals(3, lines.size());
-		Assert.assertEquals("user;firstName;lastName;mail;J0N;J1N", lines.get(0));
-		Assert.assertEquals("U0;F0;L0;;1970/01/01 01:00:00;", lines.get(1));
-		Assert.assertEquals("U1;F1;L1;M1", lines.get(2));
+		Assertions.assertEquals(3, lines.size());
+		Assertions.assertEquals("user;firstName;lastName;mail;J0N;J1N", lines.get(0));
+		Assertions.assertEquals("U0;F0;L0;;1970/01/01 01:00:00;", lines.get(1));
+		Assertions.assertEquals("U1;F1;L1;M1", lines.get(2));
 
 	}
 }

@@ -9,34 +9,29 @@ import javax.naming.directory.SchemaViolationException;
 import javax.naming.ldap.LdapName;
 import javax.transaction.Transactional;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.ligoj.app.MatcherUtil;
+import org.ligoj.app.iam.GroupOrg;
+import org.ligoj.app.iam.UserOrg;
+import org.ligoj.bootstrap.AbstractDataGeneratorTest;
+import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.mockito.internal.verification.VerificationModeFactory;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import org.ligoj.bootstrap.AbstractDataGeneratorTest;
-import org.ligoj.bootstrap.core.validation.ValidationJsonException;
-import org.ligoj.app.MatcherUtil;
-import org.ligoj.app.iam.GroupOrg;
-import org.ligoj.app.iam.UserOrg;
-import org.ligoj.app.plugin.id.ldap.dao.GroupLdapRepository;
-import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * Test class of {@link GroupLdapRepository}
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-@org.junit.FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 
 	@Test
@@ -76,14 +71,14 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 		groupRepository.setTemplate(ldapTemplate);
 		addUser(groupRepository);
 
-		Assert.assertEquals(1, users.size());
-		Assert.assertTrue(users.contains("flast1"));
+		Assertions.assertEquals(1, users.size());
+		Assertions.assertTrue(users.contains("flast1"));
 	}
 
 	/**
 	 * Mock a not managed LDAP desynchronization
 	 */
-	@Test(expected = org.springframework.ldap.AttributeInUseException.class)
+	@Test
 	public void addUserSyncError() {
 		final GroupLdapRepository groupRepository = newGroupLdapRepository();
 		final LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate.class);
@@ -91,7 +86,9 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 		Mockito.doThrow(new org.springframework.ldap.AttributeInUseException(new AttributeInUseException("any"))).when(ldapTemplate)
 				.modifyAttributes(ArgumentMatchers.any(LdapName.class), ArgumentMatchers.any());
 
-		addUser(groupRepository);
+		Assertions.assertThrows(org.springframework.ldap.AttributeInUseException.class, () -> {
+			addUser(groupRepository);
+		});
 	}
 
 	/**
@@ -148,8 +145,6 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	 */
 	@Test
 	public void removeUserSchema() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher("groups", "last-member-of-group"));
 		final GroupLdapRepository groupRepository = new GroupLdapRepository() {
 			@Override
 			public GroupOrg findById(final String name) {
@@ -164,7 +159,9 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 		groupRepository.setTemplate(ldapTemplate);
 		Mockito.doThrow(new org.springframework.ldap.SchemaViolationException(new SchemaViolationException("any"))).when(ldapTemplate)
 				.modifyAttributes(ArgumentMatchers.any(LdapName.class), ArgumentMatchers.any());
-		removeUser(groupRepository);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			removeUser(groupRepository);
+		}), "groups", "last-member-of-group");
 	}
 
 	@Test

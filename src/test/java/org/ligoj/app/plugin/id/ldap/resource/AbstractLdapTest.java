@@ -3,7 +3,7 @@ package org.ligoj.app.plugin.id.ldap.resource;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.ligoj.app.AbstractAppTest;
 import org.ligoj.app.model.Node;
 import org.ligoj.app.model.Parameter;
@@ -23,7 +23,7 @@ public abstract class AbstractLdapTest extends AbstractAppTest {
 	/**
 	 * Prepare the Spring Security in the context, not the REST one.
 	 */
-	@Before
+	@BeforeEach
 	public void setUp2() throws IOException {
 		persistEntities("csv", new Class[] { Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class },
 				StandardCharsets.UTF_8.name());

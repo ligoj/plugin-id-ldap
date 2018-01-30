@@ -9,10 +9,10 @@ import java.util.List;
 import javax.transaction.Transactional;
 import javax.ws.rs.ForbiddenException;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.ligoj.app.api.SubscriptionMode;
 import org.ligoj.app.dao.ParameterValueRepository;
 import org.ligoj.app.dao.SubscriptionRepository;
@@ -31,14 +31,14 @@ import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import net.sf.ehcache.CacheManager;
 
 /**
  * Test class of {@link SubscriptionResource}
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
@@ -56,17 +56,17 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	@Autowired
 	private ParameterValueRepository parameterValueRepository;
 
-	@Before
+	@BeforeEach
 	public void prepareSubscription() throws IOException {
 		persistEntities("csv", new Class[] { DelegateOrg.class, ContainerScope.class, DelegateNode.class }, StandardCharsets.UTF_8.name());
 		initSpringSecurityContext("fdaugan");
 	}
 
-	@Test(expected = ForbiddenException.class)
+	@Test
 	public void deleteNotManagedProject() throws Exception {
 		final Subscription one = repository.findOne(getSubscription("gStack", IdentityResource.SERVICE_KEY));
 		final int project = one.getProject().getId();
-		Assert.assertEquals(3, repository.findAllByProject(project).size());
+		Assertions.assertEquals(3, repository.findAllByProject(project).size());
 
 		// Ensure LDAP cache is loaded
 		CacheManager.getInstance().getCache("ldap").removeAll();
@@ -74,7 +74,9 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		em.flush();
 		em.clear();
 		initSpringSecurityContext("alongchu");
-		resource.delete(one.getId());
+		Assertions.assertThrows(ForbiddenException.class, () -> {
+			resource.delete(one.getId());
+		});
 	}
 
 	@Test
@@ -119,22 +121,22 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		em.flush();
 		em.clear();
 
-		Assert.assertEquals("gfi-gstack-client",
+		Assertions.assertEquals("gfi-gstack-client",
 				parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_GROUP));
-		Assert.assertEquals("gfi", parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_OU));
-		Assert.assertEquals("gfi-gstack",
+		Assertions.assertEquals("gfi", parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_OU));
+		Assertions.assertEquals("gfi-gstack",
 				parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_PARENT_GROUP));
 
 		// Check the creation in LDAP
 		final GroupOrg group = getGroup().findById("gfi-gstack-client");
-		Assert.assertNotNull(group);
-		Assert.assertEquals("gfi-gstack-client", group.getName());
-		Assert.assertEquals("gfi-gstack-client", group.getId());
-		Assert.assertEquals(dn, group.getDn());
+		Assertions.assertNotNull(group);
+		Assertions.assertEquals("gfi-gstack-client", group.getName());
+		Assertions.assertEquals("gfi-gstack-client", group.getId());
+		Assertions.assertEquals(dn, group.getDn());
 
 		// Rollback the creation in LDAP
 		resource.delete(subscription, true);
-		Assert.assertEquals(1, getMembers().length);
+		Assertions.assertEquals(1, getMembers().length);
 	}
 
 	private String[] getMembers() {
@@ -189,16 +191,17 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		em.flush();
 		em.clear();
 
-		Assert.assertEquals("gfi-gstack-client2",
+		Assertions.assertEquals("gfi-gstack-client2",
 				parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_GROUP));
-		Assert.assertEquals("gfi", parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_OU));
-		Assert.assertNull(parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_PARENT_GROUP));
+		Assertions.assertEquals("gfi", parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_OU));
+		Assertions
+				.assertNull(parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_PARENT_GROUP));
 
 		// Check the creation in LDAP
 		final GroupOrg group = getGroup().findById("gfi-gstack-client2");
-		Assert.assertNotNull(group);
-		Assert.assertEquals("gfi-gstack-client2", group.getId());
-		Assert.assertEquals("gfi-gstack-client2", group.getName());
-		Assert.assertEquals(dn, group.getDn());
+		Assertions.assertNotNull(group);
+		Assertions.assertEquals("gfi-gstack-client2", group.getId());
+		Assertions.assertEquals("gfi-gstack-client2", group.getName());
+		Assertions.assertEquals(dn, group.getDn());
 	}
 }

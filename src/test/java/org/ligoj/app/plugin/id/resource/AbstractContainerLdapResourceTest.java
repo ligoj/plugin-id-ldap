@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 
 import javax.ws.rs.core.UriInfo;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.plugin.id.dao.ContainerScopeRepository;
 import org.ligoj.app.plugin.id.ldap.resource.AbstractLdapTest;
@@ -52,7 +52,7 @@ public abstract class AbstractContainerLdapResourceTest extends AbstractLdapTest
 		return uriInfo;
 	}
 
-	@Before
+	@BeforeEach
 	public void prepareData() throws IOException {
 		persistEntities("csv", new Class[] { DelegateOrg.class, ContainerScope.class }, StandardCharsets.UTF_8.name());
 		CacheManager.getInstance().getCache("container-scopes").removeAll();

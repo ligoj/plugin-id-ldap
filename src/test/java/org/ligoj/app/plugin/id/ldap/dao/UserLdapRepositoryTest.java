@@ -4,13 +4,12 @@ import java.util.Collections;
 
 import javax.naming.Name;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.UserOrg;
-import org.ligoj.app.plugin.id.ldap.dao.CompanyLdapRepository;
-import org.ligoj.app.plugin.id.ldap.dao.UserLdapRepository;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -26,7 +25,7 @@ public class UserLdapRepositoryTest {
 
 	private UserLdapRepository repository;
 
-	@Before
+	@BeforeEach
 	public void init() {
 		repository = new UserLdapRepository();
 	}
@@ -34,43 +33,43 @@ public class UserLdapRepositoryTest {
 	@Test
 	public void toCompanyNoMatch() {
 		repository.setCompanyPattern("[^,]+,ou=([^,]+),.*");
-		Assert.assertNull(repository.toCompany("any"));
+		Assertions.assertNull(repository.toCompany("any"));
 	}
 
 	@Test
 	public void toCompanyNoCaptureNoMatch() {
 		repository.setCompanyPattern("[^,]+,ou=[^,]+,.*");
-		Assert.assertEquals("[^,]+,ou=[^,]+,.*", repository.toCompany("company"));
+		Assertions.assertEquals("[^,]+,ou=[^,]+,.*", repository.toCompany("company"));
 	}
 
 	@Test
 	public void toCompanyNoCaptureMatch() {
 		repository.setCompanyPattern("[^,]+,ou=[^,]+,.*");
-		Assert.assertNull(repository.toCompany("uid=some,ou=company,ou=fr"));
+		Assertions.assertNull(repository.toCompany("uid=some,ou=company,ou=fr"));
 	}
 
 	@Test
 	public void toCompanyContant() {
 		repository.setCompanyPattern("const");
-		Assert.assertEquals("const", repository.toCompany("uid=some,ou=company,dc=ex,dc=fr"));
+		Assertions.assertEquals("const", repository.toCompany("uid=some,ou=company,dc=ex,dc=fr"));
 	}
 
 	@Test
 	public void toCompany() {
 		repository.setCompanyPattern("[^,]+,ou=([^,]+),.*");
-		Assert.assertEquals("company", repository.toCompany("uid=some,ou=company,dc=ex,dc=fr"));
-		Assert.assertEquals("company", repository.toCompany("uid=some,ou=company,dc=ex"));
+		Assertions.assertEquals("company", repository.toCompany("uid=some,ou=company,dc=ex,dc=fr"));
+		Assertions.assertEquals("company", repository.toCompany("uid=some,ou=company,dc=ex"));
 	}
 
 	@Test
 	public void getAuthenticateProperty() {
 		repository.setUidAttribute("my-uid");
-		Assert.assertEquals("my-uid", repository.getAuthenticateProperty("some"));
+		Assertions.assertEquals("my-uid", repository.getAuthenticateProperty("some"));
 	}
 
 	@Test
 	public void getAuthenticatePropertyMail() {
-		Assert.assertEquals("mail", repository.getAuthenticateProperty("my@mail.com"));
+		Assertions.assertEquals("mail", repository.getAuthenticateProperty("my@mail.com"));
 	}
 
 	@Test
@@ -80,7 +79,7 @@ public class UserLdapRepositoryTest {
 		new UserLdapRepository() {
 			@Override
 			public void set(final Name dn, final String attribute, final String value) {
-				Assert.assertTrue(value.startsWith("{SSHA}"));
+				Assertions.assertTrue(value.startsWith("{SSHA}"));
 			}
 
 		}.setPassword(user, "test");
@@ -98,8 +97,8 @@ public class UserLdapRepositoryTest {
 			}
 
 		};
-		Assert.assertEquals("user1", repository.toUser("user1").getId());
-		Assert.assertEquals("First", repository.toUser("user1").getFirstName());
+		Assertions.assertEquals("user1", repository.toUser("user1").getId());
+		Assertions.assertEquals("First", repository.toUser("user1").getFirstName());
 	}
 
 	@Test
@@ -111,13 +110,13 @@ public class UserLdapRepositoryTest {
 			}
 
 		};
-		Assert.assertEquals("user1", repository.toUser("user1").getId());
-		Assert.assertNull(repository.toUser("user1").getFirstName());
+		Assertions.assertEquals("user1", repository.toUser("user1").getId());
+		Assertions.assertNull(repository.toUser("user1").getFirstName());
 	}
 
 	@Test
 	public void toUserNull() {
-		Assert.assertNull(repository.toUser(null));
+		Assertions.assertNull(repository.toUser(null));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -125,13 +124,13 @@ public class UserLdapRepositoryTest {
 	public void getToken() {
 		final LdapTemplate mock = Mockito.mock(LdapTemplate.class);
 		final DirContextOperations dirCtx = Mockito.mock(DirContextOperations.class);
-		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), (AbstractContextMapper<String>) ArgumentMatchers.any()))
-				.thenAnswer(i -> {
+		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(),
+				(AbstractContextMapper<String>) ArgumentMatchers.any())).thenAnswer(i -> {
 					((AbstractContextMapper<DirContextOperations>) i.getArgument(2)).mapFromContext(dirCtx);
 					return Collections.singletonList("token");
 				});
 		repository.setTemplate(mock);
-		Assert.assertEquals("token", repository.getToken("user1"));
+		Assertions.assertEquals("token", repository.getToken("user1"));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -141,10 +140,10 @@ public class UserLdapRepositoryTest {
 		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(ContextMapper.class)))
 				.thenReturn(Collections.emptyList());
 		repository.setTemplate(mock);
-		Assert.assertNull(repository.getToken("any"));
+		Assertions.assertNull(repository.getToken("any"));
 	}
 
-	@Test(expected = ValidationJsonException.class)
+	@Test
 	public void findByIdExpectedNotVisibleCompany() {
 
 		UserLdapRepository repository = new UserLdapRepository() {
@@ -156,7 +155,9 @@ public class UserLdapRepositoryTest {
 			}
 		};
 		repository.setCompanyRepository(Mockito.mock(CompanyLdapRepository.class));
-		repository.findByIdExpected("user1", "user2");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			repository.findByIdExpected("user1", "user2");
+		}), "id", "unknown-id");
 	}
 
 	@Test
