@@ -19,7 +19,6 @@ import javax.ws.rs.core.StreamingOutput;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.iam.Activity;
 import org.ligoj.app.iam.GroupOrg;
@@ -47,14 +46,10 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * Test class of {@link LdapPluginResource}
  */
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
 public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {

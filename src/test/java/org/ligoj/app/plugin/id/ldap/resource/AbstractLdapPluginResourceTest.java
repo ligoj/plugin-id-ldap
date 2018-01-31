@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.ligoj.app.AbstractAppTest;
 import org.ligoj.app.dao.NodeRepository;
 import org.ligoj.app.dao.ParameterRepository;
+import org.ligoj.app.dao.ParameterValueRepository;
 import org.ligoj.app.dao.ProjectRepository;
 import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.ICompanyRepository;
@@ -60,6 +61,9 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 	protected ParameterRepository parameterRepository;
 
 	@Autowired
+	protected ParameterValueRepository parameterValueRepository;
+
+	@Autowired
 	protected NodeRepository nodeRepository;
 
 	@Autowired
@@ -88,9 +92,9 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 
 	@BeforeEach
 	public void prepareData() throws IOException {
-		persistEntities(
-				"csv", new Class[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class, CacheGroup.class,
-						CacheMembership.class, Project.class, Node.class, Parameter.class, Subscription.class, ParameterValue.class, 
+		persistEntities("csv",
+				new Class[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class, CacheGroup.class,
+						CacheMembership.class, Project.class, Node.class, Parameter.class, Subscription.class, ParameterValue.class,
 						CacheProjectGroup.class },
 				StandardCharsets.UTF_8.name());
 		CacheManager.getInstance().getCache("container-scopes").removeAll();
@@ -103,7 +107,8 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 	}
 
 	/**
-	 * Create a group in a existing OU "sea". Most Simple case. Group matches exactly to the pkey of the project.
+	 * Create a group in a existing OU "sea". Most Simple case. Group matches
+	 * exactly to the pkey of the project.
 	 * 
 	 * @return the created subscription.
 	 */
@@ -162,35 +167,33 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 	}
 
 	protected void setGroup(final Subscription subscription, final String group) {
-		final Parameter groupParameter = new Parameter();
-		groupParameter.setId(IdentityResource.PARAMETER_GROUP);
-		final ParameterValue groupParameterValue = new ParameterValue();
-		groupParameterValue.setParameter(groupParameter);
-		groupParameterValue.setData(group);
-		groupParameterValue.setSubscription(subscription);
-		em.persist(groupParameterValue);
+		setData(subscription, IdentityResource.PARAMETER_GROUP, group);
+	}
+
+	protected ParameterValue setData(final Subscription subscription, final String parameter, String data) {
+		final Parameter groupParameter = parameterRepository.findOneExpected(parameter);
+		ParameterValue value = parameterValueRepository.findAllBy("subscription.id", subscription.isNew() ? 0 : subscription.getId())
+				.stream().filter(v -> v.getParameter().getId().equals(parameter)).findFirst().orElseGet(() -> {
+					final ParameterValue pv = new ParameterValue();
+					pv.setParameter(groupParameter);
+					pv.setSubscription(subscription);
+					pv.setData(data);
+					return pv;
+				});
+		value.setData(data);
+		if (value.isNew()) {
+			em.persist(value);
+		}
 		em.flush();
+		return value;
 	}
 
 	protected void setOu(final Subscription subscription, final String ou) {
-		final Parameter customerParameter = new Parameter();
-		customerParameter.setId(IdentityResource.PARAMETER_OU);
-		final ParameterValue customerParameterValue = new ParameterValue();
-		customerParameterValue.setParameter(customerParameter);
-		customerParameterValue.setData(ou);
-		customerParameterValue.setSubscription(subscription);
-		em.persist(customerParameterValue);
-		em.flush();
+		setData(subscription, IdentityResource.PARAMETER_OU, ou);
 	}
 
 	protected void setParentGroup(final Subscription subscription, final String parentGroup) {
-		final Parameter parentGroupParameter = new Parameter();
-		parentGroupParameter.setId(IdentityResource.PARAMETER_PARENT_GROUP);
-		final ParameterValue parentGroupParameterValue = new ParameterValue();
-		parentGroupParameterValue.setParameter(parentGroupParameter);
-		parentGroupParameterValue.setData(parentGroup);
-		parentGroupParameterValue.setSubscription(subscription);
-		em.persist(parentGroupParameterValue);
+		setData(subscription, IdentityResource.PARAMETER_PARENT_GROUP, parentGroup);
 	}
 
 	protected void basicCreate(final Subscription subscription2) throws Exception {
