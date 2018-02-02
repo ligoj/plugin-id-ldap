@@ -96,18 +96,27 @@ public class LdapCacheDao {
 	}
 
 	/**
-	 * Update the receiver DN of delegates with receiver are containers.
+	 * Update the receiver DN of delegates having an old DN. Delete all delegate having an invalid relation.
+	 * @param container 
+	 * 		The existing containers.
+	 * @param type 
+	 * 		The receiver type to update. And also the same type than the given containers.
+	 * @return The amount of update DN references.
 	 */
-	private long updateDelegateDn(final Map<String, ? extends CacheContainer> groups, final ReceiverType type) {
+	private long updateDelegateDn(final Map<String, ? extends CacheContainer> container, final ReceiverType type) {
 		final AtomicInteger updated = new AtomicInteger();
-		delegateOrgRepository.findAllBy("receiverType", type).stream().map(d -> {
-			final String dn = Optional.ofNullable(groups.get(d.getReceiver())).map(CacheContainer::getDescription)
+		// Get all delegates of he related receiver type
+		delegateOrgRepository.findAllBy("receiverType", type).stream().peek(d -> {
+			// Consider only the existing ones
+			final String dn = Optional.ofNullable(container.get(d.getReceiver())).map(CacheContainer::getDescription)
 					.orElse(null);
-			if (!dn.equalsIgnoreCase(d.getReceiverDn())) {
+			
+			// Consider only the dirty one
+			if (!d.getReceiverDn().equalsIgnoreCase(dn)) {
+				// This DN needed this update
 				d.setReceiverDn(dn);
 				updated.incrementAndGet();
 			}
-			return d;
 		}).filter(d -> d.getReceiverDn() == null).forEach(delegateOrgRepository::delete);
 		return updated.get();
 	}

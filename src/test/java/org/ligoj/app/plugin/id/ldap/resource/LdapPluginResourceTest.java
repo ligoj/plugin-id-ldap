@@ -475,9 +475,9 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		((StreamingOutput) resource.getProjectActivitiesCsv(subscription, "file1").getEntity()).write(output);
 
 		final List<String> csvLines = IOUtils.readLines(new ByteArrayInputStream(output.toByteArray()), StandardCharsets.UTF_8);
-		Assertions.assertEquals(17, csvLines.size());
+		Assertions.assertEquals(2, csvLines.size());
 		Assertions.assertEquals("user;firstName;lastName;mail;JIRA 6", csvLines.get(0));
-		Assertions.assertEquals("alongchu;Arnaud;Longchu;arnaud.longchu@sample.com;2015/01/01 00:00:00", csvLines.get(9));
+		Assertions.assertEquals("alongchu;Arnaud;Longchu;arnaud.longchu@sample.com;2015/01/01 00:00:00", csvLines.get(1));
 	}
 
 	@Test
