@@ -301,9 +301,9 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 		// "Biz Agency" is visible since "mmartin" is in the parent group "
 		Assertions.assertEquals(2, tableItem.getData().get(0).getGroups().size());
 		Assertions.assertEquals("Biz Agency", tableItem.getData().get(0).getGroups().get(0).getName());
-		Assertions.assertTrue(tableItem.getData().get(0).getGroups().get(0).isManaged());
+		Assertions.assertTrue(tableItem.getData().get(0).getGroups().get(0).isCanWrite());
 		Assertions.assertEquals("DIG RHA", tableItem.getData().get(0).getGroups().get(1).getName());
-		Assertions.assertFalse(tableItem.getData().get(0).getGroups().get(1).isManaged());
+		Assertions.assertFalse(tableItem.getData().get(0).getGroups().get(1).isCanWrite());
 	}
 
 	@Test
@@ -391,7 +391,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 		// Check the groups
 		Assertions.assertEquals(1, tableItem.getData().get(0).getGroups().size());
 		Assertions.assertEquals("Biz Agency", tableItem.getData().get(0).getGroups().get(0).getName());
-		Assertions.assertFalse(tableItem.getData().get(0).getGroups().get(0).isManaged());
+		Assertions.assertFalse(tableItem.getData().get(0).getGroups().get(0).isCanWrite());
 	}
 
 	/**

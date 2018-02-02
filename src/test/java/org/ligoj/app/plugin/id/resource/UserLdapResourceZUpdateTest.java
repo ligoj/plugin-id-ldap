@@ -109,9 +109,9 @@ public class UserLdapResourceZUpdateTest extends AbstractUserLdapResourceTest {
 		Assertions.assertEquals(1, initialResult.getData().size());
 		Assertions.assertEquals(2, initialResult.getData().get(0).getGroups().size());
 		Assertions.assertEquals("Biz Agency", initialResult.getData().get(0).getGroups().get(0).getName());
-		Assertions.assertTrue(initialResult.getData().get(0).getGroups().get(0).isManaged());
+		Assertions.assertTrue(initialResult.getData().get(0).getGroups().get(0).isCanWrite());
 		Assertions.assertEquals("DIG RHA", initialResult.getData().get(0).getGroups().get(1).getName());
-		Assertions.assertTrue(initialResult.getData().get(0).getGroups().get(1).isManaged());
+		Assertions.assertTrue(initialResult.getData().get(0).getGroups().get(1).isCanWrite());
 
 		// Remove group "Biz Agency"
 		final UserOrgEditionVo user = new UserOrgEditionVo();
