@@ -508,7 +508,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 		// Get users from other LDAP subscriptions
 		final Subscription main = subscriptionResource.checkVisibleSubscription(subscription);
 		final List<Subscription> subscriptions = subscriptionRepository.findAllOnSameProject(subscription);
-		final Set<UserOrg> users = global ? getMembersOfAllSubscription(subscriptions) : getMembersOfSubscription(main);
+		final Set<UserOrg> users = global ? getMembersOfAllSubscriptions(subscriptions) : getMembersOfSubscription(main);
 
 		// Get the activities from each subscription of the same project,
 		final ActivitiesComputations result = new ActivitiesComputations();
@@ -528,7 +528,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	/**
 	 * Return members of all LDAP subscriptions
 	 */
-	private Set<UserOrg> getMembersOfAllSubscription(final Collection<Subscription> projectSubscriptions) {
+	private Set<UserOrg> getMembersOfAllSubscriptions(final Collection<Subscription> projectSubscriptions) {
 		return projectSubscriptions.stream().flatMap(s -> getMembersOfSubscription(s).stream())
 				.collect(Collectors.toSet());
 	}
@@ -631,9 +631,9 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	public List<INamableBean<String>> findGroupsByName(@PathParam("criteria") final String criteria) {
 		final List<INamableBean<String>> result = new ArrayList<>();
 		final String criteriaClean = Normalizer.normalize(criteria);
-		final Set<GroupOrg> managedGroups = groupLdapResource.getContainers();
+		final Set<GroupOrg> visibleGroups = groupLdapResource.getContainers();
 		final List<ContainerScope> types = containerScopeResource.findAllDescOrder(ContainerType.GROUP);
-		for (final GroupOrg group : managedGroups) {
+		for (final GroupOrg group : visibleGroups) {
 			final ContainerScope scope = groupLdapResource.toScope(types, group);
 
 			// Check type and criteria

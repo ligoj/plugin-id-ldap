@@ -156,14 +156,13 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 	public void delete(final CompanyOrg container) {
 
 		/*
-		 * Remove from the managed companies, all companies within (sub LDAP DN) this company. This operation is needed
-		 * since we
-		 * are not rebuilding the cache from the LDAP. This save a lot of computations.
+		 * Remove from this company, all companies within (sub LDAP DN) this company. This operation is needed
+		 * since we are not rebuilding the cache from the LDAP. This save a lot of computations.
 		 */
 		findAll().values().stream().filter(g -> DnUtils.equalsOrParentOf(container.getDn(), g.getDn())).collect(Collectors.toList())
 				.forEach(this::removeFromJavaCache);
 
-		// Remove from LDAP the recursively the node. Anything that was not nicely cleaned will be deleted there.
+		// Remove from LDAP the recursively the company. Anything that was not nicely cleaned will be deleted there.
 		template.unbind(container.getDn(), true);
 
 		// Also, update the SQL cache

@@ -168,13 +168,13 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 	public void delete(final GroupOrg group) {
 
 		/*
-		 * Remove from the managed groups, all groups within (sub LDAP DN) this group. This operation is needed since we
+		 * Remove from this group, all groups within (sub LDAP DN) this group. This operation is needed since we
 		 * are not rebuilding the cache from the LDAP. This save a lot of computations.
 		 */
 		findAll().values().stream().filter(g -> DnUtils.equalsOrParentOf(group.getDn(), g.getDn())).collect(Collectors.toList())
 				.forEach(this::removeFromJavaCache);
 
-		// Remove from LDAP the recursively the node. Anything that was not nicely cleaned will be deleted there.
+		// Remove from LDAP the recursively the group. Anything that was not nicely cleaned will be deleted there.
 		template.unbind(org.springframework.ldap.support.LdapUtils.newLdapName(group.getDn()), true);
 
 		// Also, update the cache
