@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,8 @@ import org.ligoj.app.iam.model.CacheContainer;
 import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.iam.model.CacheMembership;
 import org.ligoj.app.iam.model.CacheUser;
+import org.ligoj.app.iam.model.DelegateOrg;
+import org.ligoj.app.iam.model.DelegateType;
 import org.ligoj.app.iam.model.ReceiverType;
 import org.ligoj.app.model.CacheProjectGroup;
 import org.ligoj.app.model.Project;
@@ -89,35 +92,51 @@ public class LdapCacheDao {
 	}
 
 	/**
-	 * Update the receiver DN of delegates with receiver are containers.
+	 * Update the receiver DN of delegates where the receiver is a container.
 	 */
 	private long updateDelegateDn(final Map<String, CacheGroup> groups, final Map<String, CacheCompany> companies) {
-		return updateDelegateDn(groups, ReceiverType.GROUP) + updateDelegateDn(companies, ReceiverType.COMPANY);
+		return updateDelegateDn(groups, ReceiverType.GROUP, DelegateType.GROUP)
+				+ updateDelegateDn(companies, ReceiverType.COMPANY, DelegateType.COMPANY);
 	}
 
 	/**
 	 * Update the receiver DN of delegates having an old DN. Delete all delegate having an invalid relation.
-	 * @param container 
-	 * 		The existing containers.
-	 * @param type 
-	 * 		The receiver type to update. And also the same type than the given containers.
-	 * @return The amount of update DN references.
+	 * 
+	 * @param containers
+	 *            The existing containers.
+	 * @param receiverType
+	 *            The receiver type to update. And also the same type than the given containers.
+	 * @param resourceType
+	 *            The delegate resource type to update. And also the same type than the given containers.
+	 * @return The amount of updated DN references.
 	 */
-	private long updateDelegateDn(final Map<String, ? extends CacheContainer> container, final ReceiverType type) {
+	private long updateDelegateDn(final Map<String, ? extends CacheContainer> containers,
+			final ReceiverType receiverType, final DelegateType resourceType) {
+		long count = updateDelegateDn(containers, receiverType, "receiverType", DelegateOrg::getReceiver,
+				DelegateOrg::getReceiverDn, DelegateOrg::setReceiverDn);
+		count += updateDelegateDn(containers, resourceType, "type", DelegateOrg::getName, DelegateOrg::getDn,
+				DelegateOrg::setDn);
+		return count;
+	}
+
+	private long updateDelegateDn(final Map<String, ? extends CacheContainer> containers, final Object type,
+			final String typePath, final Function<DelegateOrg, String> id, Function<DelegateOrg, String> getDn,
+			BiConsumer<DelegateOrg, String> setDn) {
 		final AtomicInteger updated = new AtomicInteger();
 		// Get all delegates of he related receiver type
-		delegateOrgRepository.findAllBy("receiverType", type).stream().peek(d -> {
+		delegateOrgRepository.findAllBy(typePath, type).stream().peek(d -> {
 			// Consider only the existing ones
-			final String dn = Optional.ofNullable(container.get(d.getReceiver())).map(CacheContainer::getDescription)
+			final String dn = Optional.ofNullable(containers.get(id.apply(d))).map(CacheContainer::getDescription)
 					.orElse(null);
-			
+
 			// Consider only the dirty one
-			if (!d.getReceiverDn().equalsIgnoreCase(dn)) {
-				// This DN needed this update
-				d.setReceiverDn(dn);
+			final String delegateDn = getDn.apply(d);
+			if (!delegateDn.equalsIgnoreCase(dn)) {
+				// The delegate DN needed this update
+				setDn.accept(d, dn);
 				updated.incrementAndGet();
 			}
-		}).filter(d -> d.getReceiverDn() == null).forEach(delegateOrgRepository::delete);
+		}).filter(d -> getDn.apply(d) == null).forEach(delegateOrgRepository::delete);
 		return updated.get();
 	}
 
@@ -360,8 +379,7 @@ public class LdapCacheDao {
 	}
 
 	/**
-	 * Delete a company. Warning, it is assumed there is no more user associated to
-	 * the deleted company.
+	 * Delete a company. Warning, it is assumed there is no more user associated to the deleted company.
 	 * 
 	 * @param company
 	 *            the company to delete.

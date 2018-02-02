@@ -16,10 +16,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.UserOrg;
+import org.ligoj.app.iam.dao.DelegateOrgRepository;
 import org.ligoj.app.iam.model.CacheCompany;
 import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.iam.model.CacheMembership;
 import org.ligoj.app.iam.model.CacheUser;
+import org.ligoj.app.iam.model.DelegateOrg;
+import org.ligoj.app.iam.model.DelegateType;
+import org.ligoj.app.iam.model.ReceiverType;
 import org.ligoj.bootstrap.AbstractJpaTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
@@ -37,6 +41,9 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 
 	@Autowired
 	private LdapCacheDao dao;
+
+	@Autowired
+	private DelegateOrgRepository delegateOrgRepository;
 
 	@BeforeEach
 	public void initDbCache() {
@@ -72,13 +79,13 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 	}
 
 	@Test
-	public void getLdapData() {
+	public void reset() {
 		final Map<String, CompanyOrg> companies = new HashMap<>();
-		companies.put("company", new CompanyOrg("dnc", "Company"));
+		companies.put("company", new CompanyOrg("dn=company1", "Company"));
 		final Map<String, GroupOrg> groups = new HashMap<>();
 		final Set<String> members = new HashSet<>();
 		members.add("u");
-		final GroupOrg groupLdap = new GroupOrg("dng", "Group", members);
+		final GroupOrg groupLdap = new GroupOrg("dn=group1", "Group", members);
 		groups.put("group", groupLdap);
 		final UserOrg user = newUser();
 		final UserOrg user2 = new UserOrg();
@@ -91,10 +98,44 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 		users.put("u", user);
 		users.put("u2", user2);
 
+		// Add delegates related to some containers
+
+		// Broken, non existing related group
+		final DelegateOrg brokenDelegate = new DelegateOrg();
+		brokenDelegate.setName("broken");
+		brokenDelegate.setDn("dn=group1");
+		brokenDelegate.setType(DelegateType.GROUP);
+		brokenDelegate.setReceiver("u2");
+		brokenDelegate.setReceiverDn("uid=u2,dn=company1");
+		brokenDelegate.setReceiverType(ReceiverType.USER);
+		delegateOrgRepository.saveAndFlush(brokenDelegate);
+
+		// Valid but DN need update
+		final DelegateOrg updateDelegate = new DelegateOrg();
+		updateDelegate.setName("company");
+		updateDelegate.setDn("dn=old-company");
+		updateDelegate.setType(DelegateType.COMPANY);
+		updateDelegate.setReceiver("group");
+		updateDelegate.setReceiverDn("dn=old-group");
+		updateDelegate.setReceiverType(ReceiverType.GROUP);
+		delegateOrgRepository.saveAndFlush(updateDelegate);
+
+		// Valid but DN and up-to-date
+		final DelegateOrg up2dateDelegate = new DelegateOrg();
+		up2dateDelegate.setName("company");
+		up2dateDelegate.setDn("dn=company1");
+		up2dateDelegate.setType(DelegateType.COMPANY);
+		up2dateDelegate.setReceiver("group");
+		up2dateDelegate.setReceiverDn("dn=group1");
+		up2dateDelegate.setReceiverType(ReceiverType.GROUP);
+		delegateOrgRepository.saveAndFlush(up2dateDelegate);
+		em.flush();
+
 		// Pre state
 		Assertions.assertNotNull(em.find(CacheCompany.class, "another-company"));
 		Assertions.assertNotNull(em.find(CacheGroup.class, "group"));
 		Assertions.assertNotNull(em.find(CacheUser.class, "u0"));
+		Assertions.assertEquals(3, delegateOrgRepository.count());
 
 		dao.reset(companies, groups, users);
 
@@ -108,13 +149,13 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 		Assertions.assertNotNull(company);
 		Assertions.assertEquals("company", company.getId());
 		Assertions.assertEquals("Company", company.getName());
-		Assertions.assertEquals("dnc", company.getDescription());
+		Assertions.assertEquals("dn=company1", company.getDescription());
 
 		final CacheGroup group = em.find(CacheGroup.class, "group");
 		Assertions.assertNotNull(group);
 		Assertions.assertEquals("group", group.getId());
 		Assertions.assertEquals("Group", group.getName());
-		Assertions.assertEquals("dng", group.getDescription());
+		Assertions.assertEquals("dn=group1", group.getDescription());
 		checkUser();
 		final List<CacheMembership> memberships = em.createQuery("FROM CacheMembership", CacheMembership.class)
 				.getResultList();
@@ -122,6 +163,20 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 		Assertions.assertEquals("group", memberships.get(0).getGroup().getId());
 		Assertions.assertNull(memberships.get(0).getSubGroup());
 		Assertions.assertEquals("u", memberships.get(0).getUser().getId());
+
+		// Check the state of the previous delegates
+		Assertions.assertEquals(2, delegateOrgRepository.count());
+
+		// Broken and deleted delegate
+		Assertions.assertFalse(delegateOrgRepository.existsById(brokenDelegate.getId()));
+
+		// Updated delegate
+		Assertions.assertEquals("dn=company1", delegateOrgRepository.findOneExpected(updateDelegate.getId()).getDn());
+		Assertions.assertEquals("dn=group1", delegateOrgRepository.findOneExpected(updateDelegate.getId()).getReceiverDn());
+
+		// Up to date delegate
+		Assertions.assertEquals("dn=company1", delegateOrgRepository.findOneExpected(up2dateDelegate.getId()).getDn());
+		Assertions.assertEquals("dn=group1", delegateOrgRepository.findOneExpected(up2dateDelegate.getId()).getReceiverDn());
 	}
 
 	private UserOrg newUser() {
@@ -289,8 +344,8 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 
 	@Test
 	public void deleteGroup() {
-		Assertions.assertEquals(2, em.createQuery("FROM CacheMembership WHERE group.id = :id").setParameter("id", "group")
-				.getResultList().size());
+		Assertions.assertEquals(2, em.createQuery("FROM CacheMembership WHERE group.id = :id")
+				.setParameter("id", "group").getResultList().size());
 		final GroupOrg groupLdap = new GroupOrg("dng", "Group", null);
 
 		dao.delete(groupLdap);
@@ -298,7 +353,7 @@ public class LdapCacheDaoTest extends AbstractJpaTest {
 		Assertions.assertNotNull(em.find(CacheCompany.class, "another-company"));
 		Assertions.assertNull(em.find(CacheGroup.class, "group"));
 		Assertions.assertNotNull(em.find(CacheUser.class, "u0"));
-		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE group.id = :id").setParameter("id", "group")
-				.getResultList().size());
+		Assertions.assertEquals(0, em.createQuery("FROM CacheMembership WHERE group.id = :id")
+				.setParameter("id", "group").getResultList().size());
 	}
 }
