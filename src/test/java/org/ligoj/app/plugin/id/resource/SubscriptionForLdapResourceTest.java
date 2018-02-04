@@ -86,7 +86,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		final String dn = "cn=gfi-gstack-client,cn=gfi-gstack,ou=gfi,ou=project,dc=sample,dc=com";
 		try {
 			getGroup().delete(new GroupOrg(dn, "gfi-gstack-client", new HashSet<>()));
-		} catch (final Exception e) {
+		} catch (@SuppressWarnings("unused") final Exception e) {
 			// Ignore no group
 		}
 
@@ -156,7 +156,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		final String dn = "cn=gfi-gstack-client2,ou=gfi,ou=project,dc=sample,dc=com";
 		try {
 			getGroup().delete(new GroupOrg(dn, "gfi-gstack-client", new HashSet<>()));
-		} catch (final Exception e) {
+		} catch (@SuppressWarnings("unused") final Exception e) {
 			// Ignore no group
 		}
 
