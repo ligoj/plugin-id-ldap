@@ -320,7 +320,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	}
 
 	@Override
-	public void create(final int subscription) throws Exception {
+	public void create(final int subscription) {
 		final Map<String, String> parameters = subscriptionResource.getParameters(subscription);
 		final String group = parameters.get(IdentityResource.PARAMETER_GROUP);
 		final String parentGroup = parameters.get(IdentityResource.PARAMETER_PARENT_GROUP);
@@ -445,7 +445,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	}
 
 	@Override
-	public void link(final int subscription) throws Exception {
+	public void link(final int subscription) {
 		final Map<String, String> parameters = subscriptionResource.getParameters(subscription);
 
 		// Validate the job settings
@@ -456,7 +456,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	}
 
 	@Override
-	public String getVersion(final Map<String, String> parameters) throws Exception {
+	public String getVersion(final Map<String, String> parameters) {
 		// LDAP version is fixed
 		return LDAP_VERSION;
 	}
@@ -705,12 +705,12 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	@Override
 	@Transactional(value = TxType.NOT_SUPPORTED)
-	public String getLastVersion() throws Exception {
+	public String getLastVersion() {
 		return LDAP_VERSION;
 	}
 
 	@Override
-	public boolean checkStatus(final String node, final Map<String, String> parameters) throws Exception {
+	public boolean checkStatus(final String node, final Map<String, String> parameters) {
 		// Query the LDAP, the user is not important, we expect no error, that's
 		// all.
 		getUserLdapRepositoryInternal(node).findByIdNoCache("-any-");
@@ -718,7 +718,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	}
 
 	@Override
-	public SubscriptionStatusWithData checkSubscriptionStatus(final Map<String, String> parameters) throws Exception {
+	public SubscriptionStatusWithData checkSubscriptionStatus(final Map<String, String> parameters) {
 		final GroupOrg groupLdap = getGroup().findById(parameters.get(IdentityResource.PARAMETER_GROUP));
 		if (groupLdap == null) {
 			return new SubscriptionStatusWithData(false);

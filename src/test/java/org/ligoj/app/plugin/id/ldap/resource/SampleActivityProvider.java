@@ -10,17 +10,17 @@ import org.ligoj.app.resource.ActivitiesProvider;
 public class SampleActivityProvider implements ActivitiesProvider, ServicePlugin {
 
 	@Override
-	public void delete(final int subscription, final boolean deleteRemoteData) throws Exception {
+	public void delete(final int subscription, final boolean deleteRemoteData) {
 		// Mock
 	}
 
 	@Override
-	public void create(final int subscription) throws Exception {
+	public void create(final int subscription) {
 		// Mock
 	}
 
 	@Override
-	public void link(final int subscription) throws Exception {
+	public void link(final int subscription) {
 		// Mock
 	}
 
@@ -31,7 +31,7 @@ public class SampleActivityProvider implements ActivitiesProvider, ServicePlugin
 	}
 
 	@Override
-	public Map<String, Activity> getActivities(final int subscription, final Collection<String> users) throws Exception {
+	public Map<String, Activity> getActivities(final int subscription, final Collection<String> users) {
 		// Mock
 		return null;
 	}

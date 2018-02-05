@@ -112,7 +112,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 	 * 
 	 * @return the created subscription.
 	 */
-	protected Subscription create(final String groupAndProject) throws Exception {
+	protected Subscription create(final String groupAndProject) {
 		// Preconditions
 		Assertions.assertNull(getGroup().findById(groupAndProject));
 		Assertions.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sea"));
@@ -196,14 +196,14 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 		setData(subscription, IdentityResource.PARAMETER_PARENT_GROUP, parentGroup);
 	}
 
-	protected void basicCreate(final Subscription subscription2) throws Exception {
+	protected void basicCreate(final Subscription subscription2) {
 		initSpringSecurityContext(DEFAULT_USER);
 		resource.create(subscription2.getId());
 		em.flush();
 		em.clear();
 	}
 
-	protected void basicLink(final Subscription subscription2) throws Exception {
+	protected void basicLink(final Subscription subscription2) {
 		initSpringSecurityContext(DEFAULT_USER);
 		resource.link(subscription2.getId());
 		em.flush();
@@ -215,7 +215,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 	 * 
 	 * @return the created {@link Subscription}.
 	 */
-	protected Subscription createSubGroup(final Project newProject, final String parentGroup, final String subGroup) throws Exception {
+	protected Subscription createSubGroup(final Project newProject, final String parentGroup, final String subGroup) {
 
 		// Preconditions
 		Assertions.assertNotNull(getGroup().findById(parentGroup));

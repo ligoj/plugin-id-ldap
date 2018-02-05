@@ -54,7 +54,7 @@ import org.springframework.test.annotation.Rollback;
 public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 
 	@Test
-	public void deleteNoMoreGroup() throws Exception {
+	public void deleteNoMoreGroup() {
 		final Subscription subscription = new Subscription();
 		subscription.setProject(projectRepository.findByName("gStack"));
 		subscription.setNode(nodeRepository.findOneExpected("service:id:ldap:dig"));
@@ -78,7 +78,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	 * The unsubscription without deletion has no effect
 	 */
 	@Test
-	public void delete() throws Exception {
+	public void delete() {
 		initSpringSecurityContext("fdaugan");
 		final Map<String, String> parameters = subscriptionResource.getParameters(subscription);
 		Assertions.assertTrue(resource.checkSubscriptionStatus(parameters).getStatus().isUp());
@@ -89,13 +89,13 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	@Test
-	public void getVersion() throws Exception {
+	public void getVersion() {
 		final String version = resource.getVersion(null);
 		Assertions.assertEquals("3", version);
 	}
 
 	@Test
-	public void getLastVersion() throws Exception {
+	public void getLastVersion() {
 		final String lastVersion = resource.getLastVersion();
 		Assertions.assertEquals("3", lastVersion);
 	}
@@ -134,7 +134,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	 * to the pkey of the project.
 	 */
 	@Test
-	public void create() throws Exception {
+	public void create() {
 		resource.delete(create("sea-new-project").getId(), true);
 	}
 
@@ -142,7 +142,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	 * Create a group with the same name.
 	 */
 	@Test
-	public void createAlreadyExist() throws Exception {
+	public void createAlreadyExist() {
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
 		final Subscription subscription2 = new Subscription();
@@ -164,7 +164,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	 * the pkey of the project.
 	 */
 	@Test
-	public void createSubGroup() throws Exception {
+	public void createSubGroup() {
 		// Create the parent group
 		final Project newProject = create("sea-parent").getProject();
 		createSubGroup(newProject, "sea-parent", "sea-parent-client");
@@ -175,7 +175,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	 * parent group.
 	 */
 	@Test
-	public void createNotCompliantGroupForParent() throws Exception {
+	public void createNotCompliantGroupForParent() {
 		// Create the parent group
 		final Project newProject = create("sea-parent2").getProject();
 		createSubGroup(newProject, "sea-parent2", "sea-parent2-client");
@@ -190,7 +190,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	 * this project.
 	 */
 	@Test
-	public void createNotCompliantGroupForProject() throws Exception {
+	public void createNotCompliantGroupForProject() {
 		// Preconditions
 		Assertions.assertNotNull(getGroup().findById("sea-octopus"));
 		Assertions.assertNull(getGroup().findById("sea-octopusZZ"));
@@ -218,7 +218,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	 * and without suffix.
 	 */
 	@Test
-	public void createNotCompliantGroupForProject2() throws Exception {
+	public void createNotCompliantGroupForProject2() {
 
 		// Preconditions
 		Assertions.assertNotNull(getGroup().findById("sea-octopus"));
@@ -247,7 +247,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	 * without reusing the OU of this project.
 	 */
 	@Test
-	public void createNotCompliantGroupForOu() throws Exception {
+	public void createNotCompliantGroupForOu() {
 		// Preconditions
 		Assertions.assertNull(getGroup().findById("sea-invalid-ou"));
 		Assertions.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sea"));
@@ -274,7 +274,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	 * parent.
 	 */
 	@Test
-	public void createNotExistingParentGroup() throws Exception {
+	public void createNotExistingParentGroup() {
 		// Preconditions
 		Assertions.assertNotNull(getGroup().findById("sea-octopus"));
 		Assertions.assertNull(getGroup().findById("sea-octopus-client"));
@@ -303,7 +303,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	 * creation. Exact match for group and pkey.
 	 */
 	@Test
-	public void createOuNotExists() throws Exception {
+	public void createOuNotExists() {
 
 		// Preconditions
 		Assertions.assertNull(getGroup().findById("some-new-project"));
@@ -334,7 +334,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	@Test
-	public void link() throws Exception {
+	public void link() {
 
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
@@ -377,7 +377,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	@Test
-	public void linkNotVisibleProject() throws Exception {
+	public void linkNotVisibleProject() {
 
 		// Invoke link for an already created entity, since for now
 		initSpringSecurityContext("any");
@@ -390,7 +390,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	 * Visible project, but not visible target group
 	 */
 	@Test
-	public void linkNotVisibleGroup() throws Exception {
+	public void linkNotVisibleGroup() {
 		// Attach the wrong group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
 		setGroup(subscription, "sea-octopus");
@@ -406,7 +406,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	 * Visible project, but target group does not exist
 	 */
 	@Test
-	public void linkNotExistingGroup() throws Exception {
+	public void linkNotExistingGroup() {
 		// Attach the wrong group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
 		setGroup(subscription, "any-g");
@@ -418,24 +418,24 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	@Test
-	public void checkStatus() throws Exception {
+	public void checkStatus() {
 		Assertions.assertTrue(resource.checkStatus("service:id:ldap:dig", subscriptionResource.getParametersNoCheck(subscription)));
 	}
 
 	@Test
-	public void checkSubscriptionStatus() throws Exception {
+	public void checkSubscriptionStatus() {
 		Assertions.assertTrue(resource.checkSubscriptionStatus(subscriptionResource.getParametersNoCheck(subscription)).getStatus().isUp());
 	}
 
 	@Test
-	public void findGroupsByNameNoRight() throws Exception {
+	public void findGroupsByNameNoRight() {
 		initSpringSecurityContext("any");
 		final List<INamableBean<String>> jobs = resource.findGroupsByName("StAck");
 		Assertions.assertEquals(0, jobs.size());
 	}
 
 	@Test
-	public void findGroupsByName() throws Exception {
+	public void findGroupsByName() {
 		final List<INamableBean<String>> jobs = resource.findGroupsByName("StAck");
 		Assertions.assertTrue(jobs.size() >= 1);
 		Assertions.assertEquals("gfi-gStack", jobs.get(0).getName());
@@ -631,7 +631,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	@Test
-	public void findCustomersByName() throws Exception {
+	public void findCustomersByName() {
 		final Collection<INamableBean<String>> customers = resource.findCustomersByName("ea");
 		Assertions.assertEquals(1, customers.size());
 		Assertions.assertEquals("sea", customers.iterator().next().getName());
@@ -670,13 +670,13 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	@Test
-	public void authenticatePrimary() throws Exception {
+	public void authenticatePrimary() {
 		final Authentication authentication = new UsernamePasswordAuthenticationToken("fdaugan", "Azerty01");
 		Assertions.assertSame(authentication, resource.authenticate(authentication, "service:id:ldap:dig", true));
 	}
 
 	@Test
-	public void authenticateFail() throws Exception {
+	public void authenticateFail() {
 		final Authentication authentication = new UsernamePasswordAuthenticationToken("fdaugan", "any");
 		Assertions.assertThrows(BadCredentialsException.class, () -> {
 			resource.authenticate(authentication, "service:id:ldap:dig", true);
@@ -684,7 +684,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	@Test
-	public void authenticateSecondaryMock() throws Exception {
+	public void authenticateSecondaryMock() {
 		// Create a new LDAP node pluged to the primary node
 		newLdap();
 
@@ -765,7 +765,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	@Test
-	public void toLogin() throws Exception {
+	public void toLogin() {
 		final UserOrg user = new UserOrg();
 		user.setFirstName("First");
 		user.setLastName("Last123");
