@@ -315,8 +315,10 @@ public class UserLdapRepository implements IUserRepository {
 	 */
 	public Map<String, UserOrg> findAllNoCache(final Map<String, GroupOrg> groups) {
 
-		String[] returnAttrs = new String[] { SN_ATTRIBUTE, GIVEN_NAME_ATTRIBUTE, PASSWORD_ATTRIBUTE, MAIL_ATTRIBUTE,
-				uidAttribute, departmentAttribute, localIdAttribute, lockedAttribute, PWD_ACCOUNT_LOCKED_ATTRIBUTE };
+		// List of attributes to retrieve from LDAP.
+		final String[] returnAttrs = new String[] { SN_ATTRIBUTE, GIVEN_NAME_ATTRIBUTE, PASSWORD_ATTRIBUTE,
+				MAIL_ATTRIBUTE, uidAttribute, departmentAttribute, localIdAttribute, lockedAttribute,
+				PWD_ACCOUNT_LOCKED_ATTRIBUTE };
 
 		// Fetch users and their direct attributes
 		final List<UserOrg> users = template.search(peopleBaseDn, new EqualsFilter(OBJECT_CLASS, peopleClass).encode(),
@@ -838,6 +840,28 @@ public class UserLdapRepository implements IUserRepository {
 			throw new BusinessException(BusinessException.KEY_UNKNOW_ID);
 		}
 		return date;
+	}
+
+	@Override
+	public void checkLockStatus(final UserOrg user) {
+		// List of attributes to retrieve from LDAP.
+		final String[] returnAttrs = new String[] { PWD_ACCOUNT_LOCKED_ATTRIBUTE };
+
+		final AndFilter filter = new AndFilter();
+		filter.and(new EqualsFilter(OBJECT_CLASS, peopleClass));
+		filter.and(new EqualsFilter(uidAttribute, user.getId()));
+		template.search(peopleBaseDn, filter.encode(), SearchControls.SUBTREE_SCOPE, returnAttrs,
+				new AbstractContextMapper<UserOrg>() {
+					@Override
+					public UserOrg doMapFromContext(final DirContextOperations context) {
+						// Get the pwdLockedAccountTime ppolicy attribute when exists
+						if (context.attributeExists(PWD_ACCOUNT_LOCKED_ATTRIBUTE)) {
+							user.setLockedBy(PPOLICY_NAME);
+							user.setLocked(parseLdapDate(context.getStringAttribute(PWD_ACCOUNT_LOCKED_ATTRIBUTE)));
+						}
+						return user;
+					}
+				});
 	}
 
 }

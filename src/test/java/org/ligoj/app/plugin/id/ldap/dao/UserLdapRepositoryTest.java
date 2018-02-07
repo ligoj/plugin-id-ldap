@@ -1,6 +1,7 @@
 package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.util.Collections;
+import java.util.Date;
 
 import javax.naming.Name;
 import javax.naming.NamingException;
@@ -196,7 +197,8 @@ public class UserLdapRepositoryTest {
 		user.setId("");
 		user.setCompany("company");
 		repository.setTemplate(mock);
-		Mockito.when(mock.executeReadWrite((ContextExecutor)ArgumentMatchers.any())).thenThrow(ValidationJsonException.class);
+		Mockito.when(mock.executeReadWrite((ContextExecutor) ArgumentMatchers.any()))
+				.thenThrow(ValidationJsonException.class);
 
 		Assertions.assertThrows(ValidationJsonException.class, () -> {
 			repository.setPassword(user, "yossarianspassword", "yossariansnewpassword");
@@ -216,6 +218,31 @@ public class UserLdapRepositoryTest {
 		Assertions.assertThrows(BusinessException.class, () -> {
 			repository.parseLdapDate(ldapDate).getTime();
 		});
+	}
+
+	@Test
+	public void checkUserStatus() {
+		final UserOrg user = new UserOrg();
+		final LdapTemplate mock = Mockito.mock(LdapTemplate.class);
+		final DirContextOperations dirCtx = Mockito.mock(DirContextOperations.class);
+		Mockito.when(mock.search(
+				(String) ArgumentMatchers.any(), 
+				ArgumentMatchers.any(),
+				ArgumentMatchers.eq(2),
+				ArgumentMatchers.any(), 
+				(AbstractContextMapper<UserOrg>) ArgumentMatchers.any()
+				)).thenAnswer(i -> {
+					((AbstractContextMapper<DirContextOperations>) i.getArgument(4)).mapFromContext(dirCtx);
+					user.setLocked(new Date(1517908964000L));
+					user.setLockedBy("_ppolicy");
+					return null;
+				});
+		Mockito.when(dirCtx.attributeExists(ArgumentMatchers.any())).thenReturn(true);
+		Mockito.when(dirCtx.getStringAttribute(ArgumentMatchers.any())).thenReturn("20180206102244Z");
+		repository.setTemplate(mock);
+		repository.checkLockStatus(user);
+		
+		Assertions.assertEquals(1517908964000L, user.getLocked().getTime());
 	}
 
 }
