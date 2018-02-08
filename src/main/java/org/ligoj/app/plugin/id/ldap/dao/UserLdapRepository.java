@@ -797,7 +797,7 @@ public class UserLdapRepository implements IUserRepository {
 					throw new ValidationJsonException("password", "login");
 				} catch (final InvalidAttributeValueException e) {
 					log.info("Password is in history of old passwords");
-					throw new BusinessException("password-in-history");
+					throw new ValidationJsonException("new-password", "password-in-history");
 				}
 
 				return null;

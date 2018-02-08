@@ -197,7 +197,7 @@ public class UserLdapRepositoryTest {
 		user.setId("");
 		user.setCompany("company");
 		repository.setTemplate(mock);
-		Mockito.when(mock.executeReadWrite((ContextExecutor) ArgumentMatchers.any()))
+		Mockito.when(mock.executeReadWrite((ContextExecutor<Object>) ArgumentMatchers.any()))
 				.thenThrow(ValidationJsonException.class);
 
 		Assertions.assertThrows(ValidationJsonException.class, () -> {
