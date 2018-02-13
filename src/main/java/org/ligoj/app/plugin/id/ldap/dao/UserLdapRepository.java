@@ -778,7 +778,10 @@ public class UserLdapRepository implements IUserRepository {
 		log.info("Changing password for {} ...", userLdap.getId());
 		final ModificationItem[] passwordChange = { new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
 				new BasicAttribute(PASSWORD_ATTRIBUTE, newPassword)) };
-
+		
+		// Unlock account when the user is locked by ppolicy
+		set(userLdap, PWD_ACCOUNT_LOCKED_ATTRIBUTE, null);
+		
 		// Authenticate the user is needed before changing the password.
 		template.executeReadWrite(new ContextExecutor<Object>() {
 			@Override
