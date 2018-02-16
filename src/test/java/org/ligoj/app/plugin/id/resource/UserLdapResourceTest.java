@@ -100,7 +100,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 		Assertions.assertEquals("Doe2", userLdap.getLastName());
 		Assertions.assertEquals("first2.doe2@ing.fr", userLdap.getMails().get(0));
 		Assertions.assertTrue(userLdap.isCanWrite());
-		final List<GroupLdapVo> groups = new ArrayList<>(userLdap.getGroups());
+		final List<GroupVo> groups = new ArrayList<>(userLdap.getGroups());
 		Assertions.assertEquals(2, groups.size());
 		Assertions.assertEquals("Biz Agency", groups.get(0).getName());
 		Assertions.assertEquals("DIG RHA", groups.get(1).getName());
@@ -122,7 +122,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 		Assertions.assertEquals("First2", tableItem.getData().get(0).getFirstName());
 		Assertions.assertEquals("Doe2", tableItem.getData().get(0).getLastName());
 		Assertions.assertEquals("first2.doe2@ing.fr", tableItem.getData().get(0).getMails().get(0));
-		final List<GroupLdapVo> groups = new ArrayList<>(tableItem.getData().get(0).getGroups());
+		final List<GroupVo> groups = new ArrayList<>(tableItem.getData().get(0).getGroups());
 		Assertions.assertEquals(2, groups.size());
 		Assertions.assertEquals("Biz Agency", groups.get(0).getName());
 		Assertions.assertEquals("DIG RHA", groups.get(1).getName());

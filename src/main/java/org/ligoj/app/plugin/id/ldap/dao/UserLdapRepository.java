@@ -778,10 +778,10 @@ public class UserLdapRepository implements IUserRepository {
 		log.info("Changing password for {} ...", userLdap.getId());
 		final ModificationItem[] passwordChange = { new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
 				new BasicAttribute(PASSWORD_ATTRIBUTE, newPassword)) };
-		
+
 		// Unlock account when the user is locked by ppolicy
 		set(userLdap, PWD_ACCOUNT_LOCKED_ATTRIBUTE, null);
-		
+
 		// Authenticate the user is needed before changing the password.
 		template.executeReadWrite(new ContextExecutor<Object>() {
 			@Override
@@ -799,8 +799,8 @@ public class UserLdapRepository implements IUserRepository {
 					log.info("Authentication failed for {} ...", userLdap.getId());
 					throw new ValidationJsonException("password", "login");
 				} catch (final InvalidAttributeValueException e) {
-					log.info("Password is in history of old passwords");
-					throw new ValidationJsonException("new-password", "password-in-history");
+					log.info("Password change failed due to: {}", e.getMessage());
+					throw new ValidationJsonException("new-password", "password-policy");
 				}
 
 				return null;
