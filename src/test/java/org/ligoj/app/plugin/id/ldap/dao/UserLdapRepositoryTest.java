@@ -1,8 +1,13 @@
 package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.util.Collections;
+import java.util.Date;
 
 import javax.naming.Name;
+import javax.naming.NamingException;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.ModificationItem;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,10 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.UserOrg;
+import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.springframework.ldap.core.ContextExecutor;
 import org.springframework.ldap.core.ContextMapper;
+import org.springframework.ldap.core.ContextSource;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.AbstractContextMapper;
@@ -137,8 +145,8 @@ public class UserLdapRepositoryTest {
 	@Test
 	public void getTokenNotExists() {
 		final LdapTemplate mock = Mockito.mock(LdapTemplate.class);
-		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(ContextMapper.class)))
-				.thenReturn(Collections.emptyList());
+		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(),
+				ArgumentMatchers.any(ContextMapper.class))).thenReturn(Collections.emptyList());
 		repository.setTemplate(mock);
 		Assertions.assertNull(repository.getToken("any"));
 	}
@@ -177,4 +185,64 @@ public class UserLdapRepositoryTest {
 		repository.setCompanyRepository(mock);
 		repository.findByIdExpected("user1", "user2");
 	}
+
+	@Test
+	public void testPasswordChangeWithWrongOldPasswordFails() throws NamingException {
+		final LdapTemplate mock = Mockito.mock(LdapTemplate.class);
+		final ContextSource mockCtx = Mockito.mock(ContextSource.class);
+		final ModificationItem[] passwordChange = {
+				new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", "newPassword")) };
+
+		UserOrg user = new UserOrg();
+		user.setId("");
+		user.setCompany("company");
+		repository.setTemplate(mock);
+		Mockito.when(mock.executeReadWrite((ContextExecutor<Object>) ArgumentMatchers.any()))
+				.thenThrow(ValidationJsonException.class);
+
+		Assertions.assertThrows(ValidationJsonException.class, () -> {
+			repository.setPassword(user, "yossarianspassword", "yossariansnewpassword");
+		});
+	}
+
+	@Test
+	public void testValidLdapDate() {
+		final String ldapDate = "20180206102244Z";
+		Assertions.assertEquals(1517908964000L, repository.parseLdapDate(ldapDate).getTime());
+		;
+	}
+
+	@Test
+	public void testNotValidLdapDate() {
+		final String ldapDate = "20180206102244";
+		Assertions.assertThrows(BusinessException.class, () -> {
+			repository.parseLdapDate(ldapDate).getTime();
+		});
+	}
+
+	@Test
+	public void checkUserStatus() {
+		final UserOrg user = new UserOrg();
+		final LdapTemplate mock = Mockito.mock(LdapTemplate.class);
+		final DirContextOperations dirCtx = Mockito.mock(DirContextOperations.class);
+		Mockito.when(mock.search(
+				(String) ArgumentMatchers.any(), 
+				ArgumentMatchers.any(),
+				ArgumentMatchers.eq(2),
+				ArgumentMatchers.any(), 
+				(AbstractContextMapper<UserOrg>) ArgumentMatchers.any()
+				)).thenAnswer(i -> {
+					((AbstractContextMapper<DirContextOperations>) i.getArgument(4)).mapFromContext(dirCtx);
+					user.setLocked(new Date(1517908964000L));
+					user.setLockedBy("_ppolicy");
+					return null;
+				});
+		Mockito.when(dirCtx.attributeExists(ArgumentMatchers.any())).thenReturn(true);
+		Mockito.when(dirCtx.getStringAttribute(ArgumentMatchers.any())).thenReturn("20180206102244Z");
+		repository.setTemplate(mock);
+		repository.checkLockStatus(user);
+		
+		Assertions.assertEquals(1517908964000L, user.getLocked().getTime());
+	}
+
 }
