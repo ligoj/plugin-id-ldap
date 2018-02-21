@@ -28,7 +28,6 @@ import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectRetrievalFailureException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -69,14 +68,14 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		final UriInfo uriInfo = newFindAllParameters();
 		initSpringSecurityContext("someone");
 
-		Mockito.when(SecurityContextHolder.getContext().getAuthentication().getName()).thenReturn("someone");
 		final TableItem<DelegateOrgLightVo> result = resource.findAll(uriInfo, null);
-		Assertions.assertEquals(4, result.getData().size());
-		Assertions.assertEquals(4, result.getRecordsTotal());
+		
+		// THERE IS DIFFERENCE FROM "plugin-id", broken delegates are dropped ('any' for sample)
+		Assertions.assertEquals(2, result.getData().size());
+		Assertions.assertEquals(2, result.getRecordsTotal());
 
-		// someone;group;dig rha;false;false;cn=dig rha,cn=dig
-		// as,cn=dig,ou=fonction,ou=groups,dc=sample,dc=com
-		DelegateOrgLightVo entity = result.getData().get(2);
+		// someone;group;dig rha;false;false;cn=dig rha,cn=dig as,cn=dig,ou=fonction,ou=groups,dc=sample,dc=com
+		DelegateOrgLightVo entity = result.getData().get(0);
 		Assertions.assertEquals("DIG RHA", entity.getName());
 		Assertions.assertEquals(DelegateType.GROUP, entity.getType());
 		Assertions.assertNotNull(entity.getCreatedDate());
@@ -89,10 +88,10 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		Assertions.assertFalse(entity.isCanWrite());
 		Assertions.assertFalse(entity.isManaged());
 
-		// someone;company;any;false;true;cn=any,ou=groups,dc=sample,dc=com
-		entity = result.getData().get(0);
-		Assertions.assertEquals("any", entity.getName());
-		Assertions.assertEquals(DelegateType.COMPANY, entity.getType());
+		// someone;company;ing;true;false;ou=ing,ou=external,ou=people,dc=sample,dc=com
+	}
+
+	private void assertAdmin(DelegateOrgLightVo entity) {
 		Assertions.assertNotNull(entity.getCreatedDate());
 		Assertions.assertNotNull(entity.getLastModifiedDate());
 		Assertions.assertEquals(DEFAULT_USER, entity.getCreatedBy().getId());
@@ -103,8 +102,6 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		Assertions.assertTrue(entity.isCanAdmin());
 		Assertions.assertTrue(entity.isCanWrite());
 		Assertions.assertTrue(entity.isManaged());
-
-		// someone;company;ing;true;false;ou=ing,ou=external,ou=people,dc=sample,dc=com
 	}
 
 	@Test
@@ -148,26 +145,31 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 
 		final TableItem<DelegateOrgLightVo> result = resource.findAll(uriInfo, null);
 		Assertions.assertEquals(12, result.getData().size());
-		Assertions.assertEquals(23, result.getRecordsTotal());
+		Assertions.assertEquals(18, result.getRecordsTotal());
 
-		checkDelegateGroup2(result.getData().get(11));
+		// THERE IS DIFFERENCE FROM "plugin-id", broken delegates are dropped ('any' for sample)
+		checkDelegateGroup2(result.getData().get(6));
 		checkDelegateTree(result.getData().get(3));
 	}
 
+	/**
+	 * A delegate visible by user "alongchu". This delegate add visibility of
+	 * company "ing" for all mambers of "gfi-gstack". And user "alongchu" is
+	 * member of group "gfi-gstack".
+	 */
 	@Test
 	public void findAllReceiverGroup() {
-		// create a mock URI info with pagination informations
 		final UriInfo uriInfo = newFindAllParameters();
 		initSpringSecurityContext("alongchu");
 		final TableItem<DelegateOrgLightVo> result = resource.findAll(uriInfo, null);
 		Assertions.assertEquals(1, result.getData().size());
 		Assertions.assertEquals(1, result.getRecordsTotal());
 
-		final DelegateOrgLightVo entity = result.getData().get(0);
-		Assertions.assertEquals("ing", entity.getName());
-		Assertions.assertEquals(DelegateType.COMPANY, entity.getType());
-		Assertions.assertEquals("gfi-gstack", entity.getReceiver().getId());
-		Assertions.assertEquals(ReceiverType.GROUP, entity.getReceiverType());
+		final DelegateOrgLightVo vo = result.getData().get(0);
+		Assertions.assertEquals("ing", vo.getName());
+		Assertions.assertEquals(DelegateType.COMPANY, vo.getType());
+		Assertions.assertEquals("gfi-gstack", vo.getReceiver().getId());
+		Assertions.assertEquals(ReceiverType.GROUP, vo.getReceiverType());
 	}
 
 	@Test
@@ -223,16 +225,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	private void checkDelegateGroup(final DelegateOrgLightVo entity) {
 		Assertions.assertEquals("DIG RHA", entity.getName());
 		Assertions.assertEquals(DelegateType.GROUP, entity.getType());
-		Assertions.assertNotNull(entity.getCreatedDate());
-		Assertions.assertNotNull(entity.getLastModifiedDate());
-		Assertions.assertEquals(DEFAULT_USER, entity.getCreatedBy().getId());
-		Assertions.assertEquals(DEFAULT_USER, entity.getLastModifiedBy().getId());
-		Assertions.assertEquals("fdaugan", entity.getReceiver().getId());
-		Assertions.assertEquals(ReceiverType.USER, entity.getReceiverType());
-		Assertions.assertEquals("Fabrice", ((SimpleUser) entity.getReceiver()).getFirstName());
-		Assertions.assertTrue(entity.isCanAdmin());
-		Assertions.assertTrue(entity.isCanWrite());
-		Assertions.assertTrue(entity.isManaged());
+		assertAdmin(entity);
 	}
 
 	private void checkDelegateGroup2(final DelegateOrgLightVo entity) {
@@ -291,6 +284,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		// Check the stored name is normalized
 		Assertions.assertEquals("hub paris", entity.getName());
 		Assertions.assertEquals("cn=hub paris,cn=hub france,cn=production,ou=branche,ou=groups,dc=sample,dc=com", entity.getDn());
+		Assertions.assertNull(entity.getReceiverDn());
 		Assertions.assertEquals(DelegateType.GROUP, entity.getType());
 		Assertions.assertEquals(DEFAULT_USER, entity.getCreatedBy());
 		Assertions.assertEquals("fdaugan", entity.getReceiver());
@@ -314,6 +308,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		final DelegateOrg entity = repository.findOneExpected(id);
 		Assertions.assertEquals("socygan", entity.getName());
 		Assertions.assertEquals("ou=socygan,ou=external,ou=people,dc=sample,dc=com", entity.getDn());
+		Assertions.assertNull(entity.getReceiverDn());
 		Assertions.assertEquals(DelegateType.COMPANY, entity.getType());
 		Assertions.assertEquals(DEFAULT_USER, entity.getCreatedBy());
 		Assertions.assertEquals("fdaugan", entity.getReceiver());
@@ -343,6 +338,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		Assertions.assertEquals("mtuyer", entity.getCreatedBy());
 		Assertions.assertEquals("ing", entity.getReceiver());
 		Assertions.assertEquals(ReceiverType.COMPANY, entity.getReceiverType());
+		Assertions.assertEquals("ou=ing,ou=external,ou=people,dc=sample,dc=com", entity.getReceiverDn());
 		Assertions.assertTrue(entity.isCanAdmin());
 	}
 
@@ -367,6 +363,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		Assertions.assertEquals("mtuyer", entity.getCreatedBy());
 		Assertions.assertEquals("dig", entity.getReceiver());
 		Assertions.assertEquals(ReceiverType.GROUP, entity.getReceiverType());
+		Assertions.assertEquals("cn=dig,ou=fonction,ou=groups,dc=sample,dc=com", entity.getReceiverDn());
 		Assertions.assertTrue(entity.isCanAdmin());
 	}
 
@@ -374,8 +371,8 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	public void createOnTreePartialDn() {
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setName("cn=myDn");
-		vo.setType(DelegateType.TREE);
 		vo.setReceiver("fdaugan");
+		vo.setType(DelegateType.TREE);
 		Assertions.assertThrows(ForbiddenException.class, () -> {
 			resource.create(vo);
 		});
@@ -386,8 +383,8 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setName("cn=my,invalidDn,dc=sample,dc=com");
 		vo.setName("myDn*Partial");
-		vo.setType(DelegateType.TREE);
 		vo.setReceiver("fdaugan");
+		vo.setType(DelegateType.TREE);
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.create(vo);
 		}), "tree", "DistinguishName");
@@ -408,8 +405,8 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	public void createOnSubTree() {
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setName("cn=Any,dc=sample,dc=com");
-		vo.setType(DelegateType.TREE);
 		vo.setReceiver("fdaugan");
+		vo.setType(DelegateType.TREE);
 		final int id = resource.create(vo);
 		em.flush();
 		em.clear();
@@ -429,8 +426,8 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	public void createOnSubTreeInvalidDn() {
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setName("myDn,dc=sample,dc=com");
-		vo.setType(DelegateType.TREE);
 		vo.setReceiver("fdaugan");
+		vo.setType(DelegateType.TREE);
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.create(vo);
 		}), "tree", "DistinguishName");
@@ -591,78 +588,54 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	@Test
 	public void updateToSubTree() {
 		initSpringSecurityContext("mtuyer");
-		final int id = em.createQuery("SELECT id FROM DelegateOrg WHERE receiver=:user AND dn=:dn", Integer.class)
-				.setParameter("user", "mtuyer").setParameter("dn", "ou=fonction,ou=groups,dc=sample,dc=com").getSingleResult();
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
-		vo.setId(id);
 		vo.setName("cn=any,ou=fonction,ou=groups,dc=sample,dc=com");
 		vo.setReceiver("mtuyer");
+		final DelegateOrg entity = updateNoChangeBase("mtuyer", vo);
+		Assertions.assertTrue(entity.isCanAdmin());
+		Assertions.assertFalse(entity.isCanWrite());
+	}
+
+	private DelegateOrg updateNoChangeBase(final String user, final DelegateOrgEditionVo vo) {
+		final int id = em.createQuery("SELECT id FROM DelegateOrg WHERE receiver=:user AND dn=:dn", Integer.class)
+				.setParameter("user", "mtuyer").setParameter("dn", "ou=fonction,ou=groups,dc=sample,dc=com").getSingleResult();
+		vo.setId(id);
 		vo.setType(DelegateType.TREE);
 		vo.setCanAdmin(true);
-		vo.setCanWrite(false);
 		resource.update(vo);
 		em.flush();
 		em.clear();
 
 		final DelegateOrg entity = repository.findOne(id);
 		Assertions.assertEquals("-", entity.getName());
-		Assertions.assertEquals("cn=any,ou=fonction,ou=groups,dc=sample,dc=com", entity.getDn());
+		Assertions.assertEquals(vo.getName().trim(), entity.getDn());
 		Assertions.assertEquals(DelegateType.TREE, entity.getType());
-		Assertions.assertEquals("mtuyer", entity.getReceiver());
+		Assertions.assertEquals(user, entity.getReceiver());
 		Assertions.assertEquals(ReceiverType.USER, entity.getReceiverType());
-		Assertions.assertTrue(entity.isCanAdmin());
-		Assertions.assertFalse(entity.isCanWrite());
+		return entity;
 	}
 
 	@Test
 	public void updateNoChange() {
 		initSpringSecurityContext("mtuyer");
-		final int id = em.createQuery("SELECT id FROM DelegateOrg WHERE receiver=:user AND dn=:dn", Integer.class)
-				.setParameter("user", "mtuyer").setParameter("dn", "ou=fonction,ou=groups,dc=sample,dc=com").getSingleResult();
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
-		vo.setId(id);
 
 		// Add space that would be trimmed
 		vo.setName("ou=fonction,ou=groups,dc=sample,dc=com  ");
 		vo.setReceiver("mtuyer");
-		vo.setType(DelegateType.TREE);
 		vo.setCanWrite(true);
-		vo.setCanAdmin(true);
-		resource.update(vo);
-		em.flush();
-		em.clear();
-
-		final DelegateOrg entity = repository.findOne(id);
-		Assertions.assertEquals("-", entity.getName());
-		Assertions.assertEquals("ou=fonction,ou=groups,dc=sample,dc=com", entity.getDn());
-		Assertions.assertEquals(DelegateType.TREE, entity.getType());
-		Assertions.assertEquals("mtuyer", entity.getReceiver());
-		Assertions.assertEquals(ReceiverType.USER, entity.getReceiverType());
+		final DelegateOrg entity = updateNoChangeBase("mtuyer", vo);
 		Assertions.assertTrue(entity.isCanWrite());
 		Assertions.assertTrue(entity.isCanAdmin());
 	}
 
 	@Test
 	public void updateNoChangeFromAnother() {
-		final int id = em.createQuery("SELECT id FROM DelegateOrg WHERE receiver=:user AND dn=:dn", Integer.class)
-				.setParameter("user", "mtuyer").setParameter("dn", "ou=fonction,ou=groups,dc=sample,dc=com").getSingleResult();
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
-		vo.setId(id);
 		vo.setName("ou=fonction,ou=groups,dc=sample,dc=com");
 		vo.setReceiver("fdaugan");
-		vo.setType(DelegateType.TREE);
 		vo.setCanWrite(true);
-		vo.setCanAdmin(true);
-		resource.update(vo);
-		em.flush();
-		em.clear();
-
-		final DelegateOrg entity = repository.findOne(id);
-		Assertions.assertEquals("-", entity.getName());
-		Assertions.assertEquals("ou=fonction,ou=groups,dc=sample,dc=com", entity.getDn());
-		Assertions.assertEquals(DelegateType.TREE, entity.getType());
-		Assertions.assertEquals("fdaugan", entity.getReceiver());
-		Assertions.assertEquals(ReceiverType.USER, entity.getReceiverType());
+		final DelegateOrg entity = updateNoChangeBase("fdaugan", vo);
 		Assertions.assertTrue(entity.isCanWrite());
 		Assertions.assertTrue(entity.isCanAdmin());
 	}
