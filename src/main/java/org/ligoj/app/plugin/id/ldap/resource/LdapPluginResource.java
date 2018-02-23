@@ -164,8 +164,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	public static final String PARAMETER_PEOPLE_CLASS = KEY + ":people-class";
 
 	/**
-	 * Pattern capturing the company from the DN of the user. May be a row
-	 * string for constant.
+	 * Pattern capturing the company from the DN of the user. May be a row string for constant.
 	 */
 	public static final String PARAMETER_COMPANY_PATTERN = KEY + ":company-pattern";
 
@@ -180,8 +179,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	public static final String PARAMETER_COMPANIES_DN = KEY + ":companies-dn";
 
 	/**
-	 * DN of location of people considered as internal. May be the same than
-	 * people
+	 * DN of location of people considered as internal. May be the same than people
 	 */
 	public static final String PARAMETER_PEOPLE_INTERNAL_DN = KEY + ":people-internal-dn";
 
@@ -400,8 +398,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	}
 
 	/**
-	 * Validate the group against its direct parent (a normalized OU) and return
-	 * its DN.
+	 * Validate the group against its direct parent (a normalized OU) and return its DN.
 	 */
 	private String validateAndCreateParentOu(final String group, final String ou, final String pkey) {
 		final ContainerScope groupTypeLdap = containerScopeResource.findByName(ContainerScope.TYPE_PROJECT);
@@ -462,8 +459,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	}
 
 	/**
-	 * Return activities of all users in the group of this subscription as CSV
-	 * input stream.
+	 * Return activities of all users in the group of this subscription as CSV input stream.
 	 * 
 	 * @param subscription
 	 *            The subscription identifier.
@@ -482,8 +478,8 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	}
 
 	/**
-	 * Return activities of all users in any group subscribed by the same
-	 * project of this subscription as CSV input stream.
+	 * Return activities of all users in any group subscribed by the same project of this subscription as CSV input
+	 * stream.
 	 * 
 	 * @param subscription
 	 *            The subscription identifier.
@@ -508,7 +504,8 @@ public class LdapPluginResource extends AbstractToolPluginResource
 		// Get users from other LDAP subscriptions
 		final Subscription main = subscriptionResource.checkVisibleSubscription(subscription);
 		final List<Subscription> subscriptions = subscriptionRepository.findAllOnSameProject(subscription);
-		final Set<UserOrg> users = global ? getMembersOfAllSubscriptions(subscriptions) : getMembersOfSubscription(main);
+		final Set<UserOrg> users = global ? getMembersOfAllSubscriptions(subscriptions)
+				: getMembersOfSubscription(main);
 
 		// Get the activities from each subscription of the same project,
 		final ActivitiesComputations result = new ActivitiesComputations();
@@ -549,8 +546,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	 * Return users member of associated subscription.
 	 * 
 	 * @param subscription
-	 *            The subscription identifier used to get the related group and
-	 *            members.
+	 *            The subscription identifier used to get the related group and members.
 	 * @return The members of related groups of the subscription.
 	 */
 	public Collection<UserOrg> getMembers(final int subscription) {
@@ -617,8 +613,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	}
 
 	/**
-	 * Search the LDAP Groups matching to the given criteria and for type
-	 * "Project". Node identifier is ignored for now.
+	 * Search the LDAP Groups matching to the given criteria and for type "Project". Node identifier is ignored for now.
 	 * 
 	 * @param criteria
 	 *            the search criteria.
@@ -650,8 +645,8 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	}
 
 	/**
-	 * Search the LDAP Customers matching to the given criteria and for type
-	 * "Project". Node identifier is ignored for now. Node is ignored.
+	 * Search the LDAP Customers matching to the given criteria and for type "Project". Node identifier is ignored for
+	 * now. Node is ignored.
 	 * 
 	 * @param criteria
 	 *            the search criteria.
@@ -765,12 +760,10 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	}
 
 	/**
-	 * Check the authentication, then create or get the application user
-	 * matching to the given account.
+	 * Check the authentication, then create or get the application user matching to the given account.
 	 * 
 	 * @param repository
-	 *            Repository used to authenticate the user, and also to use to
-	 *            fetch the user attributes.
+	 *            Repository used to authenticate the user, and also to use to fetch the user attributes.
 	 * @param authentication
 	 *            The current authentication.
 	 * @return A not <code>null</code> application user.
@@ -808,8 +801,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 			return newApplicationUser(account);
 		}
 		if (usersByMail.size() == 1) {
-			// Everything is checked, account can be merged into the existing
-			// application user
+			// Everything is checked, account can be merged into the existing application user
 			userResource.mergeUser(usersByMail.get(0), account);
 			return usersByMail.get(0).getId();
 		}
@@ -849,8 +841,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	}
 
 	/**
-	 * Find a free application login from a base login. Primary repository is
-	 * checked to reclaim a free login.
+	 * Find a free application login from a base login. Primary repository is checked to reclaim a free login.
 	 * 
 	 * @param login
 	 *            The base login name.
