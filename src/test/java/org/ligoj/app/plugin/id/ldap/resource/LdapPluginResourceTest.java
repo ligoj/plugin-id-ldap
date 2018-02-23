@@ -702,6 +702,8 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		user.setLastName("Last123");
 		user.setName("secondarylogin");
 		user.setCompany("gfi");
+		user.setDepartment("3890");
+		user.setLocalId("8234");
 		Assertions.assertEquals("mmartin", resource.toApplicationUser(user));
 
 		final UserOrg userLdap = userResource.findByIdNoCache("mmartin");
