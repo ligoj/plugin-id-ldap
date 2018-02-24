@@ -40,7 +40,10 @@ public class LdapCacheRepository {
 	protected IamProvider[] iamProvider;
 
 	/**
-	 * Reset the database cache with the LDAP data.
+	 * Reset the database cache with the LDAP data. Note there is no synchronization for this method. Initial first
+	 * concurrent calls may note involve the cache.
+	 * 
+	 * @return The cached LDAP data..
 	 */
 	@CacheResult(cacheName = "ldap")
 	public Map<LdapData, Map<String, ? extends ResourceOrg>> getLdapData() {
@@ -180,6 +183,11 @@ public class LdapCacheRepository {
 
 	/**
 	 * Remove the user from the given group. Cache is also updated but only in group members.
+	 * 
+	 * @param user
+	 *            The user to remove from the given group.
+	 * @param group
+	 *            The group to update.
 	 */
 	protected void removeUserFromGroup(final UserOrg user, final GroupOrg group) {
 		// Remove from JPA cache
@@ -192,6 +200,11 @@ public class LdapCacheRepository {
 
 	/**
 	 * Remove the group from the another group. Cache is also updated but only in group members.
+	 * 
+	 * @param subGroup
+	 *            The group to remove from the other group.
+	 * @param group
+	 *            The group to update.
 	 */
 	protected void removeGroupFromGroup(final GroupOrg subGroup, final GroupOrg group) {
 		// Remove from JPA cache
@@ -204,6 +217,11 @@ public class LdapCacheRepository {
 
 	/**
 	 * Add the group to the given group.Cache is also updated.
+	 * 
+	 * @param subGroup
+	 *            The group to add to the other group.
+	 * @param group
+	 *            The group to update.
 	 */
 	protected void addGroupToGroup(final GroupOrg subGroup, final GroupOrg group) {
 
@@ -217,6 +235,11 @@ public class LdapCacheRepository {
 
 	/**
 	 * Add the user to the given group.Cache is also updated.
+	 * 
+	 * @param user
+	 *            The user to add to the other group.
+	 * @param group
+	 *            The group to update.
 	 */
 	protected void addUserToGroup(final UserOrg user, final GroupOrg group) {
 
@@ -230,6 +253,9 @@ public class LdapCacheRepository {
 
 	/**
 	 * Update the attributes.
+	 * 
+	 * @param user
+	 *            The user to update.
 	 */
 	protected void update(final UserOrg user) {
 		ldapCacheDao.update(user);

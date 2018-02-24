@@ -466,6 +466,8 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	 * @param file
 	 *            The target file name.
 	 * @return the stream ready to be read during the serialization.
+	 * @throws Exception
+	 *             When any technical error occurs. Caught at upper level for the right mapping.
 	 */
 	@GET
 	@Path("activity/{subscription:\\d+}/{file:group-.*.csv}")
@@ -486,6 +488,8 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	 * @param file
 	 *            The target file name.
 	 * @return the stream ready to be read during the serialization.
+	 * @throws Exception
+	 *             When any technical error occurs. Caught at upper level for the right mapping.
 	 */
 	@GET
 	@Path("activity/{subscription:\\d+}/{file:project-.*.csv}")
@@ -558,17 +562,30 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	/**
 	 * Add activities related to given subscription.
+	 * 
+	 * @param activities
+	 *            The collected activities.
+	 * @param users
+	 *            The implied users.
+	 * @param subscription
+	 *            The related subscription of theses activities.
+	 * @param plugin
+	 *            The plug-in associated to this subscription.
+	 * @param nodes
+	 *            The nodes that have already been processed. This set will be updated by this function.
+	 * @throws Exception
+	 *             When any technical error occurs. Caught at upper level for the right mapping.
 	 */
 	protected void addSubscriptionActivities(final Map<String, Map<String, Activity>> activities,
-			final Collection<String> userLogins, final Subscription otherSubscription, final ServicePlugin plugin,
-			final Set<INamableBean<String>> nodes) throws Exception { // NOSONAR
+			final Collection<String> users, final Subscription subscription, final ServicePlugin plugin,
+			final Set<INamableBean<String>> nodes) throws Exception {
 
 		// Collect activities of each subscription of unique node
-		if (plugin instanceof ActivitiesProvider && nodes.add(otherSubscription.getNode())) {
+		if (plugin instanceof ActivitiesProvider && nodes.add(subscription.getNode())) {
 			final Map<String, Activity> subscriptionActivities = ((ActivitiesProvider) plugin)
-					.getActivities(otherSubscription.getId(), userLogins);
+					.getActivities(subscription.getId(), users);
 			for (final Entry<String, Activity> userActivity : subscriptionActivities.entrySet()) {
-				addUserActivities(activities, otherSubscription.getNode(), userActivity);
+				addUserActivities(activities, subscription.getNode(), userActivity);
 			}
 		}
 	}

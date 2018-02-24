@@ -237,22 +237,22 @@ public class UserLdapRepository implements IUserRepository {
 	}
 
 	@Override
-	public UserOrg create(final UserOrg entry) {
+	public UserOrg create(final UserOrg user) {
 		// Build the DN
-		final Name dn = buildDn(entry);
+		final Name dn = buildDn(user);
 
 		// Create the LDAP entry
-		entry.setDn(dn.toString());
+		user.setDn(dn.toString());
 		final DirContextAdapter context = new DirContextAdapter(dn);
 		context.setAttributeValues(OBJECT_CLASS, new String[] { peopleClass });
-		mapToContext(entry, context);
+		mapToContext(user, context);
 		template.bind(context);
 
 		// Also, update the cache
-		ldapCacheRepository.create(entry);
+		ldapCacheRepository.create(user);
 
 		// Return the original entry with updated DN
-		return entry;
+		return user;
 	}
 
 	/**
@@ -570,24 +570,27 @@ public class UserLdapRepository implements IUserRepository {
 	}
 
 	/**
-	 * Add the user from the given groups.Cache is also updated.
+	 * Add the user from the given groups. Cache is also updated.
 	 * 
+	 * @param user
+	 *            The user to add to the given groups.
 	 * @param groups
 	 *            the groups to add, normalized.
 	 */
 	protected void addUserToGroups(final UserOrg user, final Collection<String> groups) {
-		for (final String group : groups) {
-			groupLdapRepository.addUser(user, group);
-		}
+		groups.forEach(g -> groupLdapRepository.addUser(user, g));
 	}
 
 	/**
 	 * Remove the user from the given groups.Cache is also updated.
+	 * 
+	 * @param user
+	 *            The user to remove from the given groups.
+	 * @param groups
+	 *            the groups to remove, normalized.
 	 */
 	protected void removeUserFromGroups(final UserOrg user, final Collection<String> groups) {
-		for (final String group : groups) {
-			groupLdapRepository.removeUser(user, group);
-		}
+		groups.forEach(g -> groupLdapRepository.removeUser(user, g));
 	}
 
 	@Override
@@ -666,7 +669,7 @@ public class UserLdapRepository implements IUserRepository {
 	 * </ul>
 	 * 
 	 * @param principal
-	 *            User requesting the lock.
+	 *            Principal user requesting the lock.
 	 * @param user
 	 *            The LDAP user to disable.
 	 * @param isolate
@@ -807,14 +810,14 @@ public class UserLdapRepository implements IUserRepository {
 	/**
 	 * Generate and set a temporary password to specified user.
 	 * 
-	 * @param userLdap
+	 * @param user
 	 *            User to update.
 	 * @return current user password.
 	 */
-	private String getTmpPassword(final UserOrg userLdap) {
+	private String getTmpPassword(final UserOrg user) {
 		final String tmpPassword = GENERATOR.generate(10);
 		// set the new generated password
-		set(userLdap, PASSWORD_ATTRIBUTE, tmpPassword);
+		set(user, PASSWORD_ATTRIBUTE, tmpPassword);
 		return tmpPassword;
 	}
 

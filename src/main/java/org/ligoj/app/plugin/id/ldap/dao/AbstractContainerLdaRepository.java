@@ -42,7 +42,8 @@ import lombok.extern.slf4j.Slf4j;
  *            The container cache type.
  */
 @Slf4j
-public abstract class AbstractContainerLdaRepository<T extends ContainerOrg, C extends CacheContainer> implements IContainerRepository<T> {
+public abstract class AbstractContainerLdaRepository<T extends ContainerOrg, C extends CacheContainer>
+		implements IContainerRepository<T> {
 
 	protected static final Sort.Order DEFAULT_ORDER = new Sort.Order(Direction.ASC, "name");
 
@@ -81,17 +82,30 @@ public abstract class AbstractContainerLdaRepository<T extends ContainerOrg, C e
 	/**
 	 * Return the repository managing the container as cache.
 	 * 
+	 * @param <C>
+	 *            The container cache type.
 	 * @return the repository managing the container as cache.
 	 */
 	protected abstract CacheContainerRepository<C> getCacheRepository();
 
 	/**
 	 * Map a container <T> to LDAP.
+	 * 
+	 * @param entry
+	 *            The container entry to map.
+	 * @param context
+	 *            The target context to fill.
 	 */
 	protected abstract void mapToContext(T entry, DirContextOperations context);
 
 	/**
 	 * Create a new container bean. Not in LDAP repository.
+	 * 
+	 * @param dn
+	 *            The unique DN of the container.
+	 * @param cn
+	 *            The human readable name (CN) that will be used to build the identifier.
+	 * @return A new transient container bean. Never <code>null</code>.
 	 */
 	protected abstract T newContainer(String dn, String cn);
 
@@ -111,9 +125,11 @@ public abstract class AbstractContainerLdaRepository<T extends ContainerOrg, C e
 	}
 
 	@Override
-	public Page<T> findAll(final Set<T> groups, final String criteria, final Pageable pageable, final Map<String, Comparator<T>> customComparators) {
+	public Page<T> findAll(final Set<T> groups, final String criteria, final Pageable pageable,
+			final Map<String, Comparator<T>> customComparators) {
 		// Create the set with the right comparator
-		final List<Sort.Order> orders = IteratorUtils.toList(ObjectUtils.defaultIfNull(pageable.getSort(), new ArrayList<Sort.Order>()).iterator());
+		final List<Sort.Order> orders = IteratorUtils
+				.toList(ObjectUtils.defaultIfNull(pageable.getSort(), new ArrayList<Sort.Order>()).iterator());
 		orders.add(DEFAULT_ORDER);
 		final Sort.Order order = orders.get(0);
 		Comparator<T> comparator = customComparators.get(order.getProperty());
@@ -156,7 +172,6 @@ public abstract class AbstractContainerLdaRepository<T extends ContainerOrg, C e
 		return StringUtils.containsIgnoreCase(group.getName(), criteria);
 	}
 
-
 	/**
 	 * Find a container from its identifier. Security is applied regarding the given user.
 	 * 
@@ -170,7 +185,7 @@ public abstract class AbstractContainerLdaRepository<T extends ContainerOrg, C e
 	@Override
 	public T findById(final String user, final String id) {
 		// Check the container exists and return the in memory object.
-		return Optional.ofNullable(getCacheRepository().findById(user, Normalizer.normalize(id))).map(CacheContainer::getId).map(this::findById)
-				.orElse(null);
+		return Optional.ofNullable(getCacheRepository().findById(user, Normalizer.normalize(id)))
+				.map(CacheContainer::getId).map(this::findById).orElse(null);
 	}
 }
