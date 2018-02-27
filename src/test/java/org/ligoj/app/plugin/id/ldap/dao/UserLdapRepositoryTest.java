@@ -290,7 +290,7 @@ public class UserLdapRepositoryTest {
 	}
 	
 	@Test
-	public void checkUserStatus1() {
+	public void testBlockedUserByPpolicy() {
 		final UserOrg user = new UserOrg();
 		final LdapTemplate mock = Mockito.mock(LdapTemplate.class);
 		final DirContextOperations dirCtx = Mockito.mock(DirContextOperations.class);
