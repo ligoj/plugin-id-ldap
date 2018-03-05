@@ -776,7 +776,7 @@ public class UserLdapRepository implements IUserRepository {
 	public void setPassword(final UserOrg userLdap, final String password, final String newPassword) {
 		log.info("Changing password for {} ...", userLdap.getId());
 		final ModificationItem[] passwordChange = { new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
-				new BasicAttribute(PASSWORD_ATTRIBUTE, newPassword)) };
+				new BasicAttribute(PASSWORD_ATTRIBUTE, digest(newPassword))) };
 
 		// Unlock account when the user is locked by ppolicy
 		set(userLdap, PWD_ACCOUNT_LOCKED_ATTRIBUTE, null);
@@ -817,7 +817,7 @@ public class UserLdapRepository implements IUserRepository {
 	private String getTmpPassword(final UserOrg user) {
 		final String tmpPassword = GENERATOR.generate(10);
 		// set the new generated password
-		set(user, PASSWORD_ATTRIBUTE, tmpPassword);
+		set(user, PASSWORD_ATTRIBUTE, digest(tmpPassword));
 		return tmpPassword;
 	}
 

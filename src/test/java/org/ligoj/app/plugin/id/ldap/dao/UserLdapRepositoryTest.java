@@ -2,6 +2,7 @@ package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 
 import javax.naming.AuthenticationException;
 import javax.naming.Name;
@@ -10,11 +11,13 @@ import javax.naming.directory.InvalidAttributeValueException;
 import javax.naming.directory.ModificationItem;
 import javax.naming.ldap.LdapContext;
 
+import org.apache.commons.collections4.MapUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.iam.CompanyOrg;
+import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
@@ -282,6 +285,28 @@ public class UserLdapRepositoryTest {
 		Mockito.when(dirCtx.getStringAttribute(ArgumentMatchers.any())).thenReturn("20180206102244Z");
 		repository.setTemplate(mock);
 		repository.checkLockStatus(user);
+
+		Assertions.assertEquals(1517908964000L, user.getLocked().getTime());
+	}
+	
+	@Test
+	public void testBlockedUserByPpolicy() {
+		final UserOrg user = new UserOrg();
+		final LdapTemplate mock = Mockito.mock(LdapTemplate.class);
+		final DirContextOperations dirCtx = Mockito.mock(DirContextOperations.class);
+		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.eq(2),
+				ArgumentMatchers.any(), (AbstractContextMapper<UserOrg>) ArgumentMatchers.any())).thenAnswer(i -> {
+					((AbstractContextMapper<DirContextOperations>) i.getArgument(4)).mapFromContext(dirCtx);
+					user.setLocked(new Date(1517908964000L));
+					user.setLockedBy("_ppolicy");
+					return  Collections.singletonList(user);
+				});
+		Mockito.when(dirCtx.getDn()).thenReturn(org.springframework.ldap.support.LdapUtils.newLdapName("cn=Any"));
+		Mockito.when(dirCtx.attributeExists(ArgumentMatchers.any())).thenReturn(true);
+		Mockito.when(dirCtx.getStringAttribute(ArgumentMatchers.any())).thenReturn("20180206102244Z");
+		repository.setTemplate(mock);
+		final Map<String, GroupOrg> groups = MapUtils.EMPTY_SORTED_MAP;
+		repository.findAllNoCache(groups);
 
 		Assertions.assertEquals(1517908964000L, user.getLocked().getTime());
 	}
