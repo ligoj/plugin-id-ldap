@@ -118,7 +118,7 @@ public class UserLdapRepository implements IUserRepository {
 	 * PPolicy module identifier.
 	 */
 	private static final String PPOLICY_NAME = "_ppolicy";
-	
+
 	/**
 	 * Flag used to hash the password or not.
 	 */
@@ -781,7 +781,9 @@ public class UserLdapRepository implements IUserRepository {
 	 */
 	@SuppressWarnings("deprecation")
 	private String digest(final String password) {
-		return isHashClearPwd() == true ? new org.springframework.security.crypto.password.LdapShaPasswordEncoder().encode(password) : password;
+		return isHashClearPwd()
+				? new org.springframework.security.crypto.password.LdapShaPasswordEncoder().encode(password)
+				: password;
 	}
 
 	@Override
