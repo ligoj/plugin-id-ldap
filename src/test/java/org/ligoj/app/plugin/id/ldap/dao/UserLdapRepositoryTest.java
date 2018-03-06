@@ -289,6 +289,7 @@ public class UserLdapRepositoryTest {
 		Assertions.assertEquals(1517908964000L, user.getLocked().getTime());
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testBlockedUserByPpolicy() {
 		final UserOrg user = new UserOrg();
