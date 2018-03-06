@@ -182,6 +182,11 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	 * DN of location of people considered as internal. May be the same than people
 	 */
 	public static final String PARAMETER_PEOPLE_INTERNAL_DN = KEY + ":people-internal-dn";
+	
+	/**
+	 * Value used as flag to hash or not the password
+	 */
+	public static final String PARAMETER_HASH_CLEAR_PWD = KEY + ":hash-clear-password";
 
 	@Autowired
 	protected ProjectCustomerLdapRepository projectCustomerLdapRepository;
@@ -247,6 +252,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 		repository.setLockedValue(parameters.get(PARAMETER_LOCKED_VALUE));
 		repository.setPeopleClass(parameters.get(PARAMETER_PEOPLE_CLASS));
 		repository.setCompanyPattern(StringUtils.trimToEmpty(parameters.get(PARAMETER_COMPANY_PATTERN)));
+		repository.setHashClearPwd(Boolean.parseBoolean(parameters.get(PARAMETER_HASH_CLEAR_PWD)));
 
 		// Complete the bean
 		SpringUtils.getApplicationContext().getAutowireCapableBeanFactory().autowireBean(repository);

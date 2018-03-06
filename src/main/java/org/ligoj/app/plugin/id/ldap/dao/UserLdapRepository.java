@@ -118,6 +118,13 @@ public class UserLdapRepository implements IUserRepository {
 	 * PPolicy module identifier.
 	 */
 	private static final String PPOLICY_NAME = "_ppolicy";
+	
+	/**
+	 * Flag used to hash the password or not.
+	 */
+	@Setter
+	@Getter
+	private boolean hashClearPwd;
 
 	/**
 	 * LDAP class filter.
@@ -774,7 +781,7 @@ public class UserLdapRepository implements IUserRepository {
 	 */
 	@SuppressWarnings("deprecation")
 	private String digest(final String password) {
-		return new org.springframework.security.crypto.password.LdapShaPasswordEncoder().encode(password);
+		return isHashClearPwd() == true ? new org.springframework.security.crypto.password.LdapShaPasswordEncoder().encode(password) : password;
 	}
 
 	@Override
@@ -786,7 +793,7 @@ public class UserLdapRepository implements IUserRepository {
 	public void setPassword(final UserOrg userLdap, final String password, final String newPassword) {
 		log.info("Changing password for {} ...", userLdap.getId());
 		final ModificationItem[] passwordChange = { new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
-				new BasicAttribute(PASSWORD_ATTRIBUTE, newPassword)) };
+				new BasicAttribute(PASSWORD_ATTRIBUTE, digest(newPassword))) };
 
 		// Unlock account when the user is locked by ppolicy
 		set(userLdap, PWD_ACCOUNT_LOCKED_ATTRIBUTE, null);

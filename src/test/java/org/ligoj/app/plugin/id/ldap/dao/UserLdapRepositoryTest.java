@@ -86,10 +86,25 @@ public class UserLdapRepositoryTest {
 	}
 
 	@Test
+	public void testPasswordClear() {
+		UserOrg user = new UserOrg();
+		user.setDn("dc=sample,dc=com");
+		new UserLdapRepository() {
+			public boolean isHashClearPwd() { return false;};
+			@Override
+			public void set(final Name dn, final String attribute, final String value) {
+				Assertions.assertTrue(value.equals("test"));
+			}
+
+		}.setPassword(user, "test");
+	}
+	
+	@Test
 	public void digest() {
 		UserOrg user = new UserOrg();
 		user.setDn("dc=sample,dc=com");
 		new UserLdapRepository() {
+			public boolean isHashClearPwd() { return true;};
 			@Override
 			public void set(final Name dn, final String attribute, final String value) {
 				Assertions.assertTrue(value.startsWith("{SSHA}"));
