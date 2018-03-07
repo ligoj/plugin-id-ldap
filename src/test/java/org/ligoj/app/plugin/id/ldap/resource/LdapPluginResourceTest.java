@@ -130,8 +130,8 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	/**
-	 * Create a group in a existing OU. Most Simple case. Group matches exactly
-	 * to the pkey of the project.
+	 * Create a group in a existing OU. Most Simple case. Group matches exactly to
+	 * the pkey of the project.
 	 */
 	@Test
 	public void create() {
@@ -160,8 +160,8 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	/**
-	 * Create a group inside an existing group. Parent group matches exactly to
-	 * the pkey of the project.
+	 * Create a group inside an existing group. Parent group matches exactly to the
+	 * pkey of the project.
 	 */
 	@Test
 	public void createSubGroup() {
@@ -186,8 +186,8 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	/**
-	 * Create a group for an existing project, but without reusing the pkey of
-	 * this project.
+	 * Create a group for an existing project, but without reusing the pkey of this
+	 * project.
 	 */
 	@Test
 	public void createNotCompliantGroupForProject() {
@@ -214,8 +214,8 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	/**
-	 * Create a group for an existing project, reusing the pkey of this project
-	 * and without suffix.
+	 * Create a group for an existing project, reusing the pkey of this project and
+	 * without suffix.
 	 */
 	@Test
 	public void createNotCompliantGroupForProject2() {
@@ -299,8 +299,8 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	/**
-	 * Create a group inside a new organizational unit. Not an error, lazy
-	 * creation. Exact match for group and pkey.
+	 * Create a group inside a new organizational unit. Not an error, lazy creation.
+	 * Exact match for group and pkey.
 	 */
 	@Test
 	public void createOuNotExists() {
@@ -419,12 +419,14 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 
 	@Test
 	public void checkStatus() {
-		Assertions.assertTrue(resource.checkStatus("service:id:ldap:dig", subscriptionResource.getParametersNoCheck(subscription)));
+		Assertions.assertTrue(
+				resource.checkStatus("service:id:ldap:dig", subscriptionResource.getParametersNoCheck(subscription)));
 	}
 
 	@Test
 	public void checkSubscriptionStatus() {
-		Assertions.assertTrue(resource.checkSubscriptionStatus(subscriptionResource.getParametersNoCheck(subscription)).getStatus().isUp());
+		Assertions.assertTrue(resource.checkSubscriptionStatus(subscriptionResource.getParametersNoCheck(subscription))
+				.getStatus().isUp());
 	}
 
 	@Test
@@ -453,7 +455,8 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		final Activity activity = new Activity();
 		activity.setLastConnection(getDate(2015, 1, 1));
 		activities.put("alongchu", activity);
-		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any())).thenReturn(activities);
+		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any()))
+				.thenReturn(activities);
 
 		// Stub service locator
 		final ServicePluginLocator servicePluginLocator = Mockito.mock(ServicePluginLocator.class);
@@ -474,10 +477,12 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		// Call
 		((StreamingOutput) resource.getProjectActivitiesCsv(subscription, "file1").getEntity()).write(output);
 
-		final List<String> csvLines = IOUtils.readLines(new ByteArrayInputStream(output.toByteArray()), StandardCharsets.UTF_8);
+		final List<String> csvLines = IOUtils.readLines(new ByteArrayInputStream(output.toByteArray()),
+				StandardCharsets.UTF_8);
 		Assertions.assertEquals(2, csvLines.size());
 		Assertions.assertEquals("user;firstName;lastName;mail;JIRA 6", csvLines.get(0));
-		Assertions.assertEquals("alongchu;Arnaud;Longchu;arnaud.longchu@sample.com;2015/01/01 00:00:00", csvLines.get(1));
+		Assertions.assertEquals("alongchu;Arnaud;Longchu;arnaud.longchu@sample.com;2015/01/01 00:00:00",
+				csvLines.get(1));
 	}
 
 	@Test
@@ -491,7 +496,8 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		final Activity activity = new Activity();
 		activity.setLastConnection(getDate(2015, 1, 1));
 		activities.put("alongchu", activity);
-		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any())).thenReturn(activities);
+		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any()))
+				.thenReturn(activities);
 
 		// Stub service locator
 		final ServicePluginLocator servicePluginLocator = Mockito.mock(ServicePluginLocator.class);
@@ -512,10 +518,12 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		// Call
 		((StreamingOutput) resource.getGroupActivitiesCsv(subscription, "file1").getEntity()).write(output);
 
-		final List<String> csvLines = IOUtils.readLines(new ByteArrayInputStream(output.toByteArray()), StandardCharsets.UTF_8);
+		final List<String> csvLines = IOUtils.readLines(new ByteArrayInputStream(output.toByteArray()),
+				StandardCharsets.UTF_8);
 		Assertions.assertEquals(2, csvLines.size());
 		Assertions.assertEquals("user;firstName;lastName;mail;JIRA 6", csvLines.get(0));
-		Assertions.assertEquals("alongchu;Arnaud;Longchu;arnaud.longchu@sample.com;2015/01/01 00:00:00", csvLines.get(1));
+		Assertions.assertEquals("alongchu;Arnaud;Longchu;arnaud.longchu@sample.com;2015/01/01 00:00:00",
+				csvLines.get(1));
 	}
 
 	@Test
@@ -529,7 +537,8 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		final Activity activity = new Activity();
 		activity.setLastConnection(getDate(2015, 1, 1));
 		activities.put("alongchu", activity);
-		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any())).thenReturn(activities);
+		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any()))
+				.thenReturn(activities);
 
 		// Stub service locator
 		final ServicePluginLocator servicePluginLocator = Mockito.mock(ServicePluginLocator.class);
@@ -549,11 +558,15 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 
 		// Get the subscription using a subscribed broken group
 		final int otherSubscription = em
-				.createQuery("SELECT s.id FROM Subscription s WHERE s.project.name = ?1 AND s.node.id LIKE CONCAT(?2,'%')", Integer.class)
-				.setParameter(1, "gStack").setParameter(2, IdentityResource.SERVICE_KEY).setMaxResults(2).getResultList().get(1);
+				.createQuery(
+						"SELECT s.id FROM Subscription s WHERE s.project.name = ?1 AND s.node.id LIKE CONCAT(?2,'%')",
+						Integer.class)
+				.setParameter(1, "gStack").setParameter(2, IdentityResource.SERVICE_KEY).setMaxResults(2)
+				.getResultList().get(1);
 		((StreamingOutput) resource.getGroupActivitiesCsv(otherSubscription, "file1").getEntity()).write(output);
 
-		final List<String> csvLines = IOUtils.readLines(new ByteArrayInputStream(output.toByteArray()), StandardCharsets.UTF_8);
+		final List<String> csvLines = IOUtils.readLines(new ByteArrayInputStream(output.toByteArray()),
+				StandardCharsets.UTF_8);
 		Assertions.assertEquals("user;firstName;lastName;mail;JIRA 6", csvLines.get(0));
 		Assertions.assertEquals(1, csvLines.size());
 	}
@@ -655,7 +668,8 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		parameterValue.setParameter(parameterRepository.findOneExpected("service:id:uid-pattern"));
 		parameterValue.setData("-nomatch-");
 		em.persist(parameterValue);
-		Assertions.assertFalse(resource.accept(new UsernamePasswordAuthenticationToken("some", ""), "service:id:ldap:test"));
+		Assertions.assertFalse(
+				resource.accept(new UsernamePasswordAuthenticationToken("some", ""), "service:id:ldap:test"));
 	}
 
 	@Test
@@ -666,7 +680,8 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		ldap.setName("LDAP Test");
 		nodeRepository.saveAndFlush(ldap);
 		persistParameter(ldap, IdentityResource.PARAMETER_UID_PATTERN, "some-.*-text");
-		Assertions.assertTrue(resource.accept(new UsernamePasswordAuthenticationToken("some-awesome-text", ""), "service:id:ldap:test"));
+		Assertions.assertTrue(resource.accept(new UsernamePasswordAuthenticationToken("some-awesome-text", ""),
+				"service:id:ldap:test"));
 	}
 
 	@Test
@@ -689,7 +704,8 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		newLdap();
 
 		final Authentication authentication = new UsernamePasswordAuthenticationToken("mmartin", "complexOne");
-		final Authentication localAuthentication = resource.authenticate(authentication, "service:id:ldap:secondary", false);
+		final Authentication localAuthentication = resource.authenticate(authentication, "service:id:ldap:secondary",
+				false);
 		Assertions.assertEquals("mmartin", localAuthentication.getName());
 	}
 

@@ -186,7 +186,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	/**
 	 * Value used as flag to hash or not the password
 	 */
-	public static final String PARAMETER_HASH_CLEAR_PWD = KEY + ":hash-clear-password";
+	public static final String PARAMETER_CLEAR_PASSWORD = KEY + ":clear-password";
 
 	@Autowired
 	protected ProjectCustomerLdapRepository projectCustomerLdapRepository;
@@ -252,7 +252,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 		repository.setLockedValue(parameters.get(PARAMETER_LOCKED_VALUE));
 		repository.setPeopleClass(parameters.get(PARAMETER_PEOPLE_CLASS));
 		repository.setCompanyPattern(StringUtils.trimToEmpty(parameters.get(PARAMETER_COMPANY_PATTERN)));
-		repository.setHashClearPwd(Boolean.parseBoolean(parameters.get(PARAMETER_HASH_CLEAR_PWD)));
+		repository.setClearPassword(Boolean.parseBoolean(parameters.get(PARAMETER_CLEAR_PASSWORD)));
 
 		// Complete the bean
 		SpringUtils.getApplicationContext().getAutowireCapableBeanFactory().autowireBean(repository);

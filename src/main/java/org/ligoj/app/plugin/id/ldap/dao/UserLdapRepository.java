@@ -124,7 +124,7 @@ public class UserLdapRepository implements IUserRepository {
 	 */
 	@Setter
 	@Getter
-	private boolean hashClearPwd;
+	private boolean clearPassword = false;
 
 	/**
 	 * LDAP class filter.
@@ -781,9 +781,8 @@ public class UserLdapRepository implements IUserRepository {
 	 */
 	@SuppressWarnings("deprecation")
 	private String digest(final String password) {
-		return isHashClearPwd()
-				? new org.springframework.security.crypto.password.LdapShaPasswordEncoder().encode(password)
-				: password;
+		return isClearPassword() ? password
+				: new org.springframework.security.crypto.password.LdapShaPasswordEncoder().encode(password);
 	}
 
 	@Override

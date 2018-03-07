@@ -90,8 +90,8 @@ public class UserLdapRepositoryTest {
 		UserOrg user = new UserOrg();
 		user.setDn("dc=sample,dc=com");
 		new UserLdapRepository() {
-			public boolean isHashClearPwd() {
-				return false;
+			public boolean isClearPassword() {
+				return true;
 			};
 
 			@Override
@@ -107,8 +107,8 @@ public class UserLdapRepositoryTest {
 		UserOrg user = new UserOrg();
 		user.setDn("dc=sample,dc=com");
 		new UserLdapRepository() {
-			public boolean isHashClearPwd() {
-				return true;
+			public boolean isClearPassword() {
+				return false;
 			};
 
 			@Override
