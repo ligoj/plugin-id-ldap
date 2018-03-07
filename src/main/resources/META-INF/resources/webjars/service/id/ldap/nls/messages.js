@@ -18,7 +18,7 @@ define({
 		'service:id:ldap:url': 'Connection URL',
 		'service:id:ldap:user-dn': 'Connection user',
 		'service:id:uid-pattern': 'User pattern capture id from DN',
-		'service:id:ldap:hash-clear-password': 'Hash clear password'
+		'service:id:ldap:clear-password': 'Clear password'
 	},
 	fr: true
 });

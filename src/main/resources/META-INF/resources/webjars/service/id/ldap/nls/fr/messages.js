@@ -17,5 +17,5 @@ define({
 	'service:id:ldap:url': 'URL de connexion',
 	'service:id:ldap:user-dn': 'Utilisateur de connexion',
 	'service:id:uid-pattern': 'Pattern de capture de l\'identifiant d\'utilisateur dans un DN',
-	'service:id:ldap:hash-clear-password': 'Crypté le mot de passe'
+	'service:id:ldap:clear-password': 'Mot de passe non-crypté'
 });
