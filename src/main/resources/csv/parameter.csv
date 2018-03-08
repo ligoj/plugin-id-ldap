@@ -16,3 +16,4 @@ service:id:ldap:referral;;false;false;TEXT;service:id:ldap
 service:id:ldap:uid-attribute;;true;false;TEXT;service:id:ldap
 service:id:ldap:url;;true;true;TEXT;service:id:ldap
 service:id:ldap:user-dn;;false;true;TEXT;service:id:ldap
+service:id:ldap:clear-password;;true;false;BOOL;service:id:ldap

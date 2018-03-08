@@ -86,10 +86,31 @@ public class UserLdapRepositoryTest {
 	}
 
 	@Test
+	public void testClearPassword() {
+		UserOrg user = new UserOrg();
+		user.setDn("dc=sample,dc=com");
+		new UserLdapRepository() {
+			public boolean isClearPassword() {
+				return true;
+			};
+
+			@Override
+			public void set(final Name dn, final String attribute, final String value) {
+				Assertions.assertTrue(value.equals("test"));
+			}
+
+		}.setPassword(user, "test");
+	}
+
+	@Test
 	public void digest() {
 		UserOrg user = new UserOrg();
 		user.setDn("dc=sample,dc=com");
 		new UserLdapRepository() {
+			public boolean isClearPassword() {
+				return false;
+			};
+
 			@Override
 			public void set(final Name dn, final String attribute, final String value) {
 				Assertions.assertTrue(value.startsWith("{SSHA}"));
@@ -288,8 +309,7 @@ public class UserLdapRepositoryTest {
 
 		Assertions.assertEquals(1517908964000L, user.getLocked().getTime());
 	}
-	
-	@SuppressWarnings("unchecked")
+
 	@Test
 	public void testBlockedUserByPpolicy() {
 		final UserOrg user = new UserOrg();
@@ -300,7 +320,7 @@ public class UserLdapRepositoryTest {
 					((AbstractContextMapper<DirContextOperations>) i.getArgument(4)).mapFromContext(dirCtx);
 					user.setLocked(new Date(1517908964000L));
 					user.setLockedBy("_ppolicy");
-					return  Collections.singletonList(user);
+					return Collections.singletonList(user);
 				});
 		Mockito.when(dirCtx.getDn()).thenReturn(org.springframework.ldap.support.LdapUtils.newLdapName("cn=Any"));
 		Mockito.when(dirCtx.attributeExists(ArgumentMatchers.any())).thenReturn(true);

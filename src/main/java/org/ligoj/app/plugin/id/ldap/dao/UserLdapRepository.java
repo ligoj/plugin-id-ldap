@@ -90,10 +90,12 @@ public class UserLdapRepository implements IUserRepository {
 	private static final String PASSWORD_ATTRIBUTE = "userPassword";
 
 	/**
-	 * This attribute contains the time that the user's account was locked. If the account has been locked, the password
-	 * may no longer be used to authenticate the user to the directory. If pwdAccountLockedTime is set to 000001010000Z,
-	 * the user's account has been permanently locked and may only be unlocked by an administrator. Note that account
-	 * locking only takes effect when the pwdLockout password policy attribute is set to <code>TRUE</code>.
+	 * This attribute contains the time that the user's account was locked. If the
+	 * account has been locked, the password may no longer be used to authenticate
+	 * the user to the directory. If pwdAccountLockedTime is set to 000001010000Z,
+	 * the user's account has been permanently locked and may only be unlocked by an
+	 * administrator. Note that account locking only takes effect when the
+	 * pwdLockout password policy attribute is set to <code>TRUE</code>.
 	 */
 	private static final String PWD_ACCOUNT_LOCKED_ATTRIBUTE = "pwdAccountLockedTime";
 
@@ -116,6 +118,13 @@ public class UserLdapRepository implements IUserRepository {
 	 * PPolicy module identifier.
 	 */
 	private static final String PPOLICY_NAME = "_ppolicy";
+
+	/**
+	 * Flag used to hash the password or not.
+	 */
+	@Setter
+	@Getter
+	private boolean clearPassword = false;
 
 	/**
 	 * LDAP class filter.
@@ -159,7 +168,8 @@ public class UserLdapRepository implements IUserRepository {
 	private String localIdAttribute = "employeeID";
 
 	/**
-	 * Base DN for internal people. Should be a subset of people, so including {@link #peopleBaseDn}
+	 * Base DN for internal people. Should be a subset of people, so including
+	 * {@link #peopleBaseDn}
 	 */
 	@Setter
 	@Getter
@@ -178,7 +188,8 @@ public class UserLdapRepository implements IUserRepository {
 	private String peopleBaseDn;
 
 	/**
-	 * Compiled pattern capturing the company from the DN of the user. May be a row string for constant.
+	 * Compiled pattern capturing the company from the DN of the user. May be a row
+	 * string for constant.
 	 */
 	private Pattern companyPattern = Pattern.compile("");
 
@@ -189,10 +200,12 @@ public class UserLdapRepository implements IUserRepository {
 	private String quarantineBaseDn;
 
 	/**
-	 * LDAP Attribute used to tag a locked user. This attribute will contains several serialized values such as
-	 * #lockedValue, author, date and previous company when this user is in the isolate state.<br>
-	 * The structure of this attribute is composed by several fragments with pipe "|" as separator. The whole structure
-	 * is : <code>FLAG|locked date as milliseconds|author|[optional old company for restore]</code>.
+	 * LDAP Attribute used to tag a locked user. This attribute will contains
+	 * several serialized values such as #lockedValue, author, date and previous
+	 * company when this user is in the isolate state.<br>
+	 * The structure of this attribute is composed by several fragments with pipe
+	 * "|" as separator. The whole structure is :
+	 * <code>FLAG|locked date as milliseconds|author|[optional old company for restore]</code>.
 	 * 
 	 * @see #lockedValue
 	 */
@@ -309,7 +322,8 @@ public class UserLdapRepository implements IUserRepository {
 	 * Return all user entries.
 	 * 
 	 * @param groups
-	 *            The existing groups. They will be be used to complete the membership of each returned user.
+	 *            The existing groups. They will be be used to complete the
+	 *            membership of each returned user.
 	 * @return all user entries. Key is the user login.
 	 */
 	public Map<String, UserOrg> findAllNoCache(final Map<String, GroupOrg> groups) {
@@ -443,8 +457,9 @@ public class UserLdapRepository implements IUserRepository {
 		}
 
 		/**
-		 * Extract the {@link Date}, author, and the previous company from the locked attribute if available and matched
-		 * to the expected {@link UserLdapRepository#lockedValue}
+		 * Extract the {@link Date}, author, and the previous company from the locked
+		 * attribute if available and matched to the expected
+		 * {@link UserLdapRepository#lockedValue}
 		 * 
 		 * @param user
 		 *            The user to update.
@@ -521,7 +536,8 @@ public class UserLdapRepository implements IUserRepository {
 	}
 
 	/**
-	 * Add the members to the result if they match to the required company and the pattern.
+	 * Add the members to the result if they match to the required company and the
+	 * pattern.
 	 */
 	private void addFilteredByCompaniesAndPattern(final Set<String> members, final Set<String> companies,
 			final String criteria, final Set<UserOrg> result, final Map<String, UserOrg> users) {
@@ -749,7 +765,8 @@ public class UserLdapRepository implements IUserRepository {
 	 * Validate and set the company pattern.
 	 * 
 	 * @param companyPattern
-	 *            Pattern capturing the company from the DN of the user. May be a row string for constant.
+	 *            Pattern capturing the company from the DN of the user. May be a
+	 *            row string for constant.
 	 */
 	public void setCompanyPattern(final String companyPattern) {
 		this.companyPattern = Pattern.compile(companyPattern);
@@ -764,7 +781,8 @@ public class UserLdapRepository implements IUserRepository {
 	 */
 	@SuppressWarnings("deprecation")
 	private String digest(final String password) {
-		return new org.springframework.security.crypto.password.LdapShaPasswordEncoder().encode(password);
+		return isClearPassword() ? password
+				: new org.springframework.security.crypto.password.LdapShaPasswordEncoder().encode(password);
 	}
 
 	@Override
@@ -801,7 +819,6 @@ public class UserLdapRepository implements IUserRepository {
 					log.info("Password change failed due to: {}", e.getMessage());
 					throw new ValidationJsonException("new-password", "password-policy");
 				}
-
 				return null;
 			}
 		});
@@ -817,7 +834,7 @@ public class UserLdapRepository implements IUserRepository {
 	private String getTmpPassword(final UserOrg user) {
 		final String tmpPassword = GENERATOR.generate(10);
 		// set the new generated password
-		set(user, PASSWORD_ATTRIBUTE, digest(tmpPassword));
+		setPassword(user, tmpPassword);
 		return tmpPassword;
 	}
 
