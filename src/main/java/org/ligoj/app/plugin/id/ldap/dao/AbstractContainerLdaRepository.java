@@ -82,14 +82,12 @@ public abstract class AbstractContainerLdaRepository<T extends ContainerOrg, C e
 	/**
 	 * Return the repository managing the container as cache.
 	 * 
-	 * @param <C>
-	 *            The container cache type.
 	 * @return the repository managing the container as cache.
 	 */
 	protected abstract CacheContainerRepository<C> getCacheRepository();
 
 	/**
-	 * Map a container <T> to LDAP.
+	 * Map a container to LDAP.
 	 * 
 	 * @param entry
 	 *            The container entry to map.
