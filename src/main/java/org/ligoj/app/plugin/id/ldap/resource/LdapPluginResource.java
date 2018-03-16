@@ -211,6 +211,9 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	@Autowired
 	protected ServicePluginLocator servicePluginLocator;
+	
+	@Autowired
+	protected LdapPluginResource self;
 
 	/**
 	 * Lock object used to synchronize the creation.
@@ -313,7 +316,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	 * @return The {@link UserLdapRepository} instance. Cache is forced.
 	 */
 	private UserLdapRepository getUserLdapRepositoryInternal(final String node) {
-		return SpringUtils.getBean(LdapPluginResource.class).getUserLdapRepository(node);
+		return self.getUserLdapRepository(node);
 	}
 
 	@Override
