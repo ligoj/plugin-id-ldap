@@ -16,7 +16,7 @@ define(function () {
 
 			// Add activity export
 			result += '<div class="btn-group btn-link" data-container="body" data-toggle="tooltip" title="' + current.$messages['export'] + '">';
-			result += ' <i class="fa fa-download" data-toggle="dropdown"></i>';
+			result += ' <i class="fas fa-download" data-toggle="dropdown"></i>';
 			result += ' <ul class="dropdown-menu dropdown-menu-right"><li>';
 			result += current.$super('renderServicelink')('file-excel-o', REST_PATH + 'service/id/ldap/activity/' + subscription.id + '/group-' + subscription.parameters['service:id:group'] + '-' + now.format('YYYY-MM-DD') + '.csv', null, 'service:id:activity-group', ' download');
 			result += current.$super('renderServicelink')('file-excel-o', REST_PATH + 'service/id/ldap/activity/' + subscription.id + '/project-' + subscription.parameters['service:id:group'] + '-' + now.format('YYYY-MM-DD') + '.csv', null, 'service:id:activity-project', ' download');
@@ -111,7 +111,7 @@ define(function () {
 				return false;
 			}
 			// Live validation to check the group does not exists
-			validationManager.addMessage($input, null, [], null, 'fa fa-refresh fa-spin');
+			validationManager.addMessage($input, null, [], null, 'fas fa-sync-alt fa-spin');
 			$.ajax({
 				dataType: 'json',
 				url: REST_PATH + 'service/id/group/' + encodeURIComponent(fullName) + '/exists',
