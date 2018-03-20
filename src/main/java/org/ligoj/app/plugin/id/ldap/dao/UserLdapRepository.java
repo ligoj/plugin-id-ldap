@@ -90,12 +90,10 @@ public class UserLdapRepository implements IUserRepository {
 	private static final String PASSWORD_ATTRIBUTE = "userPassword";
 
 	/**
-	 * This attribute contains the time that the user's account was locked. If the
-	 * account has been locked, the password may no longer be used to authenticate
-	 * the user to the directory. If pwdAccountLockedTime is set to 000001010000Z,
-	 * the user's account has been permanently locked and may only be unlocked by an
-	 * administrator. Note that account locking only takes effect when the
-	 * pwdLockout password policy attribute is set to <code>TRUE</code>.
+	 * This attribute contains the time that the user's account was locked. If the account has been locked, the password
+	 * may no longer be used to authenticate the user to the directory. If pwdAccountLockedTime is set to 000001010000Z,
+	 * the user's account has been permanently locked and may only be unlocked by an administrator. Note that account
+	 * locking only takes effect when the pwdLockout password policy attribute is set to <code>TRUE</code>.
 	 */
 	private static final String PWD_ACCOUNT_LOCKED_ATTRIBUTE = "pwdAccountLockedTime";
 
@@ -168,8 +166,7 @@ public class UserLdapRepository implements IUserRepository {
 	private String localIdAttribute = "employeeID";
 
 	/**
-	 * Base DN for internal people. Should be a subset of people, so including
-	 * {@link #peopleBaseDn}
+	 * Base DN for internal people. Should be a subset of people, so including {@link #peopleBaseDn}
 	 */
 	@Setter
 	@Getter
@@ -188,8 +185,7 @@ public class UserLdapRepository implements IUserRepository {
 	private String peopleBaseDn;
 
 	/**
-	 * Compiled pattern capturing the company from the DN of the user. May be a row
-	 * string for constant.
+	 * Compiled pattern capturing the company from the DN of the user. May be a row string for constant.
 	 */
 	private Pattern companyPattern = Pattern.compile("");
 
@@ -200,12 +196,10 @@ public class UserLdapRepository implements IUserRepository {
 	private String quarantineBaseDn;
 
 	/**
-	 * LDAP Attribute used to tag a locked user. This attribute will contains
-	 * several serialized values such as #lockedValue, author, date and previous
-	 * company when this user is in the isolate state.<br>
-	 * The structure of this attribute is composed by several fragments with pipe
-	 * "|" as separator. The whole structure is :
-	 * <code>FLAG|locked date as milliseconds|author|[optional old company for restore]</code>.
+	 * LDAP Attribute used to tag a locked user. This attribute will contains several serialized values such as
+	 * #lockedValue, author, date and previous company when this user is in the isolate state.<br>
+	 * The structure of this attribute is composed by several fragments with pipe "|" as separator. The whole structure
+	 * is : <code>FLAG|locked date as milliseconds|author|[optional old company for restore]</code>.
 	 * 
 	 * @see #lockedValue
 	 */
@@ -305,9 +299,8 @@ public class UserLdapRepository implements IUserRepository {
 
 	@Override
 	public List<UserOrg> findAllBy(final String attribute, final String value) {
-		final AndFilter filter = new AndFilter();
-		filter.and(new EqualsFilter(OBJECT_CLASS, peopleClass));
-		filter.and(new EqualsFilter(attribute, value));
+		final AndFilter filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, peopleClass))
+				.and(new EqualsFilter(attribute, value));
 		return template.search(peopleBaseDn, filter.encode(), mapper).stream()
 				.map(u -> Optional.ofNullable(findById(u.getId())).orElse(u)).collect(Collectors.toList());
 	}
@@ -322,8 +315,7 @@ public class UserLdapRepository implements IUserRepository {
 	 * Return all user entries.
 	 * 
 	 * @param groups
-	 *            The existing groups. They will be be used to complete the
-	 *            membership of each returned user.
+	 *            The existing groups. They will be be used to complete the membership of each returned user.
 	 * @return all user entries. Key is the user login.
 	 */
 	public Map<String, UserOrg> findAllNoCache(final Map<String, GroupOrg> groups) {
@@ -457,9 +449,8 @@ public class UserLdapRepository implements IUserRepository {
 		}
 
 		/**
-		 * Extract the {@link Date}, author, and the previous company from the locked
-		 * attribute if available and matched to the expected
-		 * {@link UserLdapRepository#lockedValue}
+		 * Extract the {@link Date}, author, and the previous company from the locked attribute if available and matched
+		 * to the expected {@link UserLdapRepository#lockedValue}
 		 * 
 		 * @param user
 		 *            The user to update.
@@ -536,8 +527,7 @@ public class UserLdapRepository implements IUserRepository {
 	}
 
 	/**
-	 * Add the members to the result if they match to the required company and the
-	 * pattern.
+	 * Add the members to the result if they match to the required company and the pattern.
 	 */
 	private void addFilteredByCompaniesAndPattern(final Set<String> members, final Set<String> companies,
 			final String criteria, final Set<UserOrg> result, final Map<String, UserOrg> users) {
@@ -747,9 +737,8 @@ public class UserLdapRepository implements IUserRepository {
 
 	@Override
 	public String getToken(final String login) {
-		final AndFilter filter = new AndFilter();
-		filter.and(new EqualsFilter(OBJECT_CLASS, peopleClass));
-		filter.and(new EqualsFilter(uidAttribute, login));
+		final AndFilter filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, peopleClass))
+				.and(new EqualsFilter(uidAttribute, login));
 		return template.search(peopleBaseDn, filter.encode(), new AbstractContextMapper<String>() {
 			@Override
 			public String doMapFromContext(final DirContextOperations context) {
@@ -765,8 +754,7 @@ public class UserLdapRepository implements IUserRepository {
 	 * Validate and set the company pattern.
 	 * 
 	 * @param companyPattern
-	 *            Pattern capturing the company from the DN of the user. May be a
-	 *            row string for constant.
+	 *            Pattern capturing the company from the DN of the user. May be a row string for constant.
 	 */
 	public void setCompanyPattern(final String companyPattern) {
 		this.companyPattern = Pattern.compile(companyPattern);
@@ -864,9 +852,8 @@ public class UserLdapRepository implements IUserRepository {
 		// List of attributes to retrieve from LDAP.
 		final String[] returnAttrs = new String[] { PWD_ACCOUNT_LOCKED_ATTRIBUTE };
 
-		final AndFilter filter = new AndFilter();
-		filter.and(new EqualsFilter(OBJECT_CLASS, peopleClass));
-		filter.and(new EqualsFilter(uidAttribute, user.getId()));
+		final AndFilter filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, peopleClass))
+				.and(new EqualsFilter(uidAttribute, user.getId()));
 		template.search(peopleBaseDn, filter.encode(), SearchControls.SUBTREE_SCOPE, returnAttrs,
 				new AbstractContextMapper<UserOrg>() {
 					@Override

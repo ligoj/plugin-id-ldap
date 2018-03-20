@@ -182,11 +182,16 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	 * DN of location of people considered as internal. May be the same than people
 	 */
 	public static final String PARAMETER_PEOPLE_INTERNAL_DN = KEY + ":people-internal-dn";
-	
+
 	/**
 	 * Value used as flag to hash or not the password
 	 */
 	public static final String PARAMETER_CLEAR_PASSWORD = KEY + ":clear-password";
+
+	/**
+	 * Lock object used to synchronize the creation.
+	 */
+	private static final Object USER_LOCK = new Object();
 
 	@Autowired
 	protected ProjectCustomerLdapRepository projectCustomerLdapRepository;
@@ -211,14 +216,14 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	@Autowired
 	protected ServicePluginLocator servicePluginLocator;
-	
+
 	@Autowired
 	protected LdapPluginResource self;
 
 	/**
-	 * Lock object used to synchronize the creation.
+	 * Available node configurations. Key is the node identifier.
 	 */
-	private static final Object USER_LOCK = new Object();
+	private Map<String, IamConfiguration> nodeConfigurations = new HashMap<>();
 
 	/**
 	 * Build a user LDAP repository from the given node.
@@ -227,8 +232,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	 *            The node, also used as cache key.
 	 * @return The {@link UserLdapRepository} instance. Cache is involved.
 	 */
-	@CacheResult(cacheName = "ldap-user-repository")
-	public UserLdapRepository getUserLdapRepository(@CacheKey final String node) {
+	private UserLdapRepository getUserLdapRepository(@CacheKey final String node) {
 		log.info("Build ldap template for node {}", node);
 		final Map<String, String> parameters = pvResource.getNodeParameters(node);
 		final LdapContextSource contextSource = new LdapContextSource();
@@ -306,17 +310,6 @@ public class LdapPluginResource extends AbstractToolPluginResource
 		// Complete the bean
 		SpringUtils.getApplicationContext().getAutowireCapableBeanFactory().autowireBean(repository);
 		return repository;
-	}
-
-	/**
-	 * Build a User LDAP template from
-	 * 
-	 * @param node
-	 *            The node used as cache key.
-	 * @return The {@link UserLdapRepository} instance. Cache is forced.
-	 */
-	private UserLdapRepository getUserLdapRepositoryInternal(final String node) {
-		return self.getUserLdapRepository(node);
 	}
 
 	@Override
@@ -411,18 +404,16 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	 */
 	private String validateAndCreateParentOu(final String group, final String ou, final String pkey) {
 		final ContainerScope groupTypeLdap = containerScopeResource.findByName(ContainerScope.TYPE_PROJECT);
+		final String parentDn = groupTypeLdap.getDn();
 
 		// Build the complete normalized DN from the OU and new Group
-		final String ouDn = "ou=" + ou + "," + groupTypeLdap.getDn();
+		final String ouDn = "ou=" + ou + "," + parentDn;
 
 		// Check the target OU exists or not and create the OU as needed
-		if (!projectCustomerLdapRepository.findAll(groupTypeLdap.getDn()).containsKey(ou)) {
+		if (projectCustomerLdapRepository.findById(parentDn,ou) == null) {
 			// Create the OU in LDAP
 			log.info("New OU would be created {} for group {}, project {} and subscription {}", ou, group, pkey);
-			projectCustomerLdapRepository.create(ouDn, ou);
-
-			// Also, update the cache
-			projectCustomerLdapRepository.findAll(groupTypeLdap.getDn()).put(ou, ouDn);
+			projectCustomerLdapRepository.create(parentDn, ou, ouDn);
 		}
 
 		// Parent will be an organizationalUnit (OU)
@@ -686,7 +677,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 		final Set<INamableBean<String>> result = new TreeSet<>();
 		final String criteriaClean = Normalizer.normalize(criteria);
 		final ContainerScope findByName = containerScopeResource.findByName(ContainerScope.TYPE_PROJECT);
-		final Collection<String> allCustomers = projectCustomerLdapRepository.findAll(findByName.getDn()).keySet();
+		final Collection<String> allCustomers = projectCustomerLdapRepository.findAll(findByName.getDn());
 
 		// Check type and criteria
 		allCustomers.stream().filter(customer -> customer.contains(criteriaClean)).forEach(customer -> {
@@ -732,9 +723,8 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	@Override
 	public boolean checkStatus(final String node, final Map<String, String> parameters) {
-		// Query the LDAP, the user is not important, we expect no error, that's
-		// all.
-		getUserLdapRepositoryInternal(node).findByIdNoCache("-any-");
+		// Query the LDAP, the user is not important, we expect no error, that's all
+		self.getConfiguration(node).getUserRepository().findByIdNoCache("-any-");
 		return true;
 	}
 
@@ -753,14 +743,27 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	@Override
 	public IamConfiguration getConfiguration(final String node) {
-		final IamConfiguration configuration = new IamConfiguration();
-		final UserLdapRepository repository = getUserLdapRepositoryInternal(node);
-		configuration.setUserRepository(repository);
-		configuration.setCompanyRepository(newCompanyLdapRepository(node, repository.getTemplate()));
-		configuration.setGroupRepository(newGroupLdapRepository(node, repository.getTemplate()));
-		repository.setCompanyRepository((CompanyLdapRepository) configuration.getCompanyRepository());
-		repository.setGroupLdapRepository((GroupLdapRepository) configuration.getGroupRepository());
-		return configuration;
+		self.ensureCachedConfiguration(node);
+		return nodeConfigurations.computeIfAbsent(node, this::refreshConfiguration);
+	}
+
+	@CacheResult(cacheName = "ldap-user-repository")
+	public boolean ensureCachedConfiguration(@CacheKey final String node) {
+		refreshConfiguration(node);
+		return true;
+	}
+
+	private IamConfiguration refreshConfiguration(final String node) {
+		return nodeConfigurations.compute(node, (n, m) -> {
+			final IamConfiguration configuration = new IamConfiguration();
+			final UserLdapRepository repository = getUserLdapRepository(node);
+			configuration.setUserRepository(repository);
+			configuration.setCompanyRepository(newCompanyLdapRepository(node, repository.getTemplate()));
+			configuration.setGroupRepository(newGroupLdapRepository(node, repository.getTemplate()));
+			repository.setCompanyRepository((CompanyLdapRepository) configuration.getCompanyRepository());
+			repository.setGroupLdapRepository((GroupLdapRepository) configuration.getGroupRepository());
+			return configuration;
+		});
 	}
 
 	/**
@@ -774,7 +777,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	@Override
 	public Authentication authenticate(final Authentication authentication, final String node, final boolean primary) {
-		final UserLdapRepository repository = getUserLdapRepositoryInternal(node);
+		final UserLdapRepository repository = (UserLdapRepository) self.getConfiguration(node).getUserRepository();
 
 		// Authenticate the user
 		if (repository.authenticate(authentication.getName(), (String) authentication.getCredentials())) {

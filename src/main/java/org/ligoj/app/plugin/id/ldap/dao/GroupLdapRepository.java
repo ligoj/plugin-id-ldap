@@ -39,7 +39,8 @@ import lombok.extern.slf4j.Slf4j;
  * Group LDAP repository
  */
 @Slf4j
-public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg, CacheGroup> implements IGroupRepository {
+public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg, CacheGroup>
+		implements IGroupRepository {
 
 	/**
 	 * Default DN member for new group. This is required for some LDAP implementation where "uniqueMember" attribute is
@@ -98,7 +99,8 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 		final Map<String, GroupOrg> dnToGroups = new HashMap<>();
 
 		// First pass, collect the groups and dirty relationships
-		for (final DirContextAdapter groupRaw : template.search(groupsBaseDn, new EqualsFilter("objectClass", GROUP_OF_UNIQUE_NAMES).encode(),
+		for (final DirContextAdapter groupRaw : template.search(groupsBaseDn,
+				new EqualsFilter("objectClass", GROUP_OF_UNIQUE_NAMES).encode(),
 				(Object ctx) -> (DirContextAdapter) ctx)) {
 			final Set<String> members = new HashSet<>();
 			final String dn = Normalizer.normalize(groupRaw.getDn().toString());
@@ -168,11 +170,11 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 	public void delete(final GroupOrg group) {
 
 		/*
-		 * Remove from this group, all groups within (sub LDAP DN) this group. This operation is needed since we
-		 * are not rebuilding the cache from the LDAP. This save a lot of computations.
+		 * Remove from this group, all groups within (sub LDAP DN) this group. This operation is needed since we are not
+		 * rebuilding the cache from the LDAP. This save a lot of computations.
 		 */
-		findAll().values().stream().filter(g -> DnUtils.equalsOrParentOf(group.getDn(), g.getDn())).collect(Collectors.toList())
-				.forEach(this::removeFromJavaCache);
+		findAll().values().stream().filter(g -> DnUtils.equalsOrParentOf(group.getDn(), g.getDn()))
+				.collect(Collectors.toList()).forEach(this::removeFromJavaCache);
 
 		// Remove from LDAP the recursively the group. Anything that was not nicely cleaned will be deleted there.
 		template.unbind(org.springframework.ldap.support.LdapUtils.newLdapName(group.getDn()), true);
@@ -226,7 +228,8 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 	public void updateMemberDn(final String group, final String oldUniqueMemberDn, final String newUniqueMemberDn) {
 		final GroupOrg groupLdap = findById(group);
 		final ModificationItem[] mods = new ModificationItem[2];
-		mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute(UNIQUE_MEMBER, oldUniqueMemberDn));
+		mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
+				new BasicAttribute(UNIQUE_MEMBER, oldUniqueMemberDn));
 		mods[1] = new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute(UNIQUE_MEMBER, newUniqueMemberDn));
 		template.modifyAttributes(org.springframework.ldap.support.LdapUtils.newLdapName(groupLdap.getDn()), mods);
 	}
@@ -273,12 +276,15 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 	 */
 	private GroupOrg removeMember(final ResourceOrg uniqueMember, final String group) {
 		final GroupOrg groupLdap = findById(group);
-		if (groupLdap.getMembers().contains(uniqueMember.getId()) || groupLdap.getSubGroups().contains(uniqueMember.getId())) {
+		if (groupLdap.getMembers().contains(uniqueMember.getId())
+				|| groupLdap.getSubGroups().contains(uniqueMember.getId())) {
 			// Not useless LDAP operation, avoid LDAP duplicate deletion
 			final ModificationItem[] mods = new ModificationItem[1];
-			mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute(UNIQUE_MEMBER, uniqueMember.getDn()));
+			mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
+					new BasicAttribute(UNIQUE_MEMBER, uniqueMember.getDn()));
 			try {
-				template.modifyAttributes(org.springframework.ldap.support.LdapUtils.newLdapName(groupLdap.getDn()), mods);
+				template.modifyAttributes(org.springframework.ldap.support.LdapUtils.newLdapName(groupLdap.getDn()),
+						mods);
 			} catch (final org.springframework.ldap.AttributeInUseException aiue) {
 				// Even if the membership update failed, the user does not exist anymore. A broken reference can remains
 				// in LDAP, but this case is well managed.
@@ -286,7 +292,8 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 			} catch (final org.springframework.ldap.SchemaViolationException sve) { // NOSONAR - Exception is logged
 				// Occurs when there is a LDAP schema violation such as as last member removed
 				log.warn("Unable to remove user {} from the group {}", uniqueMember.getDn(), group, sve);
-				throw new ValidationJsonException("groups", "last-member-of-group", "user", uniqueMember.getId(), "group", group);
+				throw new ValidationJsonException("groups", "last-member-of-group", "user", uniqueMember.getId(),
+						"group", group);
 			}
 		}
 		return groupLdap;
@@ -315,7 +322,8 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 		}
 
 		// Build the modification operation
-		final ModificationItem[] mods = values.stream().map(v -> new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute(attribute, v)))
+		final ModificationItem[] mods = values.stream()
+				.map(v -> new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute(attribute, v)))
 				.toArray(ModificationItem[]::new);
 		try {
 			// Perform the addition
@@ -330,10 +338,10 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 
 	@Override
 	public GroupOrg findByDepartment(final String department) {
-		final AndFilter filter = new AndFilter();
-		filter.and(new EqualsFilter("objectclass", GROUP_OF_UNIQUE_NAMES));
-		filter.and(new EqualsFilter(DEPARTMENT_ATTRIBUTE, department));
-		return template.search(groupsBaseDn, filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).stream().findFirst()
-				.map(c -> c.getStringAttribute("cn")).map(Normalizer::normalize).map(this::findById).orElse(null);
+		final AndFilter filter = new AndFilter().and(new EqualsFilter("objectclass", GROUP_OF_UNIQUE_NAMES))
+				.and(new EqualsFilter(DEPARTMENT_ATTRIBUTE, department));
+		return template.search(groupsBaseDn, filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).stream()
+				.findFirst().map(c -> c.getStringAttribute("cn")).map(Normalizer::normalize).map(this::findById)
+				.orElse(null);
 	}
 }

@@ -24,8 +24,6 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import net.sf.ehcache.CacheManager;
-
 /**
  * Test of {@link UserOrgResource}<br>
  * Delegate
@@ -79,7 +77,7 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 	@BeforeEach
 	public void prepareData() throws IOException {
 		persistEntities("csv", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
-		CacheManager.getInstance().getCache("ldap").removeAll();
+		cacheManager.getCache("ldap").clear();
 
 		// Force the cache to be created
 		getUser().findAll();

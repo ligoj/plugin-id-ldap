@@ -12,8 +12,6 @@ import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.test.annotation.Rollback;
 
-import net.sf.ehcache.CacheManager;
-
 /**
  * Test of {@link UserOrgResource}<br>
  * Delegate
@@ -77,7 +75,7 @@ public class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 		checkResult(resource.findAll(null, null, "flasta", newUriInfoAsc("id")));
 
 		// Check the result, using a fresh new cache
-		CacheManager.getInstance().getCache("ldap").removeAll();
+		cacheManager.getCache("ldap").clear();
 		checkResult(resource.findAll(null, null, "flasta", newUriInfoAsc("id")));
 
 		// Restore the state, delete this new user

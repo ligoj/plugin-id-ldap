@@ -41,8 +41,6 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import net.sf.ehcache.CacheManager;
-
 /**
  * Test class of {@link LdapPluginResource}
  */
@@ -97,7 +95,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 						CacheMembership.class, Project.class, Node.class, Parameter.class, Subscription.class, ParameterValue.class,
 						CacheProjectGroup.class },
 				StandardCharsets.UTF_8.name());
-		CacheManager.getInstance().getCache("container-scopes").removeAll();
+		cacheManager.getCache("container-scopes").clear();
 
 		// Only with Spring context
 		this.subscription = getSubscription("gStack", IdentityResource.SERVICE_KEY);
@@ -115,7 +113,8 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 	protected Subscription create(final String groupAndProject) {
 		// Preconditions
 		Assertions.assertNull(getGroup().findById(groupAndProject));
-		Assertions.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sea"));
+		Assertions.assertTrue(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").contains("sea"));
+		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com","sea"));
 
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
@@ -137,8 +136,8 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 		Assertions.assertEquals(groupAndProject, groupLdap.getName());
 		Assertions.assertEquals(groupAndProject, groupLdap.getId());
 		Assertions.assertEquals("cn=" + groupAndProject + ",ou=sea,ou=project,dc=sample,dc=com", groupLdap.getDn());
-		Assertions.assertNotNull(projectCustomerLdapRepository.findAllNoCache("ou=project,dc=sample,dc=com").get("sea"));
-		Assertions.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sea"));
+		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com","sea"));
+		Assertions.assertTrue(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").contains("sea"));
 
 		return subscription2;
 	}
@@ -148,7 +147,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 	 */
 	protected void reloadLdapCache() {
 		// Ensure LDAP cache is loaded
-		CacheManager.getInstance().getCache("ldap").removeAll();
+		cacheManager.getCache("ldap").clear();
 		cache.getLdapData();
 		em.flush();
 		em.clear();
@@ -220,7 +219,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 		// Preconditions
 		Assertions.assertNotNull(getGroup().findById(parentGroup));
 		Assertions.assertNull(getGroup().findById(subGroup));
-		Assertions.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sea"));
+		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com","sea"));
 
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);

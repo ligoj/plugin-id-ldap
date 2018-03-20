@@ -2,6 +2,7 @@ package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.cache.annotation.CacheResult;
 
@@ -39,14 +40,43 @@ public class LdapCacheRepository {
 	@Autowired
 	protected IamProvider[] iamProvider;
 
+	@Autowired
+	protected LdapCacheRepository self;
+
+	/**
+	 * Current LDAP data.
+	 */
+	private Map<LdapData, Map<String, ? extends ResourceOrg>> ldapData;
+
 	/**
 	 * Reset the database cache with the LDAP data. Note there is no synchronization for this method. Initial first
 	 * concurrent calls may note involve the cache.
 	 * 
 	 * @return The cached LDAP data..
 	 */
-	@CacheResult(cacheName = "ldap")
 	public Map<LdapData, Map<String, ? extends ResourceOrg>> getLdapData() {
+		self.ensureCachedData();
+		return Optional.ofNullable(ldapData).orElseGet(this::refreshData);
+	}
+
+	/**
+	 * Ensure the fresh data computed when there is no cached LDAP data.
+	 * 
+	 * @return <code>true</code>, required by JSR-107.
+	 */
+	@CacheResult(cacheName = "ldap")
+	public boolean ensureCachedData() {
+		refreshData();
+		return true;
+	}
+
+	/**
+	 * Reset the database cache with the LDAP data. Note there is no synchronization for this method. Initial first
+	 * concurrent calls may note involve the cache.
+	 * 
+	 * @return The fresh LDAP data..
+	 */
+	private Map<LdapData, Map<String, ? extends ResourceOrg>> refreshData() {
 		final Map<LdapData, Map<String, ? extends ResourceOrg>> result = new EnumMap<>(LdapData.class);
 
 		// Fetch LDAP data
@@ -58,6 +88,7 @@ public class LdapCacheRepository {
 		result.put(LdapData.GROUP, groups);
 		result.put(LdapData.USER, users);
 		ldapCacheDao.reset(companies, groups, users);
+		this.ldapData = result;
 		return result;
 	}
 

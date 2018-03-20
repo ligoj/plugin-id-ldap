@@ -32,8 +32,6 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import net.sf.ehcache.CacheManager;
-
 /**
  * Test class of {@link DelegateOrgResource} with LDAP back-end.
  */
@@ -58,8 +56,8 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		em.clear();
 		expected = repository.findByName("dig rha");
 		em.clear();
-		CacheManager.getInstance().getCache("ldap-user-repository").removeAll();
-		CacheManager.getInstance().getCache("ldap").removeAll();
+		cacheManager.getCache("ldap-user-repository").clear();
+		cacheManager.getCache("ldap").clear();
 	}
 
 	@Test

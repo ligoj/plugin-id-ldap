@@ -130,8 +130,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	/**
-	 * Create a group in a existing OU. Most Simple case. Group matches exactly to
-	 * the pkey of the project.
+	 * Create a group in a existing OU. Most Simple case. Group matches exactly to the pkey of the project.
 	 */
 	@Test
 	public void create() {
@@ -160,8 +159,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	/**
-	 * Create a group inside an existing group. Parent group matches exactly to the
-	 * pkey of the project.
+	 * Create a group inside an existing group. Parent group matches exactly to the pkey of the project.
 	 */
 	@Test
 	public void createSubGroup() {
@@ -171,8 +169,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	/**
-	 * Create a group inside an existing group without reusing the name of the
-	 * parent group.
+	 * Create a group inside an existing group without reusing the name of the parent group.
 	 */
 	@Test
 	public void createNotCompliantGroupForParent() {
@@ -186,15 +183,14 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	/**
-	 * Create a group for an existing project, but without reusing the pkey of this
-	 * project.
+	 * Create a group for an existing project, but without reusing the pkey of this project.
 	 */
 	@Test
 	public void createNotCompliantGroupForProject() {
 		// Preconditions
 		Assertions.assertNotNull(getGroup().findById("sea-octopus"));
 		Assertions.assertNull(getGroup().findById("sea-octopusZZ"));
-		Assertions.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sea"));
+		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com", "sea"));
 
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
@@ -214,8 +210,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	/**
-	 * Create a group for an existing project, reusing the pkey of this project and
-	 * without suffix.
+	 * Create a group for an existing project, reusing the pkey of this project and without suffix.
 	 */
 	@Test
 	public void createNotCompliantGroupForProject2() {
@@ -223,7 +218,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		// Preconditions
 		Assertions.assertNotNull(getGroup().findById("sea-octopus"));
 		Assertions.assertNull(getGroup().findById("sea-octopus-"));
-		Assertions.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sea"));
+		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com", "sea"));
 
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
@@ -243,14 +238,13 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	/**
-	 * Create a group for an existing project, perfect match with the pkey, but
-	 * without reusing the OU of this project.
+	 * Create a group for an existing project, perfect match with the pkey, but without reusing the OU of this project.
 	 */
 	@Test
 	public void createNotCompliantGroupForOu() {
 		// Preconditions
 		Assertions.assertNull(getGroup().findById("sea-invalid-ou"));
-		Assertions.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sea"));
+		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com", "sea"));
 
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
@@ -270,15 +264,14 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	/**
-	 * Create a group inside an existing group without reusing the name of the
-	 * parent.
+	 * Create a group inside an existing group without reusing the name of the parent.
 	 */
 	@Test
 	public void createNotExistingParentGroup() {
 		// Preconditions
 		Assertions.assertNotNull(getGroup().findById("sea-octopus"));
 		Assertions.assertNull(getGroup().findById("sea-octopus-client"));
-		Assertions.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("sea"));
+		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com", "sea"));
 
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
@@ -299,15 +292,15 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	/**
-	 * Create a group inside a new organizational unit. Not an error, lazy creation.
-	 * Exact match for group and pkey.
+	 * Create a group inside a new organizational unit. Not an error, lazy creation. Exact match for group and pkey.
 	 */
 	@Test
 	public void createOuNotExists() {
 
 		// Preconditions
 		Assertions.assertNull(getGroup().findById("some-new-project"));
-		Assertions.assertNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("some"));
+		Assertions.assertNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com", "some"));
+		Assertions.assertFalse(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").contains("some"));
 
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
@@ -328,7 +321,8 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		Assertions.assertEquals("some-new-project", groupLdap.getName());
 		Assertions.assertEquals("cn=some-new-project,ou=some,ou=project,dc=sample,dc=com", groupLdap.getDn());
 		Assertions.assertEquals("some-new-project", groupLdap.getId());
-		Assertions.assertNotNull(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").get("some"));
+		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com", "some"));
+		Assertions.assertTrue(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").contains("some"));
 
 		resource.delete(subscription2.getId(), true);
 	}

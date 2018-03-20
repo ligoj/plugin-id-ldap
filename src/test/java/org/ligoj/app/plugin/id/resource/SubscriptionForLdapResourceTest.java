@@ -33,8 +33,6 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import net.sf.ehcache.CacheManager;
-
 /**
  * Test class of {@link SubscriptionResource}
  */
@@ -69,7 +67,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		Assertions.assertEquals(3, repository.findAllByProject(project).size());
 
 		// Ensure LDAP cache is loaded
-		CacheManager.getInstance().getCache("ldap").removeAll();
+		cacheManager.getCache("ldap").clear();
 		cache.getLdapData();
 		em.flush();
 		em.clear();
@@ -111,7 +109,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		vo.setProject(em.createQuery("SELECT id FROM Project WHERE name='gStack'", Integer.class).getSingleResult());
 
 		// Ensure LDAP cache is loaded
-		CacheManager.getInstance().getCache("ldap").removeAll();
+		cacheManager.getCache("ldap").clear();
 		cache.getLdapData();
 		em.flush();
 		em.clear();
@@ -181,7 +179,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		vo.setProject(em.createQuery("SELECT id FROM Project WHERE name='gStack'", Integer.class).getSingleResult());
 
 		// Ensure LDAP cache is loaded
-		CacheManager.getInstance().getCache("ldap").removeAll();
+		cacheManager.getCache("ldap").clear();
 		cache.getLdapData();
 		em.flush();
 		em.clear();

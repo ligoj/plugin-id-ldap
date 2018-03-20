@@ -1,5 +1,7 @@
 package org.ligoj.app.plugin.id.resource;
 
+import java.util.Optional;
+
 import javax.cache.annotation.CacheResult;
 
 import org.ligoj.app.iam.IamConfiguration;
@@ -16,17 +18,32 @@ public class LdapIamProvider implements IamProvider {
 	@Autowired
 	protected LdapPluginResource resource;
 
+	private IamConfiguration iamConfiguration;
+
+	@Autowired
+	private LdapIamProvider self;
+
 	@Override
 	public Authentication authenticate(final Authentication authentication) {
-
 		// Primary authentication
 		return resource.authenticate(authentication, "service:id:ldap:dig", true);
 	}
 
 	@Override
-	@CacheResult(cacheName = "iam-ldap-configuration")
 	public IamConfiguration getConfiguration() {
-		return resource.getConfiguration("service:id:ldap:dig");
+		self.ensureCachedConfiguration();
+		return Optional.ofNullable(iamConfiguration).orElseGet(this::refreshConfiguration);
+	}
+
+	@CacheResult(cacheName = "iam-ldap-configuration")
+	public boolean ensureCachedConfiguration() {
+		refreshConfiguration();
+		return true;
+	}
+
+	private IamConfiguration refreshConfiguration() {
+		this.iamConfiguration = resource.getConfiguration("service:id:ldap:dig");
+		return this.iamConfiguration;
 	}
 
 }

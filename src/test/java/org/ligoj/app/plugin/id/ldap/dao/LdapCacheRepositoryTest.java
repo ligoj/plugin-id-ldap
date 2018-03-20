@@ -23,8 +23,6 @@ import org.ligoj.bootstrap.core.SpringUtils;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 
-import net.sf.ehcache.CacheManager;
-
 /**
  * Test class of {@link LdapCacheRepository}
  */
@@ -89,11 +87,11 @@ public class LdapCacheRepositoryTest extends AbstractDataGeneratorTest {
 		Mockito.when(companyRepository.findAll()).thenReturn(companies);
 		Mockito.when(groupRepository.findAll()).thenReturn(groups);
 		Mockito.when(userRepository.findAll()).thenReturn(users);
-		CacheManager.getInstance().getCache("ldap").removeAll();
 		
 		repository = new LdapCacheRepository();
 		repository.iamProvider = new IamProvider[] { iamProvider };
 		repository.ldapCacheDao = Mockito.mock(LdapCacheDao.class);
+		repository.self = repository;
 	}
 
 	@Test
