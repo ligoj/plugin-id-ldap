@@ -1,3 +1,6 @@
+/*
+ * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
+ */
 define({
 	'service:id:ldap:base-dn': 'Base DN',
 	'service:id:ldap:companies-dn': 'DN des sociétés',
