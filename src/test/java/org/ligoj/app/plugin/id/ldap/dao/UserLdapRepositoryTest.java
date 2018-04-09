@@ -93,6 +93,7 @@ public class UserLdapRepositoryTest {
 		UserOrg user = new UserOrg();
 		user.setDn("dc=sample,dc=com");
 		new UserLdapRepository() {
+			@Override
 			public boolean isClearPassword() {
 				return true;
 			};
@@ -110,6 +111,7 @@ public class UserLdapRepositoryTest {
 		UserOrg user = new UserOrg();
 		user.setDn("dc=sample,dc=com");
 		new UserLdapRepository() {
+			@Override
 			public boolean isClearPassword() {
 				return false;
 			};
@@ -313,6 +315,7 @@ public class UserLdapRepositoryTest {
 		Assertions.assertEquals(1517908964000L, user.getLocked().getTime());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testBlockedUserByPpolicy() {
 		final UserOrg user = new UserOrg();

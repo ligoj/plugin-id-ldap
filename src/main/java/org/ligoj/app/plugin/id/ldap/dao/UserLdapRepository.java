@@ -803,7 +803,7 @@ public class UserLdapRepository implements IUserRepository {
 				try {
 					ctx.reconnect(null);
 					ctx.modifyAttributes(userLdap.getDn(), passwordChange);
-				} catch (final AuthenticationException e) {
+				} catch (@SuppressWarnings("unused") final AuthenticationException e) {
 					log.info("Authentication failed for {} ...", userLdap.getId());
 					throw new ValidationJsonException("password", "login");
 				} catch (final InvalidAttributeValueException e) {
@@ -843,7 +843,7 @@ public class UserLdapRepository implements IUserRepository {
 		try {
 			// parse utc into Date
 			date = formatter.parse(utc);
-		} catch (java.text.ParseException e) {
+		} catch (@SuppressWarnings("unused") java.text.ParseException e) {
 			log.info("Error while parsing date {}", utc);
 			throw new BusinessException(BusinessException.KEY_UNKNOW_ID);
 		}

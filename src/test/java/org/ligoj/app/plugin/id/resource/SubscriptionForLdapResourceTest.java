@@ -64,7 +64,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void deleteNotManagedProject() throws Exception {
+	public void deleteNotManagedProject() {
 		final Subscription one = repository.findOne(getSubscription("gStack", IdentityResource.SERVICE_KEY));
 		final int project = one.getProject().getId();
 		Assertions.assertEquals(3, repository.findAllByProject(project).size());
@@ -87,7 +87,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		final String dn = "cn=gfi-gstack-client,cn=gfi-gstack,ou=gfi,ou=project,dc=sample,dc=com";
 		try {
 			getGroup().delete(new GroupOrg(dn, "gfi-gstack-client", new HashSet<>()));
-		} catch (final Exception e) {
+		} catch (@SuppressWarnings("unused") final Exception e) {
 			// Ignore no group
 		}
 
@@ -157,7 +157,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		final String dn = "cn=gfi-gstack-client2,ou=gfi,ou=project,dc=sample,dc=com";
 		try {
 			getGroup().delete(new GroupOrg(dn, "gfi-gstack-client", new HashSet<>()));
-		} catch (final Exception e) {
+		} catch (@SuppressWarnings("unused") final Exception e) {
 			// Ignore no group
 		}
 
