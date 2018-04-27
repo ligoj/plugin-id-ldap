@@ -255,7 +255,7 @@ public class UserLdapRepositoryTest {
 		MatcherUtil.assertThrows(
 				Assertions.assertThrows(ValidationJsonException.class,
 						() -> repository.setPassword(user, "old-password", "weak-password")),
-				"new-password", "password-policy");
+				"password", "password-policy");
 	}
 
 	private LdapContext setPassword(final String password, final String newPassword) {
