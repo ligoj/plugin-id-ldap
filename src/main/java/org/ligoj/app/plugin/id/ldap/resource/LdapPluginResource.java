@@ -509,7 +509,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	 */
 	private ActivitiesComputations getActivities(final int subscription, final boolean global) throws Exception {
 		// Get users from other LDAP subscriptions
-		final Subscription main = subscriptionResource.checkVisibleSubscription(subscription);
+		final Subscription main = subscriptionResource.checkVisible(subscription);
 		final List<Subscription> subscriptions = subscriptionRepository.findAllOnSameProject(subscription);
 		final Set<UserOrg> users = global ? getMembersOfAllSubscriptions(subscriptions)
 				: getMembersOfSubscription(main);

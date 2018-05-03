@@ -5,6 +5,7 @@ package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -803,8 +804,8 @@ public class UserLdapRepository implements IUserRepository {
 				try {
 					ctx.reconnect(null);
 					ctx.modifyAttributes(userLdap.getDn(), passwordChange);
-				} catch (@SuppressWarnings("unused") final AuthenticationException e) {
-					log.info("Authentication failed for {} ...", userLdap.getId());
+				} catch (final AuthenticationException e) {
+					log.info("Authentication failed for {}: {}", userLdap.getId(), e.getMessage());
 					throw new ValidationJsonException("password", "login");
 				} catch (final InvalidAttributeValueException e) {
 					log.info("Password change failed due to: {}", e.getMessage());
@@ -843,8 +844,8 @@ public class UserLdapRepository implements IUserRepository {
 		try {
 			// parse utc into Date
 			date = formatter.parse(utc);
-		} catch (@SuppressWarnings("unused") java.text.ParseException e) {
-			log.info("Error while parsing date {}", utc);
+		} catch (final ParseException e) {
+			log.info("Error while parsing date {}: {}", utc, e.getMessage());
 			throw new BusinessException(BusinessException.KEY_UNKNOW_ID);
 		}
 		return date;
