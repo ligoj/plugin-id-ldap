@@ -809,7 +809,7 @@ public class UserLdapRepository implements IUserRepository {
 					throw new ValidationJsonException("password", "login");
 				} catch (final InvalidAttributeValueException e) {
 					log.info("Password change failed due to: {}", e.getMessage());
-					throw new ValidationJsonException("new-password", "password-policy");
+					throw new ValidationJsonException("password", "password-policy");
 				}
 				return null;
 			}
