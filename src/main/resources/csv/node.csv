@@ -1,2 +1,2 @@
 id;name;refined.id;mode;uiClasses;tag;tagUiClasses
-service:id:ldap;LDAP;service:id;CREATE;;;
+service:id:ldap;LDAP;service:id;ALL;;;
