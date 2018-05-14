@@ -20,7 +20,6 @@ define({
 		'service:id:ldap:uid-attribute': 'UID attribute',
 		'service:id:ldap:url': 'Connection URL',
 		'service:id:ldap:user-dn': 'Connection user',
-		'service:id:uid-pattern': 'User pattern capture id from DN',
 		'service:id:ldap:clear-password': 'Clear password'
 	},
 	fr: true

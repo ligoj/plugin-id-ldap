@@ -19,6 +19,5 @@ define({
 	'service:id:ldap:uid-attribute': 'Attribut UID',
 	'service:id:ldap:url': 'URL de connexion',
 	'service:id:ldap:user-dn': 'Utilisateur de connexion',
-	'service:id:uid-pattern': 'Pattern de capture de l\'identifiant d\'utilisateur dans un DN',
 	'service:id:ldap:clear-password': 'Mot de passe non-crypté'
 });
