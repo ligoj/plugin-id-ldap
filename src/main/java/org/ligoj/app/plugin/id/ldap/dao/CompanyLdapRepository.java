@@ -5,12 +5,12 @@ package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.naming.ldap.LdapName;
 
-import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.ICompanyRepository;
 import org.ligoj.app.iam.dao.CacheCompanyRepository;
@@ -61,7 +61,7 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 	/**
 	 * Fetch and return all normalized companies. Note the result uses cache, so does not reflect the current state of
 	 * LDAP. Cache manager is involved.
-	 * 
+	 *
 	 * @return the companies. Key is the normalized name.
 	 */
 	@Override
@@ -73,7 +73,7 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 	/**
 	 * Fetch and return all normalized companies. Note the result use cache, so does not reflect the current state of
 	 * LDAP.
-	 * 
+	 *
 	 * @return the companies. Key is the normalized name.
 	 */
 	public Map<String, CompanyOrg> findAllNoCache() {
@@ -113,7 +113,7 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 
 	/**
 	 * Return the quarantine/isolated company identifier.
-	 * 
+	 *
 	 * @return The quarantine/isolated company identifier.
 	 */
 	public String getQuarantineCompany() {
@@ -133,7 +133,7 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 
 	@Override
 	protected CompanyOrg newContainer(final String dn, final String name) {
-		return new CompanyOrg(Normalizer.normalize(dn), name);
+		return new CompanyOrg(dn.toLowerCase(Locale.ENGLISH), name);
 	}
 
 	/**
@@ -146,7 +146,7 @@ public class CompanyLdapRepository extends AbstractContainerLdaRepository<Compan
 
 	/**
 	 * Remove the company from the memory cache.
-	 * 
+	 *
 	 * @param company
 	 *            The company to remove.
 	 */

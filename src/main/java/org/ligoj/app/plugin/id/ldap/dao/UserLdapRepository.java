@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -204,7 +205,7 @@ public class UserLdapRepository implements IUserRepository {
 	 * #lockedValue, author, date and previous company when this user is in the isolate state.<br>
 	 * The structure of this attribute is composed by several fragments with pipe "|" as separator. The whole structure
 	 * is : <code>FLAG|locked date as milliseconds|author|[optional old company for restore]</code>.
-	 * 
+	 *
 	 * @see #lockedValue
 	 */
 	@Setter
@@ -212,7 +213,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	/**
 	 * LDAP Attribute value to tag a disabled user.
-	 * 
+	 *
 	 * @see #lockedAttribute
 	 */
 	@Setter
@@ -268,7 +269,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	/**
 	 * Replace a value by another one without touching other values.
-	 * 
+	 *
 	 * @param dn
 	 *            the DN of entry.
 	 * @param attribute
@@ -284,7 +285,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	/**
 	 * Replace a value by another one without touching other values.
-	 * 
+	 *
 	 * @param user
 	 *            The entry to update.
 	 * @param attribute
@@ -317,7 +318,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	/**
 	 * Return all user entries.
-	 * 
+	 *
 	 * @param groups
 	 *            The existing groups. They will be be used to complete the membership of each returned user.
 	 * @return all user entries. Key is the user login.
@@ -368,7 +369,7 @@ public class UserLdapRepository implements IUserRepository {
 					log.warn("Broken user UID reference found '{}' --> {}", groupLdap.getDn(), uid);
 				}
 			} else {
-				if (!Normalizer.normalize(dn).equals(Normalizer.normalize(user.getDn()))) {
+				if (!dn.toLowerCase(Locale.ENGLISH).equals(user.getDn().toLowerCase(Locale.ENGLISH))) {
 					log.warn("Broken user DN reference found '{}' --> {}, instead of {}", groupLdap.getDn(), dn,
 							user.getDn());
 				}
@@ -387,7 +388,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	/**
 	 * Return DN from entry.
-	 * 
+	 *
 	 * @param entry
 	 *            LDAP entry to convert to DN.
 	 * @return DN from entry.
@@ -399,7 +400,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	/**
 	 * Return DN from entry.
-	 * 
+	 *
 	 * @param login
 	 *            The user login to create.
 	 * @param companyDn
@@ -455,7 +456,7 @@ public class UserLdapRepository implements IUserRepository {
 		/**
 		 * Extract the {@link Date}, author, and the previous company from the locked attribute if available and matched
 		 * to the expected {@link UserLdapRepository#lockedValue}
-		 * 
+		 *
 		 * @param user
 		 *            The user to update.
 		 * @param lockedValue
@@ -474,7 +475,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	/**
 	 * Extract the company from the DN of this user.
-	 * 
+	 *
 	 * @param dn
 	 *            The user DN.
 	 * @return The company identifier from the DN of the user.
@@ -581,7 +582,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	/**
 	 * Add the user from the given groups. Cache is also updated.
-	 * 
+	 *
 	 * @param user
 	 *            The user to add to the given groups.
 	 * @param groups
@@ -593,7 +594,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	/**
 	 * Remove the user from the given groups.Cache is also updated.
-	 * 
+	 *
 	 * @param user
 	 *            The user to remove from the given groups.
 	 * @param groups
@@ -677,7 +678,7 @@ public class UserLdapRepository implements IUserRepository {
 	 * <li>Clear the password to prevent new authentication</li>
 	 * <li>Set the disabled flag.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param principal
 	 *            Principal user requesting the lock.
 	 * @param user
@@ -730,7 +731,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	/**
 	 * Return the property name used to match the user name.
-	 * 
+	 *
 	 * @param name
 	 *            The current principal.
 	 * @return the property name used to match the user name.
@@ -756,7 +757,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	/**
 	 * Validate and set the company pattern.
-	 * 
+	 *
 	 * @param companyPattern
 	 *            Pattern capturing the company from the DN of the user. May be a row string for constant.
 	 */
@@ -766,7 +767,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	/**
 	 * Digest with SSHA the given clear password.
-	 * 
+	 *
 	 * @param password
 	 *            the clear password to digest.
 	 * @return a SSHA digest.
@@ -818,7 +819,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	/**
 	 * Generate and set a temporary password to specified user.
-	 * 
+	 *
 	 * @param user
 	 *            User to update.
 	 * @return current user password.
@@ -832,7 +833,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	/**
 	 * Normalize OpenLdap date format.
-	 * 
+	 *
 	 * @param utc
 	 *            OpenLdap date format.
 	 * @return normalized date.

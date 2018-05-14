@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -48,7 +49,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 	/**
 	 * Default DN member for new group. This is required for some LDAP implementation where "uniqueMember" attribute is
 	 * required for "groupOfUniqueNames" class.
-	 * 
+	 *
 	 * @see <a href="https://msdn.microsoft.com/en-us/library/ms682261(v=vs.85).aspx">MSDN</a>
 	 * @see <a href="https://tools.ietf.org/html/rfc4519#page-19">IETF</a>
 	 */
@@ -79,7 +80,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 	/**
 	 * Fetch and return all normalized groups. Note the result use cache, so does not reflect the current state of LDAP.
 	 * LDAP. Cache manager is involved.
-	 * 
+	 *
 	 * @return the groups. Key is the normalized name, Value is the corresponding LDAP group containing real CN, DN and
 	 *         normalized UID members.
 	 */
@@ -92,7 +93,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 	/**
 	 * Fetch and return all normalized groups. Note the result use cache, so does not reflect the current state of LDAP.
 	 * LDAP.
-	 * 
+	 *
 	 * @return the groups. Key is the normalized name, Value is the corresponding LDAP group containing real CN, DN and
 	 *         normalized UID members.
 	 */
@@ -106,7 +107,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 				new EqualsFilter("objectClass", GROUP_OF_UNIQUE_NAMES).encode(),
 				(Object ctx) -> (DirContextAdapter) ctx)) {
 			final Set<String> members = new HashSet<>();
-			final String dn = Normalizer.normalize(groupRaw.getDn().toString());
+			final String dn = groupRaw.getDn().toString().toLowerCase(Locale.ENGLISH);
 			final String name = groupRaw.getStringAttribute("cn");
 			final HashSet<String> subGroups = new HashSet<>();
 			for (final String memberDN : ArrayUtils.nullToEmpty(groupRaw.getStringAttributes(UNIQUE_MEMBER))) {
@@ -165,7 +166,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 	/**
 	 * Delete the given group. There is no synchronized block, so error could occur; this is assumed for performance
 	 * purpose.
-	 * 
+	 *
 	 * @param group
 	 *            the LDAP group.
 	 */
@@ -202,7 +203,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 
 	/**
 	 * Add an "uniqueMember" to given group. Cache is not updated there.
-	 * 
+	 *
 	 * @param element
 	 *            The new member to add.
 	 * @param group
@@ -220,7 +221,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 
 	/**
 	 * Update the uniqueMember attribute of the user having changed DN. Cache is not updated since.
-	 * 
+	 *
 	 * @param oldUniqueMemberDn
 	 *            Old DN of the member to update.
 	 * @param newUniqueMemberDn
@@ -257,7 +258,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 
 	/**
 	 * Remove a group from another group. Cache is updated. There is no deletion.
-	 * 
+	 *
 	 * @param subGroup
 	 *            {@link GroupOrg} to remove.
 	 * @param group
@@ -270,7 +271,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 
 	/**
 	 * Remove an "uniqueMember" from given group. Cache is not updated there.
-	 * 
+	 *
 	 * @param uniqueMember
 	 *            DN of the member to remove.
 	 * @param group
@@ -314,7 +315,7 @@ public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg
 
 	@Override
 	protected GroupOrg newContainer(final String dn, final String cn) {
-		return new GroupOrg(Normalizer.normalize(dn), cn, new HashSet<>());
+		return new GroupOrg(dn.toLowerCase(Locale.ENGLISH), cn, new HashSet<>());
 	}
 
 	@Override
