@@ -230,7 +230,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	/**
 	 * Build a user LDAP repository from the given node.
-	 * 
+	 *
 	 * @param node
 	 *            The node, also used as cache key.
 	 * @return The {@link UserLdapRepository} instance. Cache is involved.
@@ -272,7 +272,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	/**
 	 * Build a group LDAP repository from the given node.
-	 * 
+	 *
 	 * @param node
 	 *            The node, also used as cache key.
 	 * @param template
@@ -294,7 +294,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	/**
 	 * Build a group LDAP repository from the given node.
-	 * 
+	 *
 	 * @param node
 	 *            The node, also used as cache key.
 	 * @param template
@@ -413,7 +413,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 		final String ouDn = "ou=" + ou + "," + parentDn;
 
 		// Check the target OU exists or not and create the OU as needed
-		if (projectCustomerLdapRepository.findById(parentDn,ou) == null) {
+		if (projectCustomerLdapRepository.findById(parentDn, ou) == null) {
 			// Create the OU in LDAP
 			log.info("New OU would be created {} for group {}, project {} and subscription {}", ou, group, pkey);
 			projectCustomerLdapRepository.create(parentDn, ou, ouDn);
@@ -463,7 +463,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	/**
 	 * Return activities of all users in the group of this subscription as CSV input stream.
-	 * 
+	 *
 	 * @param subscription
 	 *            The subscription identifier.
 	 * @param file
@@ -485,7 +485,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	/**
 	 * Return activities of all users in any group subscribed by the same project of this subscription as CSV input
 	 * stream.
-	 * 
+	 *
 	 * @param subscription
 	 *            The subscription identifier.
 	 * @param file
@@ -551,7 +551,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	/**
 	 * Return users member of associated subscription.
-	 * 
+	 *
 	 * @param subscription
 	 *            The subscription identifier used to get the related group and members.
 	 * @return The members of related groups of the subscription.
@@ -565,7 +565,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	/**
 	 * Add activities related to given subscription.
-	 * 
+	 *
 	 * @param activities
 	 *            The collected activities.
 	 * @param users
@@ -604,7 +604,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	/**
 	 * Validate the group settings.
-	 * 
+	 *
 	 * @param parameters
 	 *            the administration parameters.
 	 * @return real group name.
@@ -634,7 +634,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	/**
 	 * Search the LDAP Groups matching to the given criteria and for type "Project". Node identifier is ignored for now.
-	 * 
+	 *
 	 * @param criteria
 	 *            the search criteria.
 	 * @return LDAP Groups matching the criteria.
@@ -667,7 +667,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	/**
 	 * Search the LDAP Customers matching to the given criteria and for type "Project". Node identifier is ignored for
 	 * now. Node is ignored.
-	 * 
+	 *
 	 * @param criteria
 	 *            the search criteria.
 	 * @return LDAP Customers matching the criteria.
@@ -771,7 +771,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	/**
 	 * Group repository provider.
-	 * 
+	 *
 	 * @return Group repository provider.
 	 */
 	private GroupLdapRepository getGroup() {
@@ -793,7 +793,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	/**
 	 * Check the authentication, then create or get the application user matching to the given account.
-	 * 
+	 *
 	 * @param repository
 	 *            Repository used to authenticate the user, and also to use to fetch the user attributes.
 	 * @param authentication
@@ -819,7 +819,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	/**
 	 * Create or get the application user matching to the given account.
-	 * 
+	 *
 	 * @param account
 	 *            The account from the authentication.
 	 * @return A not <code>null</code> application user.
@@ -847,7 +847,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	/**
 	 * Create the application user from the actual account.
-	 * 
+	 *
 	 * @param account
 	 *            The account from the authentication.
 	 * @return The new application user.
@@ -874,7 +874,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	/**
 	 * Find a free application login from a base login. Primary repository is checked to reclaim a free login.
-	 * 
+	 *
 	 * @param login
 	 *            The base login name.
 	 * @return a free login inside the primary repository.
@@ -895,7 +895,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 
 	/**
 	 * Generate a application login from an account.
-	 * 
+	 *
 	 * @param account
 	 *            The current authenticated account in this security provider.
 	 * @return a corresponding application login candidate from an account.
