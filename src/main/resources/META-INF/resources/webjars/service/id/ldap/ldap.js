@@ -4,10 +4,10 @@
 define(function () {
 	var current = {
 
-		configureSubscriptionParameters: function (configuration) {
-			current.registerIdParentGroupSelect2(configuration, 'service:id:parent-group');
-			current.registerIdGroupSelect2(configuration, 'service:id:group');
-			current.registerIdOuSelect2(configuration, 'service:id:ou');
+		configureSubscriptionParameters: function (configuration, $container) {
+			current.registerIdParentGroupSelect2(configuration, $container, 'service:id:parent-group');
+			current.registerIdGroupSelect2(configuration, $container, 'service:id:group');
+			current.registerIdOuSelect2(configuration, $container, 'service:id:ou');
 		},
 
 		/**
@@ -30,15 +30,19 @@ define(function () {
 		/**
 		 * Replace the default text rendering by a Select2 for Customers/OU.
 		 */
-		registerIdOuSelect2: function (configuration, id) {
-			configuration.validators[id] = current.validateIdOuCreateMode;
+		registerIdOuSelect2: function (configuration, $container, id) {
+			if (!current.$super('isNodeMode')($container)) {
+				configuration.validators[id] = current.validateIdOuCreateMode;
+			}
 			current.$super('registerXServiceSelect2')(configuration, id, 'service/id/ldap/customer/', null, true);
 		},
 		/**
 		 * Replace the default text rendering by a Select2 for ParentGroup.
 		 */
-		registerIdParentGroupSelect2: function (configuration, id) {
-			configuration.validators[id] = current.validateIdGroupCreateMode;
+		registerIdParentGroupSelect2: function (configuration, $container, id) {
+			if (!current.$super('isNodeMode')($container)) {
+				configuration.validators[id] = current.validateIdGroupCreateMode;
+			}
 			current.$super('registerXServiceSelect2')(configuration, id, 'service/id/group', '?search[value]=');
 		},
 
@@ -47,10 +51,10 @@ define(function () {
 		 * and add a simple text with live
 		 * validation regarding existing group and syntax.
 		 */
-		registerIdGroupSelect2: function (configuration, id) {
+		registerIdGroupSelect2: function (configuration, $container, id) {
 			var cProviders = configuration.providers['form-group'];
 			var previousProvider = cProviders[id] || cProviders.standard;
-			if (configuration.mode === 'create') {
+			if (configuration.mode === 'create' && !current.$super('isNodeMode')($container)) {
 				cProviders[id] = function (parameter, container, $input) {
 					// Register a live validation of group
 					var simpleGroupId = 'service:id:group-simple-name';
