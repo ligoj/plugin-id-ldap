@@ -22,7 +22,7 @@ public class IdLdapCache implements CacheManagerAware {
 		cacheManager.createCache("ldap", provider.apply("ldap"));
 		cacheManager.createCache("ldap-user-repository", provider.apply("ldap-user-repository"));
 		cacheManager.createCache("customers", provider.apply("customers"));
-		cacheManager.createCache("customers-by-id", provider.apply("customers"));
+		cacheManager.createCache("customers-by-id", provider.apply("customers-by-id"));
 	}
 
 }
