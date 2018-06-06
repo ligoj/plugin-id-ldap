@@ -96,7 +96,7 @@ public class UserLdapRepositoryTest {
 			@Override
 			public boolean isClearPassword() {
 				return true;
-			};
+			}
 
 			@Override
 			public void set(final Name dn, final String attribute, final String value) {
@@ -114,7 +114,7 @@ public class UserLdapRepositoryTest {
 			@Override
 			public boolean isClearPassword() {
 				return false;
-			};
+			}
 
 			@Override
 			public void set(final Name dn, final String attribute, final String value) {
@@ -273,7 +273,7 @@ public class UserLdapRepositoryTest {
 
 		final LdapContext mockCtx = Mockito.mock(LdapContext.class);
 		Mockito.when(mock.executeReadWrite((ContextExecutor<Object>) ArgumentMatchers.any(ContextExecutor.class)))
-				.then(new Answer<Object>() {
+				.then(new Answer<>() {
 					@Override
 					public Object answer(final InvocationOnMock invocation) throws Throwable {
 						return ((ContextExecutor<Object>) invocation.getArgument(0)).executeWithContext(mockCtx);

@@ -793,7 +793,7 @@ public class UserLdapRepository implements IUserRepository {
 		set(userLdap, PWD_ACCOUNT_LOCKED_ATTRIBUTE, null);
 
 		// Authenticate the user is needed before changing the password.
-		template.executeReadWrite(new ContextExecutor<Object>() {
+		template.executeReadWrite(new ContextExecutor<>() {
 			@Override
 			public Object executeWithContext(final DirContext dirCtx) throws NamingException {
 				LdapContext ctx = (LdapContext) dirCtx;

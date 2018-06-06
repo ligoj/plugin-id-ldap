@@ -36,6 +36,8 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Test class of {@link SubscriptionResource}
  */
@@ -43,6 +45,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
+@Slf4j
 public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 
 	@Autowired
@@ -59,7 +62,8 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 
 	@BeforeEach
 	public void prepareSubscription() throws IOException {
-		persistEntities("csv", new Class[] { DelegateOrg.class, ContainerScope.class, DelegateNode.class }, StandardCharsets.UTF_8.name());
+		persistEntities("csv", new Class[] { DelegateOrg.class, ContainerScope.class, DelegateNode.class },
+				StandardCharsets.UTF_8.name());
 		initSpringSecurityContext("fdaugan");
 	}
 
@@ -85,11 +89,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		// Prepare data
 		em.createQuery("DELETE Parameter WHERE id LIKE ?1").setParameter(1, "c_%").executeUpdate();
 		final String dn = "cn=gfi-gstack-client,cn=gfi-gstack,ou=gfi,ou=project,dc=sample,dc=com";
-		try {
-			getGroup().delete(new GroupOrg(dn, "gfi-gstack-client", new HashSet<>()));
-		} catch (@SuppressWarnings("unused") final Exception e) {
-			// Ignore no group
-		}
+		cleanSubGroup(dn);
 
 		final SubscriptionEditionVo vo = new SubscriptionEditionVo();
 		final List<ParameterValueCreateVo> parameters = new ArrayList<>();
@@ -124,9 +124,10 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 
 		Assertions.assertEquals("gfi-gstack-client",
 				parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_GROUP));
-		Assertions.assertEquals("gfi", parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_OU));
-		Assertions.assertEquals("gfi-gstack",
-				parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_PARENT_GROUP));
+		Assertions.assertEquals("gfi",
+				parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_OU));
+		Assertions.assertEquals("gfi-gstack", parameterValueRepository.getSubscriptionParameterValue(subscription,
+				IdentityResource.PARAMETER_PARENT_GROUP));
 
 		// Check the creation in LDAP
 		final GroupOrg group = getGroup().findById("gfi-gstack-client");
@@ -138,6 +139,15 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		// Rollback the creation in LDAP
 		resource.delete(subscription, true);
 		Assertions.assertEquals(1, getMembers().length);
+	}
+
+	private void cleanSubGroup(final String dn) {
+		try {
+			getGroup().delete(new GroupOrg(dn, "gfi-gstack-client", new HashSet<>()));
+		} catch (final Exception e) {
+			// Ignore no group
+			log.debug("No group to delete", e);
+		}
 	}
 
 	private String[] getMembers() {
@@ -155,11 +165,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		// Prepare data
 		em.createQuery("DELETE Parameter WHERE id LIKE ?1").setParameter(1, "c_%").executeUpdate();
 		final String dn = "cn=gfi-gstack-client2,ou=gfi,ou=project,dc=sample,dc=com";
-		try {
-			getGroup().delete(new GroupOrg(dn, "gfi-gstack-client", new HashSet<>()));
-		} catch (@SuppressWarnings("unused") final Exception e) {
-			// Ignore no group
-		}
+		cleanSubGroup(dn);
 
 		final SubscriptionEditionVo vo = new SubscriptionEditionVo();
 		final List<ParameterValueCreateVo> parameters = new ArrayList<>();
@@ -194,9 +200,10 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 
 		Assertions.assertEquals("gfi-gstack-client2",
 				parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_GROUP));
-		Assertions.assertEquals("gfi", parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_OU));
-		Assertions
-				.assertNull(parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_PARENT_GROUP));
+		Assertions.assertEquals("gfi",
+				parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_OU));
+		Assertions.assertNull(parameterValueRepository.getSubscriptionParameterValue(subscription,
+				IdentityResource.PARAMETER_PARENT_GROUP));
 
 		// Check the creation in LDAP
 		final GroupOrg group = getGroup().findById("gfi-gstack-client2");
