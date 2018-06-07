@@ -14,7 +14,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -369,7 +368,7 @@ public class UserLdapRepository implements IUserRepository {
 					log.warn("Broken user UID reference found '{}' --> {}", groupLdap.getDn(), uid);
 				}
 			} else {
-				if (!dn.toLowerCase(Locale.ENGLISH).equals(user.getDn().toLowerCase(Locale.ENGLISH))) {
+				if (!dn.equalsIgnoreCase(user.getDn())) {
 					log.warn("Broken user DN reference found '{}' --> {}, instead of {}", groupLdap.getDn(), dn,
 							user.getDn());
 				}
