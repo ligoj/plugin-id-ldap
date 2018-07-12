@@ -27,7 +27,7 @@ import lombok.Setter;
 /**
  * Company LDAP repository
  */
-public class CompanyLdapRepository extends AbstractContainerLdaRepository<CompanyOrg, CacheCompany> implements ICompanyRepository {
+public class CompanyLdapRepository extends AbstractContainerLdapRepository<CompanyOrg, CacheCompany> implements ICompanyRepository {
 
 	private static final String ORGANIZATIONAL_UNIT = "organizationalUnit";
 

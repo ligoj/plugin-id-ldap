@@ -45,7 +45,7 @@ import lombok.extern.slf4j.Slf4j;
  *            The container cache type.
  */
 @Slf4j
-public abstract class AbstractContainerLdaRepository<T extends ContainerOrg, C extends CacheContainer>
+public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C extends CacheContainer>
 		implements IContainerRepository<T> {
 
 	protected static final Sort.Order DEFAULT_ORDER = new Sort.Order(Direction.ASC, "name");
@@ -76,7 +76,7 @@ public abstract class AbstractContainerLdaRepository<T extends ContainerOrg, C e
 	 */
 	private final ContainerType type;
 
-	protected AbstractContainerLdaRepository(final ContainerType type, final String className) {
+	protected AbstractContainerLdapRepository(final ContainerType type, final String className) {
 		this.type = type;
 		this.className = className;
 		this.typeName = this.type.name().toLowerCase(Locale.ENGLISH);

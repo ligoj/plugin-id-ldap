@@ -43,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
  * Group LDAP repository
  */
 @Slf4j
-public class GroupLdapRepository extends AbstractContainerLdaRepository<GroupOrg, CacheGroup>
+public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOrg, CacheGroup>
 		implements IGroupRepository {
 
 	/**
