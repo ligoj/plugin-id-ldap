@@ -17,7 +17,7 @@ import org.ligoj.app.iam.dao.CacheCompanyRepository;
 import org.ligoj.app.iam.model.CacheCompany;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.DnUtils;
-import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository.LdapData;
+import org.ligoj.app.plugin.id.dao.AbstractMemCacheRepository.CacheDataType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
@@ -27,7 +27,8 @@ import lombok.Setter;
 /**
  * Company LDAP repository
  */
-public class CompanyLdapRepository extends AbstractContainerLdapRepository<CompanyOrg, CacheCompany> implements ICompanyRepository {
+public class CompanyLdapRepository extends AbstractContainerLdapRepository<CompanyOrg, CacheCompany>
+		implements ICompanyRepository {
 
 	private static final String ORGANIZATIONAL_UNIT = "organizationalUnit";
 
@@ -67,7 +68,7 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 	@Override
 	@SuppressWarnings("unchecked")
 	public Map<String, CompanyOrg> findAll() {
-		return (Map<String, CompanyOrg>) ldapCacheRepository.getLdapData().get(LdapData.COMPANY);
+		return (Map<String, CompanyOrg>) cacheRepository.getLdapData().get(CacheDataType.COMPANY);
 	}
 
 	/**
@@ -76,12 +77,13 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 	 *
 	 * @return the companies. Key is the normalized name.
 	 */
+	@Override
 	public Map<String, CompanyOrg> findAllNoCache() {
 		final Map<String, CompanyOrg> companiesNameToDn = new HashMap<>();
-		for (final DirContextAdapter company : template.search(companyBaseDn, "objectClass=" + ORGANIZATIONAL_UNIT,
+		for (final DirContextAdapter ldap : template.search(companyBaseDn, "objectClass=" + ORGANIZATIONAL_UNIT,
 				(Object ctx) -> (DirContextAdapter) ctx)) {
-			final CompanyOrg companyLdap = new CompanyOrg(company.getDn().toString(), company.getStringAttributes("ou")[0]);
-			companiesNameToDn.put(companyLdap.getId(), companyLdap);
+			final CompanyOrg company = new CompanyOrg(ldap.getDn().toString(), ldap.getStringAttributes("ou")[0]);
+			companiesNameToDn.put(company.getId(), company);
 		}
 
 		// Also add/replace the quarantine zone
@@ -107,8 +109,9 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 	 */
 	private void buildHierarchy(final Map<String, CompanyOrg> companies, final CompanyOrg company) {
 		// Collect all parents and sorted from parent to the leaf
-		company.setCompanyTree(companies.values().stream().filter(c -> DnUtils.equalsOrParentOf(c.getDn(), company.getDn()))
-				.sorted(Comparator.comparing(CompanyOrg::getLdapName)).collect(Collectors.toList()));
+		company.setCompanyTree(
+				companies.values().stream().filter(c -> DnUtils.equalsOrParentOf(c.getDn(), company.getDn()))
+						.sorted(Comparator.comparing(CompanyOrg::getLdapName)).collect(Collectors.toList()));
 	}
 
 	/**
@@ -125,7 +128,7 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 		final CompanyOrg company = super.create(dn, cn);
 
 		// Also, update the cache
-		ldapCacheRepository.create(company);
+		cacheRepository.create(company);
 
 		// Return the new group
 		return company;
@@ -159,17 +162,17 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 	public void delete(final CompanyOrg container) {
 
 		/*
-		 * Remove from this company, all companies within (sub LDAP DN) this company. This operation is needed
-		 * since we are not rebuilding the cache from the LDAP. This save a lot of computations.
+		 * Remove from this company, all companies within (sub LDAP DN) this company. This operation is needed since we
+		 * are not rebuilding the cache from the LDAP. This save a lot of computations.
 		 */
-		findAll().values().stream().filter(g -> DnUtils.equalsOrParentOf(container.getDn(), g.getDn())).collect(Collectors.toList())
-				.forEach(this::removeFromJavaCache);
+		findAll().values().stream().filter(g -> DnUtils.equalsOrParentOf(container.getDn(), g.getDn()))
+				.collect(Collectors.toList()).forEach(this::removeFromJavaCache);
 
 		// Remove from LDAP the recursively the company. Anything that was not nicely cleaned will be deleted there.
 		template.unbind(container.getDn(), true);
 
 		// Also, update the SQL cache
-		ldapCacheRepository.delete(container);
+		cacheRepository.delete(container);
 	}
 
 }

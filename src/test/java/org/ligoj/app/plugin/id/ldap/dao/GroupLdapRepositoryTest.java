@@ -47,8 +47,8 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 			}
 
 		};
-		final LdapCacheRepository cacheRepository = Mockito.mock(LdapCacheRepository.class);
-		groupRepository.setLdapCacheRepository(cacheRepository);
+		final CacheLdapRepository cacheRepository = Mockito.mock(CacheLdapRepository.class);
+		groupRepository.setCacheRepository(cacheRepository);
 		final LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
 		addUser(groupRepository);
@@ -68,8 +68,8 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 			}
 
 		};
-		final LdapCacheRepository cacheRepository = Mockito.mock(LdapCacheRepository.class);
-		groupRepository.setLdapCacheRepository(cacheRepository);
+		final CacheLdapRepository cacheRepository = Mockito.mock(CacheLdapRepository.class);
+		groupRepository.setCacheRepository(cacheRepository);
 		final LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
 		addUser(groupRepository);
@@ -156,7 +156,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 			}
 
 		};
-		groupRepository.setLdapCacheRepository(Mockito.mock(LdapCacheRepository.class));
+		groupRepository.setCacheRepository(Mockito.mock(CacheLdapRepository.class));
 
 		final LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
@@ -196,7 +196,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 			}
 
 		};
-		groupRepository.setLdapCacheRepository(Mockito.mock(LdapCacheRepository.class));
+		groupRepository.setCacheRepository(Mockito.mock(CacheLdapRepository.class));
 		final LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
 		Mockito.doThrow(new org.springframework.ldap.AttributeInUseException(new AttributeInUseException("any"))).when(ldapTemplate)
@@ -212,7 +212,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 			}
 
 		};
-		groupRepository.setLdapCacheRepository(Mockito.mock(LdapCacheRepository.class));
+		groupRepository.setCacheRepository(Mockito.mock(CacheLdapRepository.class));
 		return groupRepository;
 	}
 

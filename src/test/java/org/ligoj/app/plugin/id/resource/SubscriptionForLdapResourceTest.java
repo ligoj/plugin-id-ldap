@@ -23,7 +23,7 @@ import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.model.DelegateNode;
 import org.ligoj.app.model.Subscription;
-import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository;
+import org.ligoj.app.plugin.id.ldap.dao.CacheLdapRepository;
 import org.ligoj.app.plugin.id.ldap.resource.AbstractLdapTest;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.app.resource.node.ParameterValueCreateVo;
@@ -49,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 
 	@Autowired
-	private LdapCacheRepository cache;
+	private CacheLdapRepository cache;
 
 	@Autowired
 	private SubscriptionResource resource;
@@ -74,7 +74,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		Assertions.assertEquals(3, repository.findAllByProject(project).size());
 
 		// Ensure LDAP cache is loaded
-		cacheManager.getCache("ldap").clear();
+		cacheManager.getCache("id-ldap-data").clear();
 		cache.getLdapData();
 		em.flush();
 		em.clear();
@@ -112,7 +112,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		vo.setProject(em.createQuery("SELECT id FROM Project WHERE name='gStack'", Integer.class).getSingleResult());
 
 		// Ensure LDAP cache is loaded
-		cacheManager.getCache("ldap").clear();
+		cacheManager.getCache("id-ldap-data").clear();
 		cache.getLdapData();
 		em.flush();
 		em.clear();
@@ -188,7 +188,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		vo.setProject(em.createQuery("SELECT id FROM Project WHERE name='gStack'", Integer.class).getSingleResult());
 
 		// Ensure LDAP cache is loaded
-		cacheManager.getCache("ldap").clear();
+		cacheManager.getCache("id-ldap-data").clear();
 		cache.getLdapData();
 		em.flush();
 		em.clear();

@@ -31,7 +31,7 @@ import org.ligoj.app.model.Parameter;
 import org.ligoj.app.model.ParameterValue;
 import org.ligoj.app.model.Project;
 import org.ligoj.app.model.Subscription;
-import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository;
+import org.ligoj.app.plugin.id.ldap.dao.CacheLdapRepository;
 import org.ligoj.app.plugin.id.ldap.dao.ProjectCustomerLdapRepository;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.app.plugin.id.resource.IdentityResource;
@@ -83,7 +83,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 	protected ServicePluginLocator servicePluginLocator;
 
 	@Autowired
-	protected LdapCacheRepository cache;
+	protected CacheLdapRepository cache;
 
 	protected IUserRepository userRepository;
 	protected IGroupRepository groupRepository;
@@ -110,7 +110,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 	/**
 	 * Create a group in a existing OU "sea". Most Simple case. Group matches
 	 * exactly to the pkey of the project.
-	 * 
+	 *
 	 * @return the created subscription.
 	 */
 	protected Subscription create(final String groupAndProject) {
@@ -150,7 +150,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 	 */
 	protected void reloadLdapCache() {
 		// Ensure LDAP cache is loaded
-		cacheManager.getCache("ldap").clear();
+		cacheManager.getCache("id-ldap-data").clear();
 		cache.getLdapData();
 		em.flush();
 		em.clear();
@@ -214,7 +214,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 
 	/**
 	 * Create a group inside another group/ Both are created inside "sea" OU.
-	 * 
+	 *
 	 * @return the created {@link Subscription}.
 	 */
 	protected Subscription createSubGroup(final Project newProject, final String parentGroup, final String subGroup) {

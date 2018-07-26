@@ -50,7 +50,7 @@ import org.ligoj.app.iam.SimpleUser;
 import org.ligoj.app.iam.SimpleUserOrg;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.plugin.id.DnUtils;
-import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository.LdapData;
+import org.ligoj.app.plugin.id.dao.AbstractMemCacheRepository.CacheDataType;
 import org.ligoj.app.plugin.id.model.CompanyComparator;
 import org.ligoj.app.plugin.id.model.FirstNameComparator;
 import org.ligoj.app.plugin.id.model.LastNameComparator;
@@ -229,7 +229,7 @@ public class UserLdapRepository implements IUserRepository {
 	private CompanyLdapRepository companyRepository;
 
 	@Autowired
-	private LdapCacheRepository ldapCacheRepository;
+	private CacheLdapRepository cacheRepository;
 
 	@Autowired
 	protected ApplicationContext applicationContext;
@@ -260,7 +260,7 @@ public class UserLdapRepository implements IUserRepository {
 		template.bind(context);
 
 		// Also, update the cache
-		ldapCacheRepository.create(user);
+		cacheRepository.create(user);
 
 		// Return the original entry with updated DN
 		return user;
@@ -312,7 +312,7 @@ public class UserLdapRepository implements IUserRepository {
 	@Override
 	@SuppressWarnings("unchecked")
 	public Map<String, UserOrg> findAll() {
-		return (Map<String, UserOrg>) ldapCacheRepository.getLdapData().get(LdapData.USER);
+		return (Map<String, UserOrg>) cacheRepository.getLdapData().get(CacheDataType.USER);
 	}
 
 	/**
@@ -322,6 +322,7 @@ public class UserLdapRepository implements IUserRepository {
 	 *            The existing groups. They will be be used to complete the membership of each returned user.
 	 * @return all user entries. Key is the user login.
 	 */
+	@Override
 	public Map<String, UserOrg> findAllNoCache(final Map<String, GroupOrg> groups) {
 
 		// List of attributes to retrieve from LDAP.
@@ -615,7 +616,7 @@ public class UserLdapRepository implements IUserRepository {
 		user.copy((SimpleUser) userLdap);
 		userLdap.setMails(user.getMails());
 
-		ldapCacheRepository.update(user);
+		cacheRepository.update(user);
 	}
 
 	@Override
@@ -629,7 +630,7 @@ public class UserLdapRepository implements IUserRepository {
 		removeUserFromGroups(user, user.getGroups());
 
 		// Remove the user from the cache
-		ldapCacheRepository.delete(user);
+		cacheRepository.delete(user);
 	}
 
 	@Override
@@ -665,7 +666,7 @@ public class UserLdapRepository implements IUserRepository {
 		template.rename(oldDn, newDn);
 		user.setDn(newDn.toString());
 		user.setCompany(company.getId());
-		ldapCacheRepository.update(user);
+		cacheRepository.update(user);
 
 		// Also, update the groups of this user
 		user.getGroups().forEach(g -> groupLdapRepository.updateMemberDn(g, oldDn.toString(), newDn.toString()));

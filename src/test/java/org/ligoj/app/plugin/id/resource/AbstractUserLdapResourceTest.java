@@ -80,7 +80,7 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 	@BeforeEach
 	public void prepareData() throws IOException {
 		persistEntities("csv", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
-		cacheManager.getCache("ldap").clear();
+		cacheManager.getCache("id-ldap-data").clear();
 
 		// Force the cache to be created
 		getUser().findAll();
@@ -104,6 +104,7 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 		Assertions.assertEquals("DIG RHA", userLdap.getGroups().get(0).getName());
 	}
 
+	@Override
 	protected UriInfo newUriInfoAsc(final String ascProperty) {
 		final UriInfo uriInfo = newUriInfo();
 		uriInfo.getQueryParameters().add(DataTableAttributes.PAGE_LENGTH, "100");
@@ -113,6 +114,7 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 		return uriInfo;
 	}
 
+	@Override
 	protected UriInfo newUriInfoDesc(final String property) {
 		final UriInfo uriInfo = newUriInfo();
 		uriInfo.getQueryParameters().add(DataTableAttributes.PAGE_LENGTH, "100");

@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * A LDAP container repository.
- * 
+ *
  * @param <T>
  *            The container type.
  * @param <C>
@@ -58,7 +58,7 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 
 	@Autowired
 	@Setter
-	protected LdapCacheRepository ldapCacheRepository;
+	protected CacheLdapRepository cacheRepository;
 
 	/**
 	 * LDAP class name of this container.
@@ -84,14 +84,14 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 
 	/**
 	 * Return the repository managing the container as cache.
-	 * 
+	 *
 	 * @return the repository managing the container as cache.
 	 */
 	protected abstract CacheContainerRepository<C> getCacheRepository();
 
 	/**
 	 * Map a container to LDAP.
-	 * 
+	 *
 	 * @param entry
 	 *            The container entry to map.
 	 * @param context
@@ -101,7 +101,7 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 
 	/**
 	 * Create a new container bean. Not in LDAP repository.
-	 * 
+	 *
 	 * @param dn
 	 *            The unique DN of the container.
 	 * @param cn
@@ -175,7 +175,7 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 
 	/**
 	 * Find a container from its identifier. Security is applied regarding the given user.
-	 * 
+	 *
 	 * @param user
 	 *            The user requesting this container.
 	 * @param id

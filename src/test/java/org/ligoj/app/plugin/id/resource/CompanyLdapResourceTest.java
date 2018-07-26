@@ -262,9 +262,9 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void createDelete() {
 		createInternal();
-		Assertions.assertEquals(1, resource.findAll(newUriInfoSearch("New-Ax-1-z:Z 0")).getRecordsTotal());
+		Assertions.assertEquals(1, resource.findAll(newUriInfo("New-Ax-1-z:Z 0")).getRecordsTotal());
 		resource.delete("New-Ax-1-z:Z 0");
-		Assertions.assertEquals(0, resource.findAll(newUriInfoSearch("New-Ax-1-z:Z 0")).getRecordsTotal());
+		Assertions.assertEquals(0, resource.findAll(newUriInfo("New-Ax-1-z:Z 0")).getRecordsTotal());
 	}
 
 	private void createInternal() {

@@ -27,6 +27,7 @@ import org.ligoj.app.iam.model.CacheUser;
 import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.iam.model.DelegateType;
 import org.ligoj.app.iam.model.ReceiverType;
+import org.ligoj.app.plugin.id.dao.IdCacheDao;
 import org.ligoj.bootstrap.AbstractJpaTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
@@ -34,16 +35,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
- * Test class of {@link LdapCacheDao}
+ * Test class of {@link IdCacheDao}
  */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = { "classpath:/META-INF/spring/application-context-test.xml" })
 @Rollback
 @Transactional
-public class LdapCacheDaoTest extends AbstractJpaTest {
+public class CacheLdapDaoTest extends AbstractJpaTest {
 
 	@Autowired
-	private LdapCacheDao dao;
+	private IdCacheDao dao;
 
 	@Autowired
 	private DelegateOrgRepository delegateOrgRepository;

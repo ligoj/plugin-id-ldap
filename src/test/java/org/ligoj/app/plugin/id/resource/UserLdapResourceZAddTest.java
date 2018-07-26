@@ -78,7 +78,7 @@ public class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 		checkResult(resource.findAll(null, null, "flasta", newUriInfoAsc("id")));
 
 		// Check the result, using a fresh new cache
-		cacheManager.getCache("ldap").clear();
+		cacheManager.getCache("id-ldap-data").clear();
 		checkResult(resource.findAll(null, null, "flasta", newUriInfoAsc("id")));
 
 		// Restore the state, delete this new user

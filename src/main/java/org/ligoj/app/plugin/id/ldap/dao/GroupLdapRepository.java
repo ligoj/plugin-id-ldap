@@ -28,7 +28,7 @@ import org.ligoj.app.iam.dao.CacheGroupRepository;
 import org.ligoj.app.iam.model.CacheGroup;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.DnUtils;
-import org.ligoj.app.plugin.id.ldap.dao.LdapCacheRepository.LdapData;
+import org.ligoj.app.plugin.id.dao.AbstractMemCacheRepository.CacheDataType;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
@@ -87,7 +87,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	@Override
 	@SuppressWarnings("unchecked")
 	public Map<String, GroupOrg> findAll() {
-		return (Map<String, GroupOrg>) ldapCacheRepository.getLdapData().get(LdapData.GROUP);
+		return (Map<String, GroupOrg>) cacheRepository.getLdapData().get(CacheDataType.GROUP);
 	}
 
 	/**
@@ -97,20 +97,21 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	 * @return the groups. Key is the normalized name, Value is the corresponding LDAP group containing real CN, DN and
 	 *         normalized UID members.
 	 */
+	@Override
 	public Map<String, GroupOrg> findAllNoCache() {
 		final Map<String, GroupOrg> groups = new HashMap<>();
 		final Map<String, Set<String>> subGroupsDn = new HashMap<>();
 		final Map<String, GroupOrg> dnToGroups = new HashMap<>();
 
 		// First pass, collect the groups and dirty relationships
-		for (final DirContextAdapter groupRaw : template.search(groupsBaseDn,
+		for (final DirContextAdapter ldap : template.search(groupsBaseDn,
 				new EqualsFilter("objectClass", GROUP_OF_UNIQUE_NAMES).encode(),
 				(Object ctx) -> (DirContextAdapter) ctx)) {
 			final Set<String> members = new HashSet<>();
-			final String dn = groupRaw.getDn().toString().toLowerCase(Locale.ENGLISH);
-			final String name = groupRaw.getStringAttribute("cn");
+			final String dn = ldap.getDn().toString().toLowerCase(Locale.ENGLISH);
+			final String name = ldap.getStringAttribute("cn");
 			final HashSet<String> subGroups = new HashSet<>();
-			for (final String memberDN : ArrayUtils.nullToEmpty(groupRaw.getStringAttributes(UNIQUE_MEMBER))) {
+			for (final String memberDN : ArrayUtils.nullToEmpty(ldap.getStringAttributes(UNIQUE_MEMBER))) {
 				if (memberDN.startsWith("uid")) {
 					// User membership
 					members.add(memberDN);
@@ -184,12 +185,12 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 		template.unbind(org.springframework.ldap.support.LdapUtils.newLdapName(group.getDn()), true);
 
 		// Also, update the cache
-		ldapCacheRepository.delete(group);
+		cacheRepository.delete(group);
 	}
 
 	@Override
 	public void empty(final GroupOrg group, final Map<String, UserOrg> users) {
-		ldapCacheRepository.empty(group, users);
+		cacheRepository.empty(group, users);
 	}
 
 	@Override
@@ -197,7 +198,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 		final GroupOrg group = super.create(dn, cn);
 
 		// Also, update the SQL cache
-		ldapCacheRepository.create(group);
+		cacheRepository.create(group);
 		return group;
 	}
 
@@ -241,19 +242,19 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	@Override
 	public void addUser(final UserOrg user, final String group) {
 		// Add to Java cache and to SQL cache
-		ldapCacheRepository.addUserToGroup(user, addMember(user, group));
+		cacheRepository.addUserToGroup(user, addMember(user, group));
 	}
 
 	@Override
 	public void addGroup(final GroupOrg subGroup, final String toGroup) {
 		// Add to Java cache and to SQL cache
-		ldapCacheRepository.addGroupToGroup(subGroup, addMember(subGroup, toGroup));
+		cacheRepository.addGroupToGroup(subGroup, addMember(subGroup, toGroup));
 	}
 
 	@Override
 	public void removeUser(final UserOrg user, final String group) {
 		// Remove from Java cache and from SQL cache
-		ldapCacheRepository.removeUserFromGroup(user, removeMember(user, group));
+		cacheRepository.removeUserFromGroup(user, removeMember(user, group));
 	}
 
 	/**
@@ -266,7 +267,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	 */
 	public void removeGroup(final GroupOrg subGroup, final String group) {
 		// Remove from Java cache and from SQL cache
-		ldapCacheRepository.removeGroupFromGroup(subGroup, removeMember(subGroup, group));
+		cacheRepository.removeGroupFromGroup(subGroup, removeMember(subGroup, group));
 	}
 
 	/**

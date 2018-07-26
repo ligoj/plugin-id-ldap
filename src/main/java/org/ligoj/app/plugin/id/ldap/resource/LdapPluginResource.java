@@ -235,7 +235,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	 *            The node, also used as cache key.
 	 * @return The {@link UserLdapRepository} instance. Cache is involved.
 	 */
-	private UserLdapRepository getUserLdapRepository(@CacheKey final String node) {
+	private UserLdapRepository getUserLdapRepository(final String node) {
 		log.info("Build ldap template for node {}", node);
 		final Map<String, String> parameters = pvResource.getNodeParameters(node);
 		final LdapContextSource contextSource = new LdapContextSource();
@@ -750,7 +750,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 		return nodeConfigurations.computeIfAbsent(node, this::refreshConfiguration);
 	}
 
-	@CacheResult(cacheName = "ldap-user-repository")
+	@CacheResult(cacheName = "id-ldap-configuration")
 	public boolean ensureCachedConfiguration(@CacheKey final String node) {
 		refreshConfiguration(node);
 		return true;

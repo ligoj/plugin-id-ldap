@@ -59,8 +59,8 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		em.clear();
 		expected = repository.findByName("dig rha");
 		em.clear();
-		cacheManager.getCache("ldap-user-repository").clear();
-		cacheManager.getCache("ldap").clear();
+		cacheManager.getCache("id-ldap-configuration").clear();
+		cacheManager.getCache("id-ldap-data").clear();
 	}
 
 	@Test
@@ -70,7 +70,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		initSpringSecurityContext("someone");
 
 		final TableItem<DelegateOrgLightVo> result = resource.findAll(uriInfo, null);
-		
+
 		// THERE IS DIFFERENCE FROM "plugin-id", broken delegates are dropped ('any' for sample)
 		Assertions.assertEquals(2, result.getData().size());
 		Assertions.assertEquals(2, result.getRecordsTotal());
