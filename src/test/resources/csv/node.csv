@@ -1,7 +1,7 @@
 id;name;refined.id;mode;uiClasses;tag;tagUiClasses
-service:id;Identity management;;CREATE;fa fa-key;functional;fa fa-suitcase
-service:id:ldap;LDAP;service:id;CREATE;;;
-service:id:ldap:dig;OpenLDAP;service:id:ldap;CREATE;;;
+service:id;Identity;;CREATE;fa fa-key;functional;fa fa-suitcase
+service:id:ldap;Identity LDAP;service:id;CREATE;;;
+service:id:ldap:dig;Identity OpenLDAP;service:id:ldap;CREATE;;;
 service:bt;Bug Tracker;;LINK;fa fa-bug;functional;fa fa-suitcase
 service:bt:jira;JIRA;service:bt;LINK;;;
 service:bt:jira:6;JIRA 6;service:bt:jira;LINK;;;
