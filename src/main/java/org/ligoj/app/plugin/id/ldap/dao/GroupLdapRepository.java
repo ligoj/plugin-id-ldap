@@ -87,7 +87,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	@Override
 	@SuppressWarnings("unchecked")
 	public Map<String, GroupOrg> findAll() {
-		return (Map<String, GroupOrg>) cacheRepository.getLdapData().get(CacheDataType.GROUP);
+		return (Map<String, GroupOrg>) cacheRepository.getData().get(CacheDataType.GROUP);
 	}
 
 	/**

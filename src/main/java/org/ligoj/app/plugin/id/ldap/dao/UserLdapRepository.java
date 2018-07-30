@@ -312,7 +312,7 @@ public class UserLdapRepository implements IUserRepository {
 	@Override
 	@SuppressWarnings("unchecked")
 	public Map<String, UserOrg> findAll() {
-		return (Map<String, UserOrg>) cacheRepository.getLdapData().get(CacheDataType.USER);
+		return (Map<String, UserOrg>) cacheRepository.getData().get(CacheDataType.USER);
 	}
 
 	/**

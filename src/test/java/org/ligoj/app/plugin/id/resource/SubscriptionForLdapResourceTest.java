@@ -75,7 +75,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 
 		// Ensure LDAP cache is loaded
 		cacheManager.getCache("id-ldap-data").clear();
-		cache.getLdapData();
+		cache.getData();
 		em.flush();
 		em.clear();
 		initSpringSecurityContext("alongchu");
@@ -113,7 +113,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 
 		// Ensure LDAP cache is loaded
 		cacheManager.getCache("id-ldap-data").clear();
-		cache.getLdapData();
+		cache.getData();
 		em.flush();
 		em.clear();
 
@@ -189,7 +189,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 
 		// Ensure LDAP cache is loaded
 		cacheManager.getCache("id-ldap-data").clear();
-		cache.getLdapData();
+		cache.getData();
 		em.flush();
 		em.clear();
 

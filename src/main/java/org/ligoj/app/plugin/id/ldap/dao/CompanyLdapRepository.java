@@ -68,7 +68,7 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 	@Override
 	@SuppressWarnings("unchecked")
 	public Map<String, CompanyOrg> findAll() {
-		return (Map<String, CompanyOrg>) cacheRepository.getLdapData().get(CacheDataType.COMPANY);
+		return (Map<String, CompanyOrg>) cacheRepository.getData().get(CacheDataType.COMPANY);
 	}
 
 	/**

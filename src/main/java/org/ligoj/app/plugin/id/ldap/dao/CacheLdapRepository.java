@@ -32,7 +32,7 @@ public class CacheLdapRepository extends AbstractMemCacheRepository {
 	 * @return The cached LDAP data..
 	 */
 	@Override
-	public Map<CacheDataType, Map<String, ? extends ResourceOrg>> getLdapData() {
+	public Map<CacheDataType, Map<String, ? extends ResourceOrg>> getData() {
 		self.ensureCachedData();
 		return Optional.ofNullable(data).orElseGet(this::refreshData);
 	}

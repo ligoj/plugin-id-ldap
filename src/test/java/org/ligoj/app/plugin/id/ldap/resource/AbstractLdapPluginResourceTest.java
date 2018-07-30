@@ -151,7 +151,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 	protected void reloadLdapCache() {
 		// Ensure LDAP cache is loaded
 		cacheManager.getCache("id-ldap-data").clear();
-		cache.getLdapData();
+		cache.getData();
 		em.flush();
 		em.clear();
 	}
