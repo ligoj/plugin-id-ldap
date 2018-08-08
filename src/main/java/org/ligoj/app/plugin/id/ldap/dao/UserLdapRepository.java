@@ -259,11 +259,8 @@ public class UserLdapRepository implements IUserRepository {
 		mapToContext(user, context);
 		template.bind(context);
 
-		// Also, update the cache
-		cacheRepository.create(user);
-
-		// Return the original entry with updated DN
-		return user;
+		// Also, update the cache and return the original entry with updated DN
+		return cacheRepository.create(user);
 	}
 
 	/**

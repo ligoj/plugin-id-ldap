@@ -195,11 +195,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 
 	@Override
 	public GroupOrg create(final String dn, final String cn) {
-		final GroupOrg group = super.create(dn, cn);
-
-		// Also, update the SQL cache
-		cacheRepository.create(group);
-		return group;
+		return cacheRepository.create(super.create(dn, cn));
 	}
 
 	/**

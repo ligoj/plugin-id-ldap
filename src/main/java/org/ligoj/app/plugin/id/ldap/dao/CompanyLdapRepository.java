@@ -125,13 +125,7 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 
 	@Override
 	public CompanyOrg create(final String dn, final String cn) {
-		final CompanyOrg company = super.create(dn, cn);
-
-		// Also, update the cache
-		cacheRepository.create(company);
-
-		// Return the new group
-		return company;
+		return cacheRepository.create(super.create(dn, cn));
 	}
 
 	@Override
