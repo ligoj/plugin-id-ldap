@@ -46,7 +46,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 		Assertions.assertEquals("fdaugan", userLdap.getId());
 		Assertions.assertEquals("Fabrice", userLdap.getFirstName());
 		Assertions.assertEquals("Daugan", userLdap.getLastName());
-		Assertions.assertEquals("gfi", userLdap.getCompany());
+		Assertions.assertEquals("ligoj", userLdap.getCompany());
 		Assertions.assertEquals("fabrice.daugan@sample.com", userLdap.getMails().get(0));
 	}
 
@@ -200,7 +200,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	/**
-	 * One delegation to members of group "gfi-gstack" to see the company "ing"
+	 * One delegation to members of group "ligoj-gstack" to see the company "ing"
 	 */
 	@Test
 	public void findAllUsingDelegateReceiverGroup() {
@@ -218,7 +218,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 
 		// Check the groups
 		Assertions.assertEquals(1, tableItem.getData().get(0).getGroups().size());
-		Assertions.assertEquals("gfi-gStack", tableItem.getData().get(0).getGroups().get(0).getName());
+		Assertions.assertEquals("ligoj-gStack", tableItem.getData().get(0).getGroups().get(0).getName());
 	}
 
 	/**
@@ -320,7 +320,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 		Assertions.assertEquals(15, tableItem.getData().size());
 
 		// Check the users
-		Assertions.assertEquals("fdoe2", tableItem.getData().get(7).getId());
+		Assertions.assertEquals("fdoe2", tableItem.getData().get(0).getId());
 	}
 
 	@Test
@@ -333,8 +333,8 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 		// Check the users
 		Assertions.assertEquals("flast0", tableItem.getData().get(0).getId());
 		Assertions.assertEquals("socygan", tableItem.getData().get(0).getCompany());
-		Assertions.assertEquals("fdaugan", tableItem.getData().get(14).getId());
-		Assertions.assertEquals("gfi", tableItem.getData().get(14).getCompany());
+		Assertions.assertEquals("fdaugan", tableItem.getData().get(6).getId());
+		Assertions.assertEquals("ligoj", tableItem.getData().get(6).getCompany());
 	}
 
 	@Test
@@ -353,7 +353,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 
 	@Test
 	public void findAllMemberDifferentCase() {
-		final TableItem<UserOrgVo> tableItem = resource.findAll("GfI", "ProductioN", "mmarTIN", newUriInfoAsc("lastName"));
+		final TableItem<UserOrgVo> tableItem = resource.findAll("LigoJ", "ProductioN", "mmarTIN", newUriInfoAsc("lastName"));
 		Assertions.assertEquals(1, tableItem.getRecordsTotal());
 		Assertions.assertEquals(1, tableItem.getRecordsFiltered());
 		Assertions.assertEquals(1, tableItem.getData().size());
@@ -1059,9 +1059,9 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	public void findAllMyCompany() {
 		initSpringSecurityContext("mmartin");
 
-		final TableItem<UserOrgVo> tableItem = resource.findAll("gfi", null, null, newUriInfoAsc("id"));
+		final TableItem<UserOrgVo> tableItem = resource.findAll("ligoj", null, null, newUriInfoAsc("id"));
 
-		// 7 users from company 'gfi', 0 from delegate
+		// 7 users from company 'ligoj', 0 from delegate
 		Assertions.assertEquals(7, tableItem.getRecordsTotal());
 		Assertions.assertEquals(7, tableItem.getRecordsFiltered());
 

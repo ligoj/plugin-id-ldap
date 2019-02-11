@@ -88,22 +88,22 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	public void createCreateMode() throws Exception {
 		// Prepare data
 		em.createQuery("DELETE Parameter WHERE id LIKE ?1").setParameter(1, "c_%").executeUpdate();
-		final String dn = "cn=gfi-gstack-client,cn=gfi-gstack,ou=gfi,ou=project,dc=sample,dc=com";
+		final String dn = "cn=ligoj-gstack-client,cn=ligoj-gstack,ou=ligoj,ou=project,dc=sample,dc=com";
 		cleanSubGroup(dn);
 
 		final SubscriptionEditionVo vo = new SubscriptionEditionVo();
 		final List<ParameterValueCreateVo> parameters = new ArrayList<>();
 		final ParameterValueCreateVo parameterValueEditionVo = new ParameterValueCreateVo();
 		parameterValueEditionVo.setParameter(IdentityResource.PARAMETER_OU);
-		parameterValueEditionVo.setText("gfi");
+		parameterValueEditionVo.setText("ligoj");
 		parameters.add(parameterValueEditionVo);
 		final ParameterValueCreateVo parameterValueEditionVo2 = new ParameterValueCreateVo();
 		parameterValueEditionVo2.setParameter(IdentityResource.PARAMETER_PARENT_GROUP);
-		parameterValueEditionVo2.setText("gfi-gstack");
+		parameterValueEditionVo2.setText("ligoj-gstack");
 		parameters.add(parameterValueEditionVo2);
 		final ParameterValueCreateVo parameterValueEditionVo3 = new ParameterValueCreateVo();
 		parameterValueEditionVo3.setParameter(IdentityResource.PARAMETER_GROUP);
-		parameterValueEditionVo3.setText("gfi-gstack-client");
+		parameterValueEditionVo3.setText("ligoj-gstack-client");
 		parameters.add(parameterValueEditionVo3);
 
 		vo.setMode(SubscriptionMode.CREATE);
@@ -122,18 +122,18 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		em.flush();
 		em.clear();
 
-		Assertions.assertEquals("gfi-gstack-client",
+		Assertions.assertEquals("ligoj-gstack-client",
 				parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_GROUP));
-		Assertions.assertEquals("gfi",
+		Assertions.assertEquals("ligoj",
 				parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_OU));
-		Assertions.assertEquals("gfi-gstack", parameterValueRepository.getSubscriptionParameterValue(subscription,
+		Assertions.assertEquals("ligoj-gstack", parameterValueRepository.getSubscriptionParameterValue(subscription,
 				IdentityResource.PARAMETER_PARENT_GROUP));
 
 		// Check the creation in LDAP
-		final GroupOrg group = getGroup().findById("gfi-gstack-client");
+		final GroupOrg group = getGroup().findById("ligoj-gstack-client");
 		Assertions.assertNotNull(group);
-		Assertions.assertEquals("gfi-gstack-client", group.getName());
-		Assertions.assertEquals("gfi-gstack-client", group.getId());
+		Assertions.assertEquals("ligoj-gstack-client", group.getName());
+		Assertions.assertEquals("ligoj-gstack-client", group.getId());
 		Assertions.assertEquals(dn, group.getDn());
 
 		// Rollback the creation in LDAP
@@ -143,7 +143,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 
 	private void cleanSubGroup(final String dn) {
 		try {
-			getGroup().delete(new GroupOrg(dn, "gfi-gstack-client", new HashSet<>()));
+			getGroup().delete(new GroupOrg(dn, "ligoj-gstack-client", new HashSet<>()));
 		} catch (final Exception e) {
 			// Ignore no group
 			log.debug("No group to delete", e);
@@ -151,8 +151,8 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	}
 
 	private String[] getMembers() {
-		final DirContextAdapter groupContext = getTemplate().search("cn=gfi-gstack,ou=gfi,ou=project,dc=sample,dc=com",
-				new EqualsFilter("cn", "gfi-gStack").encode(), (Object ctx) -> (DirContextAdapter) ctx).get(0);
+		final DirContextAdapter groupContext = getTemplate().search("cn=ligoj-gstack,ou=ligoj,ou=project,dc=sample,dc=com",
+				new EqualsFilter("cn", "ligoj-gStack").encode(), (Object ctx) -> (DirContextAdapter) ctx).get(0);
 		final String[] members = groupContext.getStringAttributes("uniqueMember");
 		return members;
 	}
@@ -164,14 +164,14 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	public void createCreateModeBlank() throws Exception {
 		// Prepare data
 		em.createQuery("DELETE Parameter WHERE id LIKE ?1").setParameter(1, "c_%").executeUpdate();
-		final String dn = "cn=gfi-gstack-client2,ou=gfi,ou=project,dc=sample,dc=com";
+		final String dn = "cn=ligoj-gstack-client2,ou=ligoj,ou=project,dc=sample,dc=com";
 		cleanSubGroup(dn);
 
 		final SubscriptionEditionVo vo = new SubscriptionEditionVo();
 		final List<ParameterValueCreateVo> parameters = new ArrayList<>();
 		final ParameterValueCreateVo parameterValueEditionVo = new ParameterValueCreateVo();
 		parameterValueEditionVo.setParameter(IdentityResource.PARAMETER_OU);
-		parameterValueEditionVo.setText("gfi");
+		parameterValueEditionVo.setText("ligoj");
 		parameters.add(parameterValueEditionVo);
 		final ParameterValueCreateVo parameterValueEditionVo2 = new ParameterValueCreateVo();
 		parameterValueEditionVo2.setParameter(IdentityResource.PARAMETER_PARENT_GROUP);
@@ -179,7 +179,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		parameters.add(parameterValueEditionVo2);
 		final ParameterValueCreateVo parameterValueEditionVo3 = new ParameterValueCreateVo();
 		parameterValueEditionVo3.setParameter(IdentityResource.PARAMETER_GROUP);
-		parameterValueEditionVo3.setText("gfi-gstack-client2");
+		parameterValueEditionVo3.setText("ligoj-gstack-client2");
 		parameters.add(parameterValueEditionVo3);
 
 		vo.setMode(SubscriptionMode.CREATE);
@@ -198,18 +198,18 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		em.flush();
 		em.clear();
 
-		Assertions.assertEquals("gfi-gstack-client2",
+		Assertions.assertEquals("ligoj-gstack-client2",
 				parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_GROUP));
-		Assertions.assertEquals("gfi",
+		Assertions.assertEquals("ligoj",
 				parameterValueRepository.getSubscriptionParameterValue(subscription, IdentityResource.PARAMETER_OU));
 		Assertions.assertNull(parameterValueRepository.getSubscriptionParameterValue(subscription,
 				IdentityResource.PARAMETER_PARENT_GROUP));
 
 		// Check the creation in LDAP
-		final GroupOrg group = getGroup().findById("gfi-gstack-client2");
+		final GroupOrg group = getGroup().findById("ligoj-gstack-client2");
 		Assertions.assertNotNull(group);
-		Assertions.assertEquals("gfi-gstack-client2", group.getId());
-		Assertions.assertEquals("gfi-gstack-client2", group.getName());
+		Assertions.assertEquals("ligoj-gstack-client2", group.getId());
+		Assertions.assertEquals("ligoj-gstack-client2", group.getName());
 		Assertions.assertEquals(dn, group.getDn());
 	}
 }

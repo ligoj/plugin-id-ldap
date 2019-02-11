@@ -162,7 +162,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void findByIdExpectedMyCompany() {
 		initSpringSecurityContext("mmartin");
-		Assertions.assertEquals("ou=gfi,ou=france,ou=people,dc=sample,dc=com", resource.findByIdExpected("gfi").getDn());
+		Assertions.assertEquals("ou=ligoj,ou=france,ou=people,dc=sample,dc=com", resource.findByIdExpected("ligoj").getDn());
 	}
 
 	/**
@@ -176,10 +176,10 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assertions.assertEquals(4, managed.getRecordsTotal());
 		Assertions.assertEquals(4, managed.getData().size());
 
-		// gfi, ing, socygan
-		Assertions.assertEquals("gfi", managed.getData().get(0));
-		Assertions.assertEquals("ing", managed.getData().get(1));
-		Assertions.assertEquals("ing-internal", managed.getData().get(2));
+		// ligoj, ing, socygan
+		Assertions.assertEquals("ing", managed.getData().get(0));
+		Assertions.assertEquals("ing-internal", managed.getData().get(1));
+		Assertions.assertEquals("ligoj", managed.getData().get(2));
 		Assertions.assertEquals("socygan", managed.getData().get(3));
 	}
 
@@ -199,7 +199,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	public void deleteNotVisible() {
 		initSpringSecurityContext("mmartin");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.delete("gfi");
+			resource.delete("ligoj");
 		}), "company", "unknown-id");
 	}
 
@@ -223,7 +223,7 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void deleteNotEmptyLeaf() {
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.delete("gfi");
+			resource.delete("ligoj");
 		}), "company", "not-empty-company");
 	}
 
@@ -304,16 +304,16 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	public void findAllOnlyMyCompany() {
 		initSpringSecurityContext("mmartin");
-		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "gfi"));
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "ligoj"));
 		Assertions.assertEquals(1, groups.getRecordsTotal());
 		final ContainerCountVo group0 = groups.getData().get(0);
-		Assertions.assertEquals("gfi", group0.getName());
+		Assertions.assertEquals("ligoj", group0.getName());
 		Assertions.assertEquals(7, group0.getCount());
 		Assertions.assertEquals(7, group0.getCountVisible());
 		Assertions.assertFalse(group0.isCanAdmin());
 		Assertions.assertFalse(group0.isCanWrite());
 		Assertions.assertEquals("France", group0.getScope());
-		Assertions.assertEquals("gfi", group0.getId());
+		Assertions.assertEquals("ligoj", group0.getId());
 		Assertions.assertEquals(ContainerType.COMPANY, group0.getContainerType());
 	}
 
@@ -321,24 +321,24 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	public void findAllOnlyMyCompanyDesc() {
 		initSpringSecurityContext("mmartin");
 		final UriInfo uriInfo = newUriInfo("name", "desc");
-		uriInfo.getQueryParameters().add(DataTableAttributes.SEARCH, "gfi");
+		uriInfo.getQueryParameters().add(DataTableAttributes.SEARCH, "ligoj");
 		final TableItem<ContainerCountVo> groups = resource.findAll(uriInfo);
 		Assertions.assertEquals(1, groups.getRecordsTotal());
 		final ContainerCountVo group0 = groups.getData().get(0);
-		Assertions.assertEquals("gfi", group0.getName());
+		Assertions.assertEquals("ligoj", group0.getName());
 		Assertions.assertEquals(7, group0.getCount());
 		Assertions.assertEquals(7, group0.getCountVisible());
 		Assertions.assertFalse(group0.isCanAdmin());
 		Assertions.assertFalse(group0.isCanWrite());
 		Assertions.assertEquals("France", group0.getScope());
-		Assertions.assertEquals("gfi", group0.getId());
+		Assertions.assertEquals("ligoj", group0.getId());
 		Assertions.assertEquals(ContainerType.COMPANY, group0.getContainerType());
 	}
 
 	@Test
 	public void findAllExternal() {
 		initSpringSecurityContext("mtuyer");
-		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "gfi"));
+		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "ligoj"));
 		Assertions.assertEquals(0, groups.getRecordsTotal());
 	}
 
@@ -364,19 +364,19 @@ public class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	public void findAll() {
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "g"));
 		Assertions.assertEquals(5, groups.getRecordsTotal());
-		final ContainerCountVo group0 = groups.getData().get(0);
-		Assertions.assertEquals("gfi", group0.getName());
+		final ContainerCountVo group0 = groups.getData().get(2);
+		Assertions.assertEquals("ligoj", group0.getName());
 		Assertions.assertEquals(7, group0.getCount());
 		Assertions.assertEquals(7, group0.getCountVisible());
 		Assertions.assertTrue(group0.isCanAdmin());
 		Assertions.assertTrue(group0.isCanWrite());
 		Assertions.assertFalse(group0.isLocked());
 		Assertions.assertEquals("France", group0.getScope());
-		Assertions.assertEquals("gfi", group0.getId());
+		Assertions.assertEquals("ligoj", group0.getId());
 		Assertions.assertEquals(ContainerType.COMPANY, group0.getContainerType());
 
 		// No group type case
-		final ContainerCountVo group2 = groups.getData().get(2);
+		final ContainerCountVo group2 = groups.getData().get(1);
 		Assertions.assertEquals("ing-internal", group2.getName());
 		Assertions.assertEquals(1, group2.getCount());
 		Assertions.assertEquals(1, group2.getCountVisible());

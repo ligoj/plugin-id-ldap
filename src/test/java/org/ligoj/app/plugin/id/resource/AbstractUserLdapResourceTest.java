@@ -54,7 +54,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
  * <li>mtuyer;company;ing;false;true;ou=ing,ou=external,ou=people</li>
  * <li>mlavoine;tree;cn=Biz Agency,ou=tools;false;false;cn=Biz
  * Agency,ou=tools</li>
- * <li>gfi-gstack
+ * <li>ligoj-gstack
  * (group);company;ing;false;false;ou=ing,ou=external,ou=people,dc=sample,dc=com</li>
  * <li>ing (company);group;business solution;false;false;cn=business
  * solution,ou=groups,dc=sample,dc=com</li>
@@ -129,7 +129,7 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 		Assertions.assertEquals("fdaugan", userLdap.getId());
 		Assertions.assertEquals("Fabrice", userLdap.getFirstName());
 		Assertions.assertEquals("Daugan", userLdap.getLastName());
-		Assertions.assertEquals("gfi", userLdap.getCompany());
+		Assertions.assertEquals("ligoj", userLdap.getCompany());
 		Assertions.assertEquals("fabrice.daugan@sample.com", userLdap.getMails().get(0));
 		Assertions.assertEquals(1, userLdap.getGroups().size());
 		Assertions.assertEquals("Hub Paris", userLdap.getGroups().iterator().next());
@@ -187,9 +187,9 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 	protected void checkMember(final String dn) {
 		final AndFilter filter = new AndFilter();
 		filter.and(new EqualsFilter("objectclass", "groupOfUniqueNames"));
-		filter.and(new EqualsFilter("cn", "gfi-gStack"));
+		filter.and(new EqualsFilter("cn", "ligoj-gStack"));
 		final DirContextAdapter groupContext = getTemplate()
-				.search("ou=gfi,ou=project,dc=sample,dc=com", filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).get(0);
+				.search("ou=ligoj,ou=project,dc=sample,dc=com", filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).get(0);
 		final String[] members = groupContext.getStringAttributes("uniqueMember");
 		Assertions.assertEquals(1, members.length);
 		Assertions.assertEquals(dn, members[0]);
@@ -215,10 +215,10 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 	}
 
 	protected DirContextAdapter checkUnlocked() {
-		assertUnlocked(resource.findAll("gfi", null, "alongchu", newUriInfo()).getData().get(0));
+		assertUnlocked(resource.findAll("ligoj", null, "alongchu", newUriInfo()).getData().get(0));
 		assertUnlocked(getUser().findByIdNoCache("alongchu"));
 		assertUnlocked(getUser().findById("alongchu"));
-		Assertions.assertTrue(getGroup().findAll().get("gfi-gstack").getMembers().contains("alongchu"));
+		Assertions.assertTrue(getGroup().findAll().get("ligoj-gstack").getMembers().contains("alongchu"));
 
 		final DirContextAdapter result = getContext("alongchu");
 		Assertions.assertNull(result.getStringAttribute("employeeType"));
@@ -232,7 +232,7 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 		checker.accept(resource.findById("alongchu"));
 
 		// Check the status at cache layer
-		Assertions.assertTrue(getGroup().findAll().get("gfi-gstack").getMembers().contains("alongchu"));
+		Assertions.assertTrue(getGroup().findAll().get("ligoj-gstack").getMembers().contains("alongchu"));
 		checker.accept(getUser().findByIdNoCache("alongchu"));
 
 		// Check in the status in the LDAP

@@ -27,8 +27,8 @@ dn: ou=france,ou=people,dc=sample,dc=com
 ou: france
 objectclass: organizationalUnit
 
-dn: ou=gfi,ou=france,ou=people,dc=sample,dc=com
-ou: gfi
+dn: ou=ligoj,ou=france,ou=people,dc=sample,dc=com
+ou: ligoj
 objectclass: organizationalUnit
 
 dn: ou=fonction,ou=groups,dc=sample,dc=com
@@ -39,8 +39,8 @@ dn: ou=branche,ou=groups,dc=sample,dc=com
 ou: branche
 objectclass: organizationalUnit
 
-dn: cn=Gfi Groupe,ou=groups,dc=sample,dc=com
-cn: Gfi Groupe
+dn: cn=Ligoj Groupe,ou=groups,dc=sample,dc=com
+cn: Ligoj Groupe
 objectclass: groupOfUniqueNames
 uniqueMember: cn=Business Solution,ou=groups,dc=sample,dc=com
 uniqueMember: cn=Production,ou=branche,ou=groups,dc=sample,dc=com
@@ -49,7 +49,7 @@ uniqueMember: cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 dn: cn=Business Solution,ou=groups,dc=sample,dc=com
 cn: Business Solution
 objectclass: groupOfUniqueNames
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
+uniqueMember: uid=mmartin,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 
 dn: cn=Sub Business Solution,cn=Business Solution,ou=groups,dc=sample,dc=com
 cn: Sub Business Solution
@@ -59,7 +59,7 @@ uniqueMember: uid=none
 dn: cn=Production,ou=branche,ou=groups,dc=sample,dc=com
 cn: Production
 objectclass: groupOfUniqueNames
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
+uniqueMember: uid=mmartin,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 uniqueMember: cn=Hub France,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
 
 dn: cn=Hub France,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
@@ -70,7 +70,7 @@ uniqueMember: cn=Hub Paris,cn=Hub France,cn=Production,ou=branche,ou=groups,dc=s
 dn: cn=Hub Paris,cn=Hub France,cn=Production,ou=branche,ou=groups,dc=sample,dc=com
 cn: Hub Paris
 objectclass: groupOfUniqueNames
-uniqueMember: uid=fdaugan,ou=gfi,ou=france,ou=people,dc=sample,dc=com
+uniqueMember: uid=fdaugan,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 
 dn: cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 cn : DIG
@@ -82,12 +82,12 @@ uniqueMember: cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 dn: cn=DIG Production,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 cn : DIG Production
 objectclass: groupOfUniqueNames
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
+uniqueMember: uid=mmartin,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 
 dn: cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 cn : DIG AS
 objectclass: groupOfUniqueNames
-uniqueMember: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
+uniqueMember: uid=mmartin,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 businessCategory: 456987
 
 dn: cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
@@ -117,13 +117,13 @@ cn : Biz Agency
 objectclass: groupOfUniqueNames
 uniqueMember: uid=fdoe2,ou=ing,ou=external,ou=people,dc=sample,dc=com
 uniqueMember: cn=Biz Agency Manager,cn=Biz Agency,ou=tools,dc=sample,dc=com
-uniqueMember: uid=broken,ou=gfi,ou=france,ou=people,dc=sample,dc=com
-uniqueMember: cn=broken,ou=gfi,ou=france,ou=people,dc=sample,dc=com
+uniqueMember: uid=broken,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
+uniqueMember: cn=broken,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 
 dn: cn=Biz Agency Manager,cn=Biz Agency,ou=tools,dc=sample,dc=com
 cn : Biz Agency Manager
 objectclass: groupOfUniqueNames
-uniqueMember: uid=wuser,ou=ing,ou=external,ou=people,dc=gfi,dc=fr
+uniqueMember: uid=wuser,ou=ing,ou=external,ou=people,dc=ligoj,dc=fr
 
 dn: ou=sea,ou=project,dc=sample,dc=com
 ou: sea
@@ -132,18 +132,18 @@ objectclass: organizationalUnit
 dn: cn=sea-octopus,ou=sea,ou=project,dc=sample,dc=com
 cn: sea-octopus
 objectclass: groupOfUniqueNames
-uniqueMember: uid=any,ou=gfi,ou=france,ou=people,dc=sample,dc=com
+uniqueMember: uid=any,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 
-dn: ou=gfi,ou=project,dc=sample,dc=com
-ou: gfi
+dn: ou=ligoj,ou=project,dc=sample,dc=com
+ou: ligoj
 objectClass: organizationalUnit
 
-dn: cn=gfi-gStack,ou=gfi,ou=project,dc=sample,dc=com
-cn: gfi-gStack
+dn: cn=ligoj-gStack,ou=ligoj,ou=project,dc=sample,dc=com
+cn: ligoj-gStack
 objectclass: groupOfUniqueNames
-uniqueMember: uid=alongchu,ou=gfi,ou=france,ou=people,dc=sample,dc=com
+uniqueMember: uid=alongchu,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 
-dn: uid=fdaugan,ou=gfi,ou=france,ou=people,dc=sample,dc=com
+dn: uid=fdaugan,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 cn: Fabrice Daugan
 sn: Daugan
 givenName: Fabrice
@@ -154,7 +154,7 @@ mail: fabrice.daugan@sample.com
 objectClass: inetOrgPerson
 userPassword: Azerty01
 
-dn: uid=fdauganA,ou=gfi,ou=france,ou=people,dc=sample,dc=com
+dn: uid=fdauganA,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 cn: Fabrice Daugan
 sn: Daugan
 givenName: Fabrice
@@ -163,7 +163,7 @@ mail: fabrice.daugan@sample.com
 objectClass: inetOrgPerson
 userPassword: Azerty01
 
-dn: uid=fdauganB,ou=gfi,ou=france,ou=people,dc=sample,dc=com
+dn: uid=fdauganB,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 cn: Fabrice Daugan
 sn: Daugan
 givenName: Fabrice
@@ -172,7 +172,7 @@ mail: fabrice.daugan@sample.com
 objectClass: inetOrgPerson
 userPassword: Azerty01
 
-dn: uid=alongchu,ou=gfi,ou=france,ou=people,dc=sample,dc=com
+dn: uid=alongchu,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 cn: Arnaud Longchu
 sn: Longchu
 givenName: Arnaud
@@ -181,7 +181,7 @@ mail: arnaud.longchu@sample.com
 objectClass: inetOrgPerson
 userPassword: Azerty01
 
-dn: uid=hdurant,ou=gfi,ou=france,ou=people,dc=sample,dc=com
+dn: uid=hdurant,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 cn: Hervé Durant
 sn: Durant
 givenName: Hervé
@@ -190,7 +190,7 @@ mail: herve.durant@sample.com
 objectClass: inetOrgPerson
 userPassword: Azerty01
 
-dn: uid=jdupont,ou=gfi,ou=france,ou=people,dc=sample,dc=com
+dn: uid=jdupont,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 cn: Jose Dupont
 sn: Dupont
 givenName: Jose
@@ -198,7 +198,7 @@ uid: jdupont
 objectClass: inetOrgPerson
 userPassword: Azerty01
 
-dn: uid=mmartin,ou=gfi,ou=france,ou=people,dc=sample,dc=com
+dn: uid=mmartin,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 cn: Marc Martin
 sn: Martin
 givenName: Marc

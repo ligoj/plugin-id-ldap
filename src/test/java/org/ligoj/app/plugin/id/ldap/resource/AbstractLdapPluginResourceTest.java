@@ -267,7 +267,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 		persistParameter(ldap, LdapPluginResource.PARAMETER_DEPARTMENT_ATTRIBUTE, "departmentNumber");
 		persistParameter(ldap, LdapPluginResource.PARAMETER_LOCAL_ID_ATTRIBUTE, "employeeNumber");
 		persistParameter(ldap, LdapPluginResource.PARAMETER_PEOPLE_CLASS, "inetOrgPerson");
-		persistParameter(ldap, LdapPluginResource.PARAMETER_COMPANY_PATTERN, "gfi");
+		persistParameter(ldap, LdapPluginResource.PARAMETER_COMPANY_PATTERN, "ligoj");
 	}
 
 	protected void persistParameter(final Node node, final String id, final String value) {

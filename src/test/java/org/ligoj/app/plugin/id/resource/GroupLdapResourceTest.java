@@ -292,7 +292,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 				.search("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).get(0);
 		Assertions.assertEquals("uid=wuser,ou=ing,ou=external,ou=people,dc=sample,dc=com", contextAdapter.getObjectAttribute("seeAlso"));
 		Assertions.assertEquals("SOME", contextAdapter.getStringAttribute("businessCategory"));
-		Assertions.assertEquals("uid=fdaugan,ou=gfi,ou=france,ou=people,dc=sample,dc=com", contextAdapter.getStringAttribute("owner"));
+		Assertions.assertEquals("uid=fdaugan,ou=ligoj,ou=france,ou=people,dc=sample,dc=com", contextAdapter.getStringAttribute("owner"));
 
 		userResource.addUserToGroup("wuser", "New-Ax-1-z:Z 0");
 

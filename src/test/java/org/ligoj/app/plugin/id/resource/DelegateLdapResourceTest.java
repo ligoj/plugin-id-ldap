@@ -155,8 +155,8 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 
 	/**
 	 * A delegate visible by user "alongchu". This delegate add visibility of
-	 * company "ing" for all mambers of "gfi-gstack". And user "alongchu" is
-	 * member of group "gfi-gstack".
+	 * company "ing" for all mambers of "ligoj-gstack". And user "alongchu" is
+	 * member of group "ligoj-gstack".
 	 */
 	@Test
 	public void findAllReceiverGroup() {
@@ -169,7 +169,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		final DelegateOrgLightVo vo = result.getData().get(0);
 		Assertions.assertEquals("ing", vo.getName());
 		Assertions.assertEquals(DelegateType.COMPANY, vo.getType());
-		Assertions.assertEquals("gfi-gstack", vo.getReceiver().getId());
+		Assertions.assertEquals("ligoj-gstack", vo.getReceiver().getId());
 		Assertions.assertEquals(ReceiverType.GROUP, vo.getReceiverType());
 	}
 
