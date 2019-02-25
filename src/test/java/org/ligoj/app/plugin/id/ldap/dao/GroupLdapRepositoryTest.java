@@ -57,6 +57,14 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 				ArgumentMatchers.any(GroupOrg.class));
 	}
 
+	private void addUser(final GroupLdapRepository groupRepository) {
+		final UserOrg user = new UserOrg();
+		user.setId("flast1");
+		user.setDn("dc=com");
+		user.setCompany("ing");
+		groupRepository.addUser(user, "DIG RHA");
+	}
+
 	@Test
 	public void addUserAlreadyMember() {
 		final Set<String> users = new HashSet<>();
@@ -128,6 +136,14 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 		final LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
 		removeUser(groupRepository);
+	}
+
+	private void removeUser(final GroupLdapRepository groupRepository) {
+		final UserOrg user = new UserOrg();
+		user.setId("flast1");
+		user.setDn("dc=com");
+		user.setCompany("ing");
+		groupRepository.removeUser(user, "DIG RHA");
 	}
 
 	/**
@@ -214,22 +230,6 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 		};
 		groupRepository.setCacheRepository(Mockito.mock(CacheLdapRepository.class));
 		return groupRepository;
-	}
-
-	private void removeUser(final GroupLdapRepository groupRepository) {
-		final UserOrg user = new UserOrg();
-		user.setId("flast1");
-		user.setDn("dc=com");
-		user.setCompany("ing");
-		groupRepository.removeUser(user, "DIG RHA");
-	}
-
-	private void addUser(final GroupLdapRepository groupRepository) {
-		final UserOrg user = new UserOrg();
-		user.setId("flast1");
-		user.setDn("dc=com");
-		user.setCompany("ing");
-		groupRepository.addUser(user, "DIG RHA");
 	}
 
 }

@@ -312,6 +312,38 @@ public class UserLdapRepository implements IUserRepository {
 		return (Map<String, UserOrg>) cacheRepository.getData().get(CacheDataType.USER);
 	}
 
+	@Override
+	public Page<UserOrg> findAll(final Collection<GroupOrg> requiredGroups, final Set<String> companies,
+			final String criteria, final Pageable pageable) {
+		// Create the set with the right comparator
+		final List<Sort.Order> orders = IteratorUtils
+				.toList(ObjectUtils.defaultIfNull(pageable.getSort(), new ArrayList<Sort.Order>()).iterator());
+		orders.add(DEFAULT_ORDER);
+		final Sort.Order order = orders.get(0);
+		Comparator<UserOrg> comparator = ObjectUtils.defaultIfNull(COMPARATORS.get(order.getProperty()),
+				DEFAULT_COMPARATOR);
+		if (order.getDirection() == Direction.DESC) {
+			comparator = Collections.reverseOrder(comparator);
+		}
+		final Set<UserOrg> result = new TreeSet<>(comparator);
+
+		// Filter the users traversing firstly the required groups and their members,
+		// the companies, then the criteria
+		final Map<String, UserOrg> users = findAll();
+		if (requiredGroups == null) {
+			// No constraint on group
+			addFilteredByCompaniesAndPattern(users.keySet(), companies, criteria, result, users);
+		} else {
+			// User must be within one the given groups
+			for (final GroupOrg requiredGroup : requiredGroups) {
+				addFilteredByCompaniesAndPattern(requiredGroup.getMembers(), companies, criteria, result, users);
+			}
+		}
+
+		// Apply in-memory pagination
+		return inMemoryPagination.newPage(result, pageable);
+	}
+
 	/**
 	 * Return all user entries.
 	 *
@@ -343,6 +375,15 @@ public class UserLdapRepository implements IUserRepository {
 			updateMembership(result, groupEntry);
 		}
 		return result;
+	}
+
+	@Override
+	public void updateMembership(final Collection<String> groups, final UserOrg user) {
+		// Add new groups
+		addUserToGroups(user, CollectionUtils.subtract(groups, user.getGroups()));
+
+		// Remove old groups
+		removeUserFromGroups(user, CollectionUtils.subtract(user.getGroups(), groups));
 	}
 
 	/**
@@ -496,38 +537,6 @@ public class UserLdapRepository implements IUserRepository {
 		return Normalizer.normalize(companyPattern.pattern());
 	}
 
-	@Override
-	public Page<UserOrg> findAll(final Collection<GroupOrg> requiredGroups, final Set<String> companies,
-			final String criteria, final Pageable pageable) {
-		// Create the set with the right comparator
-		final List<Sort.Order> orders = IteratorUtils
-				.toList(ObjectUtils.defaultIfNull(pageable.getSort(), new ArrayList<Sort.Order>()).iterator());
-		orders.add(DEFAULT_ORDER);
-		final Sort.Order order = orders.get(0);
-		Comparator<UserOrg> comparator = ObjectUtils.defaultIfNull(COMPARATORS.get(order.getProperty()),
-				DEFAULT_COMPARATOR);
-		if (order.getDirection() == Direction.DESC) {
-			comparator = Collections.reverseOrder(comparator);
-		}
-		final Set<UserOrg> result = new TreeSet<>(comparator);
-
-		// Filter the users traversing firstly the required groups and their members,
-		// the companies, then the criteria
-		final Map<String, UserOrg> users = findAll();
-		if (requiredGroups == null) {
-			// No constraint on group
-			addFilteredByCompaniesAndPattern(users.keySet(), companies, criteria, result, users);
-		} else {
-			// User must be within one the given groups
-			for (final GroupOrg requiredGroup : requiredGroups) {
-				addFilteredByCompaniesAndPattern(requiredGroup.getMembers(), companies, criteria, result, users);
-			}
-		}
-
-		// Apply in-memory pagination
-		return inMemoryPagination.newPage(result, pageable);
-	}
-
 	/**
 	 * Add the members to the result if they match to the required company and the pattern.
 	 */
@@ -566,15 +575,6 @@ public class UserLdapRepository implements IUserRepository {
 				|| StringUtils.containsIgnoreCase(userLdap.getLastName(), criteria)
 				|| StringUtils.containsIgnoreCase(userLdap.getId(), criteria) || !userLdap.getMails().isEmpty()
 						&& StringUtils.containsIgnoreCase(userLdap.getMails().get(0), criteria);
-	}
-
-	@Override
-	public void updateMembership(final Collection<String> groups, final UserOrg user) {
-		// Add new groups
-		addUserToGroups(user, CollectionUtils.subtract(groups, user.getGroups()));
-
-		// Remove old groups
-		removeUserFromGroups(user, CollectionUtils.subtract(user.getGroups(), groups));
 	}
 
 	/**
@@ -635,6 +635,36 @@ public class UserLdapRepository implements IUserRepository {
 		lock(principal, user, false);
 	}
 
+	/**
+	 * Lock an user :
+	 * <ul>
+	 * <li>Clear the password to prevent new authentication</li>
+	 * <li>Set the disabled flag.</li>
+	 * </ul>
+	 *
+	 * @param principal
+	 *            Principal user requesting the lock.
+	 * @param user
+	 *            The LDAP user to disable.
+	 * @param isolate
+	 *            When <code>true</code>, the user will be isolated in addition.
+	 */
+	private void lock(final String principal, final UserOrg user, final boolean isolate) {
+		if (user.getLockedBy() == null) {
+			// Not yet locked
+			final ModificationItem[] mods = new ModificationItem[2];
+			final long timeInMillis = DateUtils.newCalendar().getTimeInMillis();
+			mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(lockedAttribute, String
+					.format("%s|%s|%s|%s|", lockedValue, timeInMillis, principal, isolate ? user.getCompany() : "")));
+			mods[1] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_ATTRIBUTE, null));
+			template.modifyAttributes(org.springframework.ldap.support.LdapUtils.newLdapName(user.getDn()), mods);
+
+			// Also update the disabled date
+			user.setLocked(new Date(timeInMillis));
+			user.setLockedBy(principal);
+		}
+	}
+
 	@Override
 	public void isolate(final String principal, final UserOrg user) {
 		if (user.getIsolated() == null) {
@@ -667,36 +697,6 @@ public class UserLdapRepository implements IUserRepository {
 
 		// Also, update the groups of this user
 		user.getGroups().forEach(g -> groupLdapRepository.updateMemberDn(g, oldDn.toString(), newDn.toString()));
-	}
-
-	/**
-	 * Lock an user :
-	 * <ul>
-	 * <li>Clear the password to prevent new authentication</li>
-	 * <li>Set the disabled flag.</li>
-	 * </ul>
-	 *
-	 * @param principal
-	 *            Principal user requesting the lock.
-	 * @param user
-	 *            The LDAP user to disable.
-	 * @param isolate
-	 *            When <code>true</code>, the user will be isolated in addition.
-	 */
-	private void lock(final String principal, final UserOrg user, final boolean isolate) {
-		if (user.getLockedBy() == null) {
-			// Not yet locked
-			final ModificationItem[] mods = new ModificationItem[2];
-			final long timeInMillis = DateUtils.newCalendar().getTimeInMillis();
-			mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(lockedAttribute, String
-					.format("%s|%s|%s|%s|", lockedValue, timeInMillis, principal, isolate ? user.getCompany() : "")));
-			mods[1] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_ATTRIBUTE, null));
-			template.modifyAttributes(org.springframework.ldap.support.LdapUtils.newLdapName(user.getDn()), mods);
-
-			// Also update the disabled date
-			user.setLocked(new Date(timeInMillis));
-			user.setLockedBy(principal);
-		}
 	}
 
 	@Override

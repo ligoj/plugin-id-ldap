@@ -225,6 +225,14 @@ public class UserLdapRepositoryTest {
 		Mockito.verify(mockCtx).addToEnvironment("java.naming.security.credentials", "old-password");
 	}
 
+	private LdapContext setPassword(final String password, final String newPassword) {
+		final UserOrg user = new UserOrg();
+		user.setDn("cn=Any");
+		final LdapContext mockCtx = newLdapContext();
+		repository.setPassword(user, password, newPassword);
+		return mockCtx;
+	}
+
 	@Test
 	public void setPasswordNullOldPassword() throws NamingException {
 		final LdapContext mockCtx = setPassword(null, "new-password");
@@ -256,14 +264,6 @@ public class UserLdapRepositoryTest {
 				Assertions.assertThrows(ValidationJsonException.class,
 						() -> repository.setPassword(user, "old-password", "weak-password")),
 				"password", "password-policy");
-	}
-
-	private LdapContext setPassword(final String password, final String newPassword) {
-		final UserOrg user = new UserOrg();
-		user.setDn("cn=Any");
-		final LdapContext mockCtx = newLdapContext();
-		repository.setPassword(user, password, newPassword);
-		return mockCtx;
 	}
 
 	@SuppressWarnings("unchecked")

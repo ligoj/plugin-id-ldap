@@ -356,32 +356,6 @@ public class LdapPluginResource extends AbstractToolPluginResource
 		cacheProjectGroupRepository.saveAndFlush(projectGroup);
 	}
 
-	/**
-	 * Validate the group against the OU and the linked project.
-	 */
-	private void validateGroup(final String group, final String ou, final String pkey) {
-		// Check the group does not exists
-		if (groupLdapResource.findById(group) != null) {
-			// This group already exists
-			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, "already-exist", "0",
-					GroupResource.GROUP_ATTRIBUTE, "1", group);
-		}
-
-		// Compare the project's key with the OU, and the name of the group
-
-		// The group must start with the target OU
-		if (!startsWithAndDifferent(group, ou + "-")) {
-			// This group has not a correct form
-			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, PATTERN_PROPERTY, ou + "-.+");
-		}
-
-		// The name of the group must start with the PKEY of project
-		if (!group.equals(pkey) && !startsWithAndDifferent(group, pkey + "-")) {
-			// This group has not a correct form
-			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, PATTERN_PROPERTY, pkey + "(-.+)?");
-		}
-	}
-
 	private boolean startsWithAndDifferent(final String provided, final String expected) {
 		return provided.startsWith(expected) && !provided.equals(expected);
 	}
@@ -630,6 +604,32 @@ public class LdapPluginResource extends AbstractToolPluginResource
 		result.setName(groupLdap.getName());
 		result.setId(group);
 		return result;
+	}
+
+	/**
+	 * Validate the group against the OU and the linked project.
+	 */
+	private void validateGroup(final String group, final String ou, final String pkey) {
+		// Check the group does not exists
+		if (groupLdapResource.findById(group) != null) {
+			// This group already exists
+			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, "already-exist", "0",
+					GroupResource.GROUP_ATTRIBUTE, "1", group);
+		}
+
+		// Compare the project's key with the OU, and the name of the group
+
+		// The group must start with the target OU
+		if (!startsWithAndDifferent(group, ou + "-")) {
+			// This group has not a correct form
+			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, PATTERN_PROPERTY, ou + "-.+");
+		}
+
+		// The name of the group must start with the PKEY of project
+		if (!group.equals(pkey) && !startsWithAndDifferent(group, pkey + "-")) {
+			// This group has not a correct form
+			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, PATTERN_PROPERTY, pkey + "(-.+)?");
+		}
 	}
 
 	/**
