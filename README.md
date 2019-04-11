@@ -4,7 +4,7 @@
 [![Build Status](https://circleci.com/gh/ligoj/plugin-id-ldap.svg?style=svg)](https://circleci.com/gh/ligoj/plugin-id-ldap)
 [![Build Status](https://semaphoreci.com/api/v1/ligoj/plugin-id-ldap/branches/master/shields_badge.svg)](https://semaphoreci.com/ligoj/plugin-id-ldap)
 [![Build Status](https://ci.appveyor.com/api/projects/status/5926fmf0p5qp9j16/branch/master?svg=true)](https://ci.appveyor.com/project/ligoj/plugin-id-ldap/branch/master)
-[![Coverage Status](https://coveralls.io/repos/github/ligoj/plugin-id-ldap/badge.svg?branch=master)](https://coveralls.io/github/ligoj/plugin-id-ldap?branch=master)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=org.ligoj.plugin%3plugin-id-ldap&metric=coverage)](https://sonarcloud.io/component_measures/metric/coverage/list?id=org.ligoj.plugin%3plugin-id-ldap)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?metric=alert_status&project=org.ligoj.plugin:plugin-id-ldap)](https://sonarcloud.io/dashboard/index/org.ligoj.plugin:plugin-id-ldap)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/abf810c094e44c0691f71174c707d6ed)](https://www.codacy.com/app/ligoj/plugin-id-ldap?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ligoj/plugin-id-ldap&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/ligoj/plugin-id-ldap/badge)](https://www.codefactor.io/repository/github/ligoj/plugin-id-ldap)
