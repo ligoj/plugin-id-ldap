@@ -10,7 +10,7 @@
 
 	<groupId>org.ligoj.plugin</groupId>
 	<artifactId>plugin-id-ldap</artifactId>
-	<version>1.2.0-SNAPSHOT</version>
+	<version>1.2.0</version>
 	<packaging>jar</packaging>
 	<name>Ligoj - Plugin ID - LDAP</name>
 	<url>https://github.com/ligoj/plugin-id-ldap</url>
