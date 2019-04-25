@@ -11,7 +11,6 @@ import javax.transaction.Transactional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.ligoj.app.AbstractAppTest;
 import org.ligoj.app.dao.NodeRepository;
 import org.ligoj.app.dao.ParameterRepository;
 import org.ligoj.app.dao.ParameterValueRepository;
@@ -34,6 +33,7 @@ import org.ligoj.app.model.Subscription;
 import org.ligoj.app.plugin.id.ldap.dao.CacheLdapRepository;
 import org.ligoj.app.plugin.id.ldap.dao.ProjectCustomerLdapRepository;
 import org.ligoj.app.plugin.id.model.ContainerScope;
+import org.ligoj.app.plugin.id.resource.AbstractPluginIdTest;
 import org.ligoj.app.plugin.id.resource.IdentityResource;
 import org.ligoj.app.plugin.id.resource.UserOrgResource;
 import org.ligoj.app.resource.ServicePluginLocator;
@@ -51,7 +51,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
+public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTest {
 	@Autowired
 	protected LdapPluginResource resource;
 
@@ -94,9 +94,9 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 	@BeforeEach
 	public void prepareData() throws IOException {
 		persistEntities("csv",
-				new Class[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class, CacheGroup.class,
-						CacheMembership.class, Project.class, Node.class, Parameter.class, Subscription.class, ParameterValue.class,
-						CacheProjectGroup.class },
+				new Class[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class,
+						CacheGroup.class, CacheMembership.class, Project.class, Node.class, Parameter.class,
+						Subscription.class, ParameterValue.class, CacheProjectGroup.class },
 				StandardCharsets.UTF_8.name());
 		cacheManager.getCache("container-scopes").clear();
 
@@ -108,8 +108,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 	}
 
 	/**
-	 * Create a group in a existing OU "sea". Most Simple case. Group matches
-	 * exactly to the pkey of the project.
+	 * Create a group in a existing OU "sea". Most Simple case. Group matches exactly to the pkey of the project.
 	 *
 	 * @return the created subscription.
 	 */
@@ -117,7 +116,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 		// Preconditions
 		Assertions.assertNull(getGroup().findById(groupAndProject));
 		Assertions.assertTrue(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").contains("sea"));
-		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com","sea"));
+		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com", "sea"));
 
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
@@ -139,7 +138,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 		Assertions.assertEquals(groupAndProject, groupLdap.getName());
 		Assertions.assertEquals(groupAndProject, groupLdap.getId());
 		Assertions.assertEquals("cn=" + groupAndProject + ",ou=sea,ou=project,dc=sample,dc=com", groupLdap.getDn());
-		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com","sea"));
+		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com", "sea"));
 		Assertions.assertTrue(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").contains("sea"));
 
 		return subscription2;
@@ -174,8 +173,9 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 
 	protected ParameterValue setData(final Subscription subscription, final String parameter, String data) {
 		final Parameter groupParameter = parameterRepository.findOneExpected(parameter);
-		ParameterValue value = parameterValueRepository.findAllBy("subscription.id", subscription.isNew() ? 0 : subscription.getId())
-				.stream().filter(v -> v.getParameter().getId().equals(parameter)).findFirst().orElseGet(() -> {
+		ParameterValue value = parameterValueRepository
+				.findAllBy("subscription.id", subscription.isNew() ? 0 : subscription.getId()).stream()
+				.filter(v -> v.getParameter().getId().equals(parameter)).findFirst().orElseGet(() -> {
 					final ParameterValue pv = new ParameterValue();
 					pv.setParameter(groupParameter);
 					pv.setSubscription(subscription);
@@ -222,7 +222,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 		// Preconditions
 		Assertions.assertNotNull(getGroup().findById(parentGroup));
 		Assertions.assertNull(getGroup().findById(subGroup));
-		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com","sea"));
+		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com", "sea"));
 
 		// Attach the new group
 		final Subscription subscription = em.find(Subscription.class, this.subscription);
@@ -242,7 +242,8 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractAppTest {
 		final GroupOrg groupLdap = getGroup().findById(subGroup);
 		Assertions.assertNotNull(groupLdap);
 		Assertions.assertEquals(subGroup, groupLdap.getName());
-		Assertions.assertEquals("cn=" + subGroup + ",cn=" + parentGroup + ",ou=sea,ou=project,dc=sample,dc=com", groupLdap.getDn());
+		Assertions.assertEquals("cn=" + subGroup + ",cn=" + parentGroup + ",ou=sea,ou=project,dc=sample,dc=com",
+				groupLdap.getDn());
 		Assertions.assertEquals(subGroup, groupLdap.getId());
 		Assertions.assertEquals(1, groupLdap.getGroups().size());
 		Assertions.assertTrue(groupLdap.getGroups().contains(parentGroup));

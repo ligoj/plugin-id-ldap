@@ -717,7 +717,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		user.setCompany("ligoj");
 		user.setDepartment("3890");
 		user.setLocalId("8234");
-		Assertions.assertEquals("mmartin", resource.toApplicationUser(user));
+		Assertions.assertEquals("mmartin", toApplicationUser(resource, user));
 
 		final UserOrg userLdap = userResource.findByIdNoCache("mmartin");
 		Assertions.assertEquals("mmartin", userLdap.getName());
@@ -735,7 +735,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		user.setLastName("Last123");
 		user.setCompany("ligoj");
 		user.setName("secondarylogin");
-		Assertions.assertEquals("flast123", resource.toApplicationUser(user));
+		Assertions.assertEquals("flast123", toApplicationUser(resource, user));
 
 		final UserOrg userLdap = userResource.findByIdNoCache("flast123");
 		Assertions.assertEquals("flast123", userLdap.getName());
@@ -755,7 +755,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		user.setLastName("Martin");
 		user.setCompany("ligoj");
 		user.setName("secondarylogin");
-		Assertions.assertEquals("mmartin1", resource.toApplicationUser(user));
+		Assertions.assertEquals("mmartin1", toApplicationUser(resource, user));
 
 		final UserOrg userLdap = userResource.findByIdNoCache("mmartin1");
 		Assertions.assertEquals("mmartin1", userLdap.getName());
@@ -775,33 +775,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		user.setLastName("Last123");
 		user.setName("secondarylogin");
 		Assertions.assertThrows(NotAuthorizedException.class, () -> {
-			resource.toApplicationUser(user);
-		});
-	}
-
-	@Test
-	public void toLogin() {
-		final UserOrg user = new UserOrg();
-		user.setFirstName("First");
-		user.setLastName("Last123");
-		Assertions.assertEquals("flast123", resource.toLogin(user));
-	}
-
-	@Test
-	public void toLoginNoFirstName() {
-		final UserOrg user = new UserOrg();
-		user.setLastName("Last123");
-		Assertions.assertThrows(NotAuthorizedException.class, () -> {
-			resource.toLogin(user);
-		});
-	}
-
-	@Test
-	public void toLoginNoLastName() {
-		final UserOrg user = new UserOrg();
-		user.setFirstName("First");
-		Assertions.assertThrows(NotAuthorizedException.class, () -> {
-			resource.toLogin(user);
+			toApplicationUser(resource, user);
 		});
 	}
 
@@ -831,9 +805,10 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	@Test
 	public void newApplicationUserSaveFail() {
 		final LdapPluginResource resource = new LdapPluginResource();
-		resource.userResource = Mockito.mock(UserOrgResource.class);
-		Mockito.when(resource.userResource.findByIdNoCache("flast123")).thenReturn(null);
-		Mockito.doThrow(new UncategorizedLdapException("")).when(resource.userResource)
+		final UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
+		setUserResource(resource, userResource);
+		Mockito.when(userResource.findByIdNoCache("flast123")).thenReturn(null);
+		Mockito.doThrow(new UncategorizedLdapException("")).when(userResource)
 				.saveOrUpdate(ArgumentMatchers.any(UserOrgEditionVo.class));
 
 		final UserOrg user = new UserOrg();
@@ -850,8 +825,9 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	@Test
 	public void newApplicationUserNextLoginFail() {
 		final LdapPluginResource resource = new LdapPluginResource();
-		resource.userResource = Mockito.mock(UserOrgResource.class);
-		Mockito.doThrow(new RuntimeException()).when(resource.userResource).findByIdNoCache("flast123");
+		final UserOrgResource userResource = Mockito.mock(UserOrgResource.class);
+		setUserResource(resource, userResource);
+		Mockito.doThrow(new RuntimeException()).when(userResource).findByIdNoCache("flast123");
 
 		final UserOrg user = new UserOrg();
 		user.setMails(Collections.singletonList("fabrice.daugan@sample.com"));

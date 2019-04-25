@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiFunction;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -120,6 +121,15 @@ public class UserLdapRepository implements IUserRepository {
 	 * PPolicy module identifier.
 	 */
 	private static final String PPOLICY_NAME = "_ppolicy";
+	
+
+	/**
+	 * LDAP mapping attributes allowed for search.
+	 */
+	private static final Map<String, String> SEARCH_MAPPER = new HashMap<>();
+	static {
+		SEARCH_MAPPER.put("mails", "mail");
+	}
 
 	/**
 	 * Flag used to hash the password or not.
@@ -301,7 +311,7 @@ public class UserLdapRepository implements IUserRepository {
 	@Override
 	public List<UserOrg> findAllBy(final String attribute, final String value) {
 		final AndFilter filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, peopleClass))
-				.and(new EqualsFilter(attribute, value));
+				.and(new EqualsFilter(SEARCH_MAPPER.getOrDefault(attribute, attribute), value));
 		return template.search(peopleBaseDn, filter.encode(), mapper).stream()
 				.map(u -> Optional.ofNullable(findById(u.getId())).orElse(u)).collect(Collectors.toList());
 	}

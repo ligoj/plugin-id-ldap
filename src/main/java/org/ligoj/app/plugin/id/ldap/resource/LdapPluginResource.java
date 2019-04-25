@@ -5,7 +5,6 @@ package org.ligoj.app.plugin.id.ldap.resource;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -22,7 +21,6 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -36,7 +34,6 @@ import org.ligoj.app.api.SubscriptionStatusWithData;
 import org.ligoj.app.iam.Activity;
 import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.IamConfiguration;
-import org.ligoj.app.iam.IamConfigurationProvider;
 import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.model.CacheProjectGroup;
@@ -50,17 +47,14 @@ import org.ligoj.app.plugin.id.ldap.dao.GroupLdapRepository;
 import org.ligoj.app.plugin.id.ldap.dao.ProjectCustomerLdapRepository;
 import org.ligoj.app.plugin.id.ldap.dao.UserLdapRepository;
 import org.ligoj.app.plugin.id.model.ContainerScope;
+import org.ligoj.app.plugin.id.resource.AbstractPluginIdResource;
 import org.ligoj.app.plugin.id.resource.CompanyResource;
 import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
 import org.ligoj.app.plugin.id.resource.ContainerWithScopeVo;
 import org.ligoj.app.plugin.id.resource.GroupResource;
 import org.ligoj.app.plugin.id.resource.IdentityResource;
-import org.ligoj.app.plugin.id.resource.IdentityServicePlugin;
-import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
-import org.ligoj.app.plugin.id.resource.UserOrgResource;
 import org.ligoj.app.resource.ActivitiesProvider;
 import org.ligoj.app.resource.ServicePluginLocator;
-import org.ligoj.app.resource.plugin.AbstractToolPluginResource;
 import org.ligoj.bootstrap.core.INamableBean;
 import org.ligoj.bootstrap.core.NamedBean;
 import org.ligoj.bootstrap.core.SpringUtils;
@@ -69,12 +63,11 @@ import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -85,8 +78,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 @Produces(MediaType.APPLICATION_JSON)
 @Slf4j
-public class LdapPluginResource extends AbstractToolPluginResource
-		implements IdentityServicePlugin, IamConfigurationProvider {
+public class LdapPluginResource extends AbstractPluginIdResource<UserLdapRepository> {
 
 	private static final String PATTERN_PROPERTY = "pattern";
 
@@ -191,19 +183,11 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	 */
 	public static final String PARAMETER_CLEAR_PASSWORD = KEY + ":clear-password";
 
-	/**
-	 * Lock object used to synchronize the creation.
-	 */
-	private static final Object USER_LOCK = new Object();
-
 	@Autowired
 	protected ProjectCustomerLdapRepository projectCustomerLdapRepository;
 
 	@Autowired
 	protected CompanyResource companyResource;
-
-	@Autowired
-	protected UserOrgResource userResource;
 
 	@Autowired
 	protected GroupResource groupLdapResource;
@@ -221,21 +205,11 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	protected ServicePluginLocator servicePluginLocator;
 
 	@Autowired
+	@Getter
 	protected LdapPluginResource self;
 
-	/**
-	 * Available node configurations. Key is the node identifier.
-	 */
-	private Map<String, IamConfiguration> nodeConfigurations = new HashMap<>();
-
-	/**
-	 * Build a user LDAP repository from the given node.
-	 *
-	 * @param node
-	 *            The node, also used as cache key.
-	 * @return The {@link UserLdapRepository} instance. Cache is involved.
-	 */
-	private UserLdapRepository getUserLdapRepository(final String node) {
+	@Override
+	protected UserLdapRepository getUserRepository(final String node) {
 		log.info("Build ldap template for node {}", node);
 		final Map<String, String> parameters = pvResource.getNodeParameters(node);
 		final LdapContextSource contextSource = new LdapContextSource();
@@ -273,10 +247,8 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	/**
 	 * Build a group LDAP repository from the given node.
 	 *
-	 * @param node
-	 *            The node, also used as cache key.
-	 * @param template
-	 *            The {@link LdapTemplate} used to query the repository.
+	 * @param node     The node, also used as cache key.
+	 * @param template The {@link LdapTemplate} used to query the repository.
 	 * @return The {@link UserLdapRepository} instance. Cache is involved.
 	 */
 	public GroupLdapRepository newGroupLdapRepository(final String node, final LdapTemplate template) {
@@ -295,10 +267,8 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	/**
 	 * Build a group LDAP repository from the given node.
 	 *
-	 * @param node
-	 *            The node, also used as cache key.
-	 * @param template
-	 *            The {@link LdapTemplate} used to query the repository.
+	 * @param node     The node, also used as cache key.
+	 * @param template The {@link LdapTemplate} used to query the repository.
 	 * @return The {@link UserLdapRepository} instance. Cache is involved.
 	 */
 	public CompanyLdapRepository newCompanyLdapRepository(final String node, final LdapTemplate template) {
@@ -438,13 +408,10 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	/**
 	 * Return activities of all users in the group of this subscription as CSV input stream.
 	 *
-	 * @param subscription
-	 *            The subscription identifier.
-	 * @param file
-	 *            The target file name.
+	 * @param subscription The subscription identifier.
+	 * @param file         The target file name.
 	 * @return the stream ready to be read during the serialization.
-	 * @throws Exception
-	 *             When any technical error occurs. Caught at upper level for the right mapping.
+	 * @throws Exception When any technical error occurs. Caught at upper level for the right mapping.
 	 */
 	@GET
 	@Path("activity/{subscription:\\d+}/{file:group-.*.csv}")
@@ -460,13 +427,10 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	 * Return activities of all users in any group subscribed by the same project of this subscription as CSV input
 	 * stream.
 	 *
-	 * @param subscription
-	 *            The subscription identifier.
-	 * @param file
-	 *            The target file name.
+	 * @param subscription The subscription identifier.
+	 * @param file         The target file name.
 	 * @return the stream ready to be read during the serialization.
-	 * @throws Exception
-	 *             When any technical error occurs. Caught at upper level for the right mapping.
+	 * @throws Exception When any technical error occurs. Caught at upper level for the right mapping.
 	 */
 	@GET
 	@Path("activity/{subscription:\\d+}/{file:project-.*.csv}")
@@ -526,8 +490,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	/**
 	 * Return users member of associated subscription.
 	 *
-	 * @param subscription
-	 *            The subscription identifier used to get the related group and members.
+	 * @param subscription The subscription identifier used to get the related group and members.
 	 * @return The members of related groups of the subscription.
 	 */
 	public Collection<UserOrg> getMembers(final int subscription) {
@@ -540,18 +503,12 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	/**
 	 * Add activities related to given subscription.
 	 *
-	 * @param activities
-	 *            The collected activities.
-	 * @param users
-	 *            The implied users.
-	 * @param subscription
-	 *            The related subscription of theses activities.
-	 * @param plugin
-	 *            The plug-in associated to this subscription.
-	 * @param nodes
-	 *            The nodes that have already been processed. This set will be updated by this function.
-	 * @throws Exception
-	 *             When any technical error occurs. Caught at upper level for the right mapping.
+	 * @param activities   The collected activities.
+	 * @param users        The implied users.
+	 * @param subscription The related subscription of theses activities.
+	 * @param plugin       The plug-in associated to this subscription.
+	 * @param nodes        The nodes that have already been processed. This set will be updated by this function.
+	 * @throws Exception When any technical error occurs. Caught at upper level for the right mapping.
 	 */
 	protected void addSubscriptionActivities(final Map<String, Map<String, Activity>> activities,
 			final Collection<String> users, final Subscription subscription, final ServicePlugin plugin,
@@ -579,8 +536,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	/**
 	 * Validate the group settings.
 	 *
-	 * @param parameters
-	 *            the administration parameters.
+	 * @param parameters the administration parameters.
 	 * @return real group name.
 	 */
 	protected INamableBean<String> validateGroup(final Map<String, String> parameters) {
@@ -635,8 +591,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	/**
 	 * Search the LDAP Groups matching to the given criteria and for type "Project". Node identifier is ignored for now.
 	 *
-	 * @param criteria
-	 *            the search criteria.
+	 * @param criteria the search criteria.
 	 * @return LDAP Groups matching the criteria.
 	 * @see ContainerScope#TYPE_PROJECT
 	 */
@@ -668,8 +623,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	 * Search the LDAP Customers matching to the given criteria and for type "Project". Node identifier is ignored for
 	 * now. Node is ignored.
 	 *
-	 * @param criteria
-	 *            the search criteria.
+	 * @param criteria the search criteria.
 	 * @return LDAP Customers matching the criteria.
 	 * @see ContainerScope#TYPE_PROJECT
 	 */
@@ -744,29 +698,17 @@ public class LdapPluginResource extends AbstractToolPluginResource
 		return result;
 	}
 
-	@Override
-	public IamConfiguration getConfiguration(final String node) {
-		self.ensureCachedConfiguration(node);
-		return nodeConfigurations.computeIfAbsent(node, this::refreshConfiguration);
-	}
-
 	@CacheResult(cacheName = "id-ldap-configuration")
 	public boolean ensureCachedConfiguration(@CacheKey final String node) {
-		refreshConfiguration(node);
-		return true;
+		return super.ensureCachedConfiguration(node);
 	}
 
-	private IamConfiguration refreshConfiguration(final String node) {
-		return nodeConfigurations.compute(node, (n, m) -> {
-			final IamConfiguration configuration = new IamConfiguration();
-			final UserLdapRepository repository = getUserLdapRepository(node);
-			configuration.setUserRepository(repository);
-			configuration.setCompanyRepository(newCompanyLdapRepository(node, repository.getTemplate()));
-			configuration.setGroupRepository(newGroupLdapRepository(node, repository.getTemplate()));
-			repository.setCompanyRepository((CompanyLdapRepository) configuration.getCompanyRepository());
-			repository.setGroupLdapRepository((GroupLdapRepository) configuration.getGroupRepository());
-			return configuration;
-		});
+	@Override
+	protected void copyConfiguration(final IamConfiguration iam, final UserLdapRepository repository) {
+		iam.setCompanyRepository(newCompanyLdapRepository(iam.getNode(), repository.getTemplate()));
+		iam.setGroupRepository(newGroupLdapRepository(iam.getNode(), repository.getTemplate()));
+		repository.setCompanyRepository((CompanyLdapRepository) iam.getCompanyRepository());
+		repository.setGroupLdapRepository((GroupLdapRepository) iam.getGroupRepository());
 	}
 
 	/**
@@ -779,139 +721,7 @@ public class LdapPluginResource extends AbstractToolPluginResource
 	}
 
 	@Override
-	public Authentication authenticate(final Authentication authentication, final String node, final boolean primary) {
-		final UserLdapRepository repository = (UserLdapRepository) self.getConfiguration(node).getUserRepository();
-
-		// Authenticate the user
-		if (repository.authenticate(authentication.getName(), (String) authentication.getCredentials())) {
-			// Return a new authentication based on resolved application user
-			return primary ? authentication
-					: new UsernamePasswordAuthenticationToken(toApplicationUser(repository, authentication), null);
-		}
-		throw new BadCredentialsException("");
-	}
-
-	/**
-	 * Check the authentication, then create or get the application user matching to the given account.
-	 *
-	 * @param repository
-	 *            Repository used to authenticate the user, and also to use to fetch the user attributes.
-	 * @param authentication
-	 *            The current authentication.
-	 * @return A not <code>null</code> application user.
-	 */
-	protected String toApplicationUser(final UserLdapRepository repository, final Authentication authentication) {
-		// Check the authentication
-		final UserOrg account = repository.findOneBy(repository.getAuthenticateProperty(authentication.getName()),
-				authentication.getName());
-
-		// Check at least one mail is present
-		if (account.getMails().isEmpty()) {
-			// Mails are required to proceed the authentication
-			log.info("Account '{} [{} {}]' has no mail", account.getId(), account.getFirstName(),
-					account.getLastName());
-			throw new NotAuthorizedException("ambiguous-account-no-mail");
-		}
-
-		// Find the right application user
-		return toApplicationUser(account);
-	}
-
-	/**
-	 * Create or get the application user matching to the given account.
-	 *
-	 * @param account
-	 *            The account from the authentication.
-	 * @return A not <code>null</code> application user.
-	 */
-	protected String toApplicationUser(final UserOrg account) {
-		// Find the user by the mail in the primary repository
-		final List<UserOrg> usersByMail = userResource.findAllBy("mail", account.getMails().get(0));
-		if (usersByMail.isEmpty()) {
-			// No more try, account can be created in the application repository
-			// with a free login
-			return newApplicationUser(account);
-		}
-		if (usersByMail.size() == 1) {
-			// Everything is checked, account can be merged into the existing application user
-			userResource.mergeUser(usersByMail.get(0), account);
-			return usersByMail.get(0).getId();
-		}
-
-		// Too many matching mail
-		log.info("Account '{} [{} {}]' has too many mails ({}), expected one", account.getId(), account.getFirstName(),
-				account.getLastName(), usersByMail.size());
-		throw new NotAuthorizedException("ambiguous-account-too-many-mails");
-
-	}
-
-	/**
-	 * Create the application user from the actual account.
-	 *
-	 * @param account
-	 *            The account from the authentication.
-	 * @return The new application user.
-	 */
-	protected String newApplicationUser(final UserOrg account) {
-		synchronized (USER_LOCK) {
-
-			// Copy the data from the authenticated account to the application
-			// account
-			final UserOrgEditionVo userLdapEdition = new UserOrgEditionVo();
-			account.copy(userLdapEdition);
-			userLdapEdition.setGroups(Collections.emptyList());
-			userLdapEdition.setMail(account.getMails().get(0));
-
-			// Assign a free login
-			userLdapEdition.setName(nextFreeLogin(toLogin(account)));
-
-			// This user can be created in the primary repository
-			userResource.saveOrUpdate(userLdapEdition);
-
-			return userLdapEdition.getId();
-		}
-	}
-
-	/**
-	 * Find a free application login from a base login. Primary repository is checked to reclaim a free login.
-	 *
-	 * @param login
-	 *            The base login name.
-	 * @return a free login inside the primary repository.
-	 */
-	protected String nextFreeLogin(final String login) {
-		int suffix = 0;
-		UserOrg userLdap;
-		String nextLogin;
-		do {
-			nextLogin = login + (suffix == 0 ? "" : suffix);
-			userLdap = userResource.findByIdNoCache(nextLogin);
-			suffix++;
-		} while (userLdap != null);
-
-		// No user found for this login
-		return nextLogin;
-	}
-
-	/**
-	 * Generate a application login from an account.
-	 *
-	 * @param account
-	 *            The current authenticated account in this security provider.
-	 * @return a corresponding application login candidate from an account.
-	 */
-	protected String toLogin(final UserOrg account) {
-		final String trimFirstName = normalize(account.getFirstName());
-		final String trimLastName = normalize(account.getLastName());
-		if (trimFirstName.length() * trimLastName.length() == 0) {
-			// Unable to build a valid login from these attributes
-			throw new NotAuthorizedException("cannot-build-application-login");
-		}
-
-		return trimFirstName.substring(0, 1) + trimLastName;
-	}
-
-	private String normalize(final String string) {
-		return StringUtils.trimToEmpty(Normalizer.normalize(string).replace("[^\\w\\d]", " ").replace("  ", " "));
+	protected String getAuthenticateProperty(final UserLdapRepository repository, final Authentication authentication) {
+		return repository.getAuthenticateProperty(authentication.getName());
 	}
 }
