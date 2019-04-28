@@ -11,11 +11,13 @@ import org.ligoj.app.iam.IamConfiguration;
 import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.plugin.id.ldap.resource.LdapPluginResource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.core.Authentication;
 
 /**
  * LDAP IAM provider.
  */
+@Order(50)
 public class LdapIamProvider implements IamProvider {
 
 	@Autowired
