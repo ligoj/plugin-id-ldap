@@ -96,7 +96,7 @@ public class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 		initSpringSecurityContext("fdaugan");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.create(user);
-		}), "company", BusinessException.KEY_UNKNOW_ID);
+		}), "company", BusinessException.KEY_UNKNOWN_ID);
 	}
 
 	@Test
@@ -110,7 +110,7 @@ public class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 		initSpringSecurityContext("any");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.create(user);
-		}), "company", BusinessException.KEY_UNKNOW_ID);
+		}), "company", BusinessException.KEY_UNKNOWN_ID);
 	}
 
 	@Test
@@ -124,7 +124,7 @@ public class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 		initSpringSecurityContext("fdaugan");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.create(user);
-		}), "company", BusinessException.KEY_UNKNOW_ID);
+		}), "company", BusinessException.KEY_UNKNOWN_ID);
 	}
 
 	@Test
@@ -141,7 +141,7 @@ public class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 		initSpringSecurityContext("someone");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.create(user);
-		}), "group", BusinessException.KEY_UNKNOW_ID);
+		}), "group", BusinessException.KEY_UNKNOWN_ID);
 	}
 
 	/**

@@ -15,8 +15,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import javax.cache.annotation.CacheKey;
-import javax.cache.annotation.CacheResult;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import javax.ws.rs.Consumes;
@@ -374,7 +372,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		final GroupOrg parentGroupLdap = groupLdapResource.findById(parentGroup);
 		if (parentGroupLdap == null) {
 			// The parent group does not exists
-			throw new ValidationJsonException(IdentityResource.PARAMETER_PARENT_GROUP, BusinessException.KEY_UNKNOW_ID,
+			throw new ValidationJsonException(IdentityResource.PARAMETER_PARENT_GROUP, BusinessException.KEY_UNKNOWN_ID,
 					parentGroup);
 		}
 
@@ -546,7 +544,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 
 		// Check the group exists
 		if (groupLdap == null) {
-			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOW_ID, group);
+			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOWN_ID, group);
 		}
 
 		// Check the group has type TYPE_PROJECT
@@ -696,11 +694,6 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		final SubscriptionStatusWithData result = new SubscriptionStatusWithData(true);
 		result.put("members", groupLdap.getMembers().size());
 		return result;
-	}
-
-	@CacheResult(cacheName = "id-ldap-configuration")
-	public boolean ensureCachedConfiguration(@CacheKey final String node) {
-		return super.ensureCachedConfiguration(node);
 	}
 
 	@Override

@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.BiFunction;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -854,7 +853,7 @@ public class UserLdapRepository implements IUserRepository {
 			date = formatter.parse(utc);
 		} catch (final ParseException e) {
 			log.info("Error while parsing date {}: {}", utc, e.getMessage());
-			throw new BusinessException(BusinessException.KEY_UNKNOW_ID);
+			throw new BusinessException(BusinessException.KEY_UNKNOWN_ID);
 		}
 		return date;
 	}

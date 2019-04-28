@@ -20,7 +20,6 @@ public class IdLdapCache implements CacheManagerAware {
 	@Override
 	public void onCreate(final HazelcastCacheManager cacheManager, final Function<String, CacheConfig<?, ?>> provider) {
 		cacheManager.createCache("id-ldap-data", provider.apply("id-ldap-data"));
-		cacheManager.createCache("id-ldap-configuration", provider.apply("id-ldap-configuration"));
 		cacheManager.createCache("customers", provider.apply("customers"));
 		cacheManager.createCache("customers-by-id", provider.apply("customers-by-id"));
 	}

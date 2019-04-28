@@ -59,7 +59,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 		em.clear();
 		expected = repository.findByName("dig rha");
 		em.clear();
-		cacheManager.getCache("id-ldap-configuration").clear();
+		cacheManager.getCache("id-configuration").clear();
 		cacheManager.getCache("id-ldap-data").clear();
 	}
 

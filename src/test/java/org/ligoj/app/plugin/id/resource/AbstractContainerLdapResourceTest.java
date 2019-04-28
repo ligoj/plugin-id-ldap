@@ -26,7 +26,7 @@ public abstract class AbstractContainerLdapResourceTest extends AbstractLdapTest
 		persistEntities("csv", new Class[] { DelegateOrg.class, ContainerScope.class }, StandardCharsets.UTF_8.name());
 		cacheManager.getCache("container-scopes").clear();
 		cacheManager.getCache("id-ldap-data").clear();
-		cacheManager.getCache("id-ldap-configuration").clear();
+		cacheManager.getCache("id-configuration").clear();
 
 		// For the cache to be created
 		getUser().findAll();

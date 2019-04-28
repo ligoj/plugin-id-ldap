@@ -109,7 +109,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		parameters.put(IdentityResource.PARAMETER_GROUP, "broken");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.validateGroup(parameters);
-		}), IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOW_ID);
+		}), IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOWN_ID);
 	}
 
 	@Test
@@ -396,7 +396,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		initSpringSecurityContext("fdaugan");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.link(this.subscription);
-		}), IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOW_ID);
+		}), IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOWN_ID);
 	}
 
 	/**
@@ -411,7 +411,7 @@ public class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		initSpringSecurityContext("fdaugan");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.link(this.subscription);
-		}), IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOW_ID);
+		}), IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOWN_ID);
 	}
 
 	@Test
