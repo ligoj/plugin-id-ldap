@@ -18,10 +18,10 @@ import org.springframework.test.annotation.Rollback;
  */
 @Rollback
 @Transactional
-public class UserLdapResourceZUpdateTest extends AbstractUserLdapResourceTest {
+class UserLdapResourceZUpdateTest extends AbstractUserLdapResourceTest {
 
 	@Test
-	public void zupdateUserHadNoMail() {
+	void zupdateUserHadNoMail() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("jdoe5");
 		user.setFirstName("John5");
@@ -49,7 +49,7 @@ public class UserLdapResourceZUpdateTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void zupdateUserHasNoMail() {
+	void zupdateUserHasNoMail() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("jdoe5");
 		user.setFirstName("John5");
@@ -77,7 +77,7 @@ public class UserLdapResourceZUpdateTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void zupdateUserNoPassword() {
+	void zupdateUserNoPassword() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("jdoe4");
 		user.setFirstName("John4");
@@ -105,7 +105,7 @@ public class UserLdapResourceZUpdateTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void zupdateUserRemoveGroup() {
+	void zupdateUserRemoveGroup() {
 		// Pre-condition
 		initSpringSecurityContext("fdaugan");
 		final TableItem<UserOrgVo> initialResult = resource.findAll(null, null, "fdoe2", newUriInfoAsc("id"));

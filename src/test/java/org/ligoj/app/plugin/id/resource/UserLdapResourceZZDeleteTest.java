@@ -20,10 +20,10 @@ import org.springframework.test.annotation.Rollback;
  */
 @Rollback
 @Transactional
-public class UserLdapResourceZZDeleteTest extends AbstractUserLdapResourceTest {
+class UserLdapResourceZZDeleteTest extends AbstractUserLdapResourceTest {
 
 	@Test
-	public void zzdeleteUser() {
+	void zzdeleteUser() {
 		initSpringSecurityContext("assist");
 		Assertions.assertEquals(1, resource.findAll("ing", null, "jdoe5", newUriInfo()).getData().size());
 		Assertions.assertNotNull(getUser().findByIdNoCache("jdoE5"));

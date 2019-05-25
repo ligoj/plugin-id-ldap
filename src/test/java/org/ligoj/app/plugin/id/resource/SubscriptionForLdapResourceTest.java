@@ -46,7 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 @Rollback
 @Transactional
 @Slf4j
-public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
+class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 
 	@Autowired
 	private CacheLdapRepository cache;
@@ -61,14 +61,14 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	private ParameterValueRepository parameterValueRepository;
 
 	@BeforeEach
-	public void prepareSubscription() throws IOException {
+	void prepareSubscription() throws IOException {
 		persistEntities("csv", new Class[] { DelegateOrg.class, ContainerScope.class, DelegateNode.class },
 				StandardCharsets.UTF_8.name());
 		initSpringSecurityContext("fdaugan");
 	}
 
 	@Test
-	public void deleteNotManagedProject() {
+	void deleteNotManagedProject() {
 		final Subscription one = repository.findOne(getSubscription("gStack", IdentityResource.SERVICE_KEY));
 		final int project = one.getProject().getId();
 		Assertions.assertEquals(3, repository.findAllByProject(project).size());
@@ -85,7 +85,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void createCreateMode() throws Exception {
+	void createCreateMode() throws Exception {
 		// Prepare data
 		em.createQuery("DELETE Parameter WHERE id LIKE ?1").setParameter(1, "c_%").executeUpdate();
 		final String dn = "cn=ligoj-gstack-client,cn=ligoj-gstack,ou=ligoj,ou=project,dc=sample,dc=com";
@@ -161,7 +161,7 @@ public class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	 * Create mode, blank optional parameter
 	 */
 	@Test
-	public void createCreateModeBlank() throws Exception {
+	void createCreateModeBlank() throws Exception {
 		// Prepare data
 		em.createQuery("DELETE Parameter WHERE id LIKE ?1").setParameter(1, "c_%").executeUpdate();
 		final String dn = "cn=ligoj-gstack-client2,ou=ligoj,ou=project,dc=sample,dc=com";

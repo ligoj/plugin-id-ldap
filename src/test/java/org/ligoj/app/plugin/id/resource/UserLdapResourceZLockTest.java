@@ -52,10 +52,10 @@ import org.springframework.test.annotation.Rollback;
  */
 @Rollback
 @Transactional
-public class UserLdapResourceZLockTest extends AbstractUserLdapResourceTest {
+class UserLdapResourceZLockTest extends AbstractUserLdapResourceTest {
 
 	@Test
-	public void zlockUnlockUser() {
+	void zlockUnlockUser() {
 		checkUnlockedBefore();
 		resource.lock("aLongchu");
 		check("ligoj", "ou=ligoj,ou=france,ou=people,dc=sample,dc=com", "LOCKED\\|[0-9]+\\|junit\\|\\|", this::assertLocked);
@@ -73,7 +73,7 @@ public class UserLdapResourceZLockTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void zisolateRestoreUser() {
+	void zisolateRestoreUser() {
 		checkDnAndMember(checkUnlockedBefore(), "uid=alongchu,ou=ligoj,ou=france,ou=people,dc=sample,dc=com");
 
 		// Isolate

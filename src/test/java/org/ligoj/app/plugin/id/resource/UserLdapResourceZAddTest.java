@@ -58,10 +58,10 @@ import org.springframework.test.annotation.Rollback;
  */
 @Rollback
 @Transactional
-public class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
+class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 
 	@Test
-	public void zcreateUser() {
+	void zcreateUser() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flasta");
 		user.setFirstName("FirstA ");
@@ -86,7 +86,7 @@ public class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void zcreateUserDelegateCompanyNotExist() {
+	void zcreateUserDelegateCompanyNotExist() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flastc");
 		user.setFirstName("FirstC");
@@ -100,7 +100,7 @@ public class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void zcreateUserNoDelegate() {
+	void zcreateUserNoDelegate() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flastd");
 		user.setFirstName("FirstD");
@@ -114,7 +114,7 @@ public class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void zcreateUserNoDelegateCompany() {
+	void zcreateUserNoDelegateCompany() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flastc");
 		user.setFirstName("FirstC");
@@ -128,7 +128,7 @@ public class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void zcreateUserNoDelegateGroup() {
+	void zcreateUserNoDelegateGroup() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flastg");
 		user.setFirstName("FirstG");
@@ -148,7 +148,7 @@ public class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 	 * Test user addition to a group.
 	 */
 	@Test
-	public void zaddRemoveUser() {
+	void zaddRemoveUser() {
 		// Pre condition
 		Assertions.assertFalse(resource.findById("wuser").getGroups().contains("DIG RHA"));
 		Assertions.assertFalse(getGroup().findById("dig rha").getMembers().contains("wuser"));

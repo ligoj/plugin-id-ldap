@@ -37,59 +37,59 @@ import org.springframework.ldap.core.support.AbstractContextMapper;
 /**
  * Test class of {@link UserLdapRepository}
  */
-public class UserLdapRepositoryTest {
+class UserLdapRepositoryTest {
 
 	private UserLdapRepository repository;
 
 	@BeforeEach
-	public void init() {
+	void init() {
 		repository = new UserLdapRepository();
 	}
 
 	@Test
-	public void toCompanyNoMatch() {
+	void toCompanyNoMatch() {
 		repository.setCompanyPattern("[^,]+,ou=([^,]+),.*");
 		Assertions.assertNull(repository.toCompany("any"));
 	}
 
 	@Test
-	public void toCompanyNoCaptureNoMatch() {
+	void toCompanyNoCaptureNoMatch() {
 		repository.setCompanyPattern("[^,]+,ou=[^,]+,.*");
 		Assertions.assertEquals("[^,]+,ou=[^,]+,.*", repository.toCompany("company"));
 	}
 
 	@Test
-	public void toCompanyNoCaptureMatch() {
+	void toCompanyNoCaptureMatch() {
 		repository.setCompanyPattern("[^,]+,ou=[^,]+,.*");
 		Assertions.assertNull(repository.toCompany("uid=some,ou=company,ou=fr"));
 	}
 
 	@Test
-	public void toCompanyContant() {
+	void toCompanyContant() {
 		repository.setCompanyPattern("const");
 		Assertions.assertEquals("const", repository.toCompany("uid=some,ou=company,dc=ex,dc=fr"));
 	}
 
 	@Test
-	public void toCompany() {
+	void toCompany() {
 		repository.setCompanyPattern("[^,]+,ou=([^,]+),.*");
 		Assertions.assertEquals("company", repository.toCompany("uid=some,ou=company,dc=ex,dc=fr"));
 		Assertions.assertEquals("company", repository.toCompany("uid=some,ou=company,dc=ex"));
 	}
 
 	@Test
-	public void getAuthenticateProperty() {
+	void getAuthenticateProperty() {
 		repository.setUidAttribute("my-uid");
 		Assertions.assertEquals("my-uid", repository.getAuthenticateProperty("some"));
 	}
 
 	@Test
-	public void getAuthenticatePropertyMail() {
+	void getAuthenticatePropertyMail() {
 		Assertions.assertEquals("mail", repository.getAuthenticateProperty("my@mail.com"));
 	}
 
 	@Test
-	public void testClearPassword() {
+	void testClearPassword() {
 		UserOrg user = new UserOrg();
 		user.setDn("dc=sample,dc=com");
 		new UserLdapRepository() {
@@ -107,7 +107,7 @@ public class UserLdapRepositoryTest {
 	}
 
 	@Test
-	public void digest() {
+	void digest() {
 		UserOrg user = new UserOrg();
 		user.setDn("dc=sample,dc=com");
 		new UserLdapRepository() {
@@ -125,7 +125,7 @@ public class UserLdapRepositoryTest {
 	}
 
 	@Test
-	public void toUser() {
+	void toUser() {
 		UserLdapRepository repository = new UserLdapRepository() {
 			@Override
 			public UserOrg findById(final String login) {
@@ -141,7 +141,7 @@ public class UserLdapRepositoryTest {
 	}
 
 	@Test
-	public void toUserNotExist() {
+	void toUserNotExist() {
 		UserLdapRepository repository = new UserLdapRepository() {
 			@Override
 			public UserOrg findById(final String login) {
@@ -154,13 +154,13 @@ public class UserLdapRepositoryTest {
 	}
 
 	@Test
-	public void toUserNull() {
+	void toUserNull() {
 		Assertions.assertNull(repository.toUser(null));
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void getToken() {
+	void getToken() {
 		final LdapTemplate mock = Mockito.mock(LdapTemplate.class);
 		final DirContextOperations dirCtx = Mockito.mock(DirContextOperations.class);
 		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(),
@@ -174,7 +174,7 @@ public class UserLdapRepositoryTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void getTokenNotExists() {
+	void getTokenNotExists() {
 		final LdapTemplate mock = Mockito.mock(LdapTemplate.class);
 		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(),
 				ArgumentMatchers.any(ContextMapper.class))).thenReturn(Collections.emptyList());
@@ -183,7 +183,7 @@ public class UserLdapRepositoryTest {
 	}
 
 	@Test
-	public void findByIdExpectedNotVisibleCompany() {
+	void findByIdExpectedNotVisibleCompany() {
 
 		UserLdapRepository repository = new UserLdapRepository() {
 			@Override
@@ -200,7 +200,7 @@ public class UserLdapRepositoryTest {
 	}
 
 	@Test
-	public void findByIdExpected() {
+	void findByIdExpected() {
 
 		UserLdapRepository repository = new UserLdapRepository() {
 			@Override
@@ -218,7 +218,7 @@ public class UserLdapRepositoryTest {
 	}
 
 	@Test
-	public void setPassword() throws NamingException {
+	void setPassword() throws NamingException {
 		final LdapContext mockCtx = setPassword("old-password", "new-password");
 		Mockito.verify(mockCtx).modifyAttributes(ArgumentMatchers.eq("cn=Any"),
 				ArgumentMatchers.any(ModificationItem[].class));
@@ -234,7 +234,7 @@ public class UserLdapRepositoryTest {
 	}
 
 	@Test
-	public void setPasswordNullOldPassword() throws NamingException {
+	void setPasswordNullOldPassword() throws NamingException {
 		final LdapContext mockCtx = setPassword(null, "new-password");
 		Mockito.verify(mockCtx).modifyAttributes(ArgumentMatchers.eq("cn=Any"),
 				ArgumentMatchers.any(ModificationItem[].class));
@@ -243,7 +243,7 @@ public class UserLdapRepositoryTest {
 	}
 
 	@Test
-	public void setPasswordBadPassword() throws NamingException {
+	void setPasswordBadPassword() throws NamingException {
 		final UserOrg user = new UserOrg();
 		user.setDn("cn=Any");
 		final LdapContext mockCtx = newLdapContext();
@@ -254,7 +254,7 @@ public class UserLdapRepositoryTest {
 	}
 
 	@Test
-	public void setPasswordPolicyFail() throws NamingException {
+	void setPasswordPolicyFail() throws NamingException {
 		final UserOrg user = new UserOrg();
 		user.setDn("cn=Any");
 		final LdapContext mockCtx = newLdapContext();
@@ -283,20 +283,20 @@ public class UserLdapRepositoryTest {
 	}
 
 	@Test
-	public void testValidLdapDate() {
+	void testValidLdapDate() {
 		final String ldapDate = "20180206102244Z";
 		Assertions.assertEquals(1517908964000L, repository.parseLdapDate(ldapDate).getTime());
 	}
 
 	@Test
-	public void testNotValidLdapDate() {
+	void testNotValidLdapDate() {
 		final String ldapDate = "20180206102244";
 		Assertions.assertThrows(BusinessException.class, () -> repository.parseLdapDate(ldapDate).getTime());
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void checkUserStatus() {
+	void checkUserStatus() {
 		final UserOrg user = new UserOrg();
 		final LdapTemplate mock = Mockito.mock(LdapTemplate.class);
 		final DirContextOperations dirCtx = Mockito.mock(DirContextOperations.class);
@@ -317,7 +317,7 @@ public class UserLdapRepositoryTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testBlockedUserByPpolicy() {
+	void testBlockedUserByPpolicy() {
 		final UserOrg user = new UserOrg();
 		final LdapTemplate mock = Mockito.mock(LdapTemplate.class);
 		final DirContextOperations dirCtx = Mockito.mock(DirContextOperations.class);

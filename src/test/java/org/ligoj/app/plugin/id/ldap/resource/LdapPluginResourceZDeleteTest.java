@@ -18,9 +18,9 @@ import org.springframework.test.annotation.Rollback;
  */
 @Rollback
 @Transactional
-public class LdapPluginResourceZDeleteTest extends AbstractLdapPluginResourceTest {
+class LdapPluginResourceZDeleteTest extends AbstractLdapPluginResourceTest {
 	@Test
-	public void zzdeleteWithSubGroup() {
+	void zzdeleteWithSubGroup() {
 		// Create the data
 		initSpringSecurityContext("fdaugan");
 
@@ -52,7 +52,7 @@ public class LdapPluginResourceZDeleteTest extends AbstractLdapPluginResourceTes
 	 * Delete a group that is also member from another group.
 	 */
 	@Test
-	public void zzdeleteFromParentGroup() {
+	void zzdeleteFromParentGroup() {
 		// Create the data
 		initSpringSecurityContext("fdaugan");
 

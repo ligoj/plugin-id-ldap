@@ -42,7 +42,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public class DelegateLdapResourceTest extends AbstractLdapTest {
+class DelegateLdapResourceTest extends AbstractLdapTest {
 
 	@Autowired
 	private DelegateOrgResource resource;
@@ -53,7 +53,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	private DelegateOrg expected;
 
 	@BeforeEach
-	public void setUpEntities() throws IOException {
+	void setUpEntities() throws IOException {
 		persistEntities("csv", new Class[] { DelegateOrg.class }, StandardCharsets.UTF_8.name());
 		em.flush();
 		em.clear();
@@ -64,7 +64,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void findAllFewVisible() {
+	void findAllFewVisible() {
 		// create a mock URI info with pagination informations
 		final UriInfo uriInfo = newFindAllParameters();
 		initSpringSecurityContext("someone");
@@ -106,7 +106,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void findAllSelf() {
+	void findAllSelf() {
 		// create a mock URI info with pagination informations
 		final UriInfo uriInfo = newFindAllParameters();
 		initSpringSecurityContext("mlavoine");
@@ -139,7 +139,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void findAll() {
+	void findAll() {
 		// create a mock URI info with pagination informations
 		final UriInfo uriInfo = newFindAllParameters();
 		uriInfo.getQueryParameters().putSingle("length", "12");
@@ -159,7 +159,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	 * member of group "ligoj-gstack".
 	 */
 	@Test
-	public void findAllReceiverGroup() {
+	void findAllReceiverGroup() {
 		final UriInfo uriInfo = newFindAllParameters();
 		initSpringSecurityContext("alongchu");
 		final TableItem<DelegateOrgLightVo> result = resource.findAll(uriInfo, null);
@@ -174,7 +174,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void findAllReceiverCompany() {
+	void findAllReceiverCompany() {
 		// create a mock URI info with pagination informations
 		final UriInfo uriInfo = newFindAllParameters();
 		initSpringSecurityContext("jdoe5");
@@ -190,7 +190,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void findAllGlobalSearch() {
+	void findAllGlobalSearch() {
 		// create a mock URI info with pagination informations
 		final UriInfo uriInfo = newFindAllParameters();
 		uriInfo.getQueryParameters().add(DataTableAttributes.SEARCH, "dig");
@@ -202,7 +202,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void findAllGlobalSearchGroup() {
+	void findAllGlobalSearchGroup() {
 		// create a mock URI info with pagination informations
 		final UriInfo uriInfo = newFindAllParameters();
 		uriInfo.getQueryParameters().add(DataTableAttributes.SEARCH, "dig");
@@ -214,7 +214,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void findAllGlobalSearchCompany() {
+	void findAllGlobalSearchCompany() {
 		// create a mock URI info with pagination informations
 		final UriInfo uriInfo = newFindAllParameters();
 		uriInfo.getQueryParameters().add(DataTableAttributes.SEARCH, "dig");
@@ -271,7 +271,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void createOnGroup() {
+	void createOnGroup() {
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setName("hUb Paris");
 		vo.setType(DelegateType.GROUP);
@@ -295,7 +295,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void createDelegateCompany() {
+	void createDelegateCompany() {
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setName("socygan");
 		vo.setType(DelegateType.COMPANY);
@@ -319,7 +319,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void createDelegateCompanyReceiverCompany() {
+	void createDelegateCompanyReceiverCompany() {
 		initSpringSecurityContext("mtuyer");
 
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
@@ -344,7 +344,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void createDelegateCompanyReceiverGroup() {
+	void createDelegateCompanyReceiverGroup() {
 		initSpringSecurityContext("mtuyer");
 
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
@@ -369,7 +369,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void createOnTreePartialDn() {
+	void createOnTreePartialDn() {
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setName("cn=myDn");
 		vo.setReceiver("fdaugan");
@@ -380,7 +380,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void createInvalidDn() {
+	void createInvalidDn() {
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setName("cn=my,invalidDn,dc=sample,dc=com");
 		vo.setName("myDn*Partial");
@@ -392,7 +392,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void createOnUnkownCompany() {
+	void createOnUnkownCompany() {
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setName("any");
 		vo.setType(DelegateType.COMPANY);
@@ -403,7 +403,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void createOnSubTree() {
+	void createOnSubTree() {
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setName("cn=Any,dc=sample,dc=com");
 		vo.setReceiver("fdaugan");
@@ -424,7 +424,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void createOnSubTreeInvalidDn() {
+	void createOnSubTreeInvalidDn() {
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setName("myDn,dc=sample,dc=com");
 		vo.setReceiver("fdaugan");
@@ -435,7 +435,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void updateForbiddenNotAdminDn() {
+	void updateForbiddenNotAdminDn() {
 		initSpringSecurityContext("mlavoine");
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setId(expected.getId());
@@ -448,7 +448,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void updateInvisibleDelegateUser() {
+	void updateInvisibleDelegateUser() {
 		initSpringSecurityContext("mlavoine");
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setId(expected.getId());
@@ -461,7 +461,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void updateInvisibleDelegateCompany() {
+	void updateInvisibleDelegateCompany() {
 		initSpringSecurityContext("mtuyer");
 		final int id = em.createQuery("SELECT id FROM DelegateOrg WHERE receiver=:user AND dn=:dn", Integer.class)
 				.setParameter("user", "mtuyer").setParameter("dn", "ou=fonction,ou=groups,dc=sample,dc=com").getSingleResult();
@@ -476,7 +476,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void updateInvisibleReceiverUser() {
+	void updateInvisibleReceiverUser() {
 		initSpringSecurityContext("mtuyer");
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setId(expected.getId());
@@ -489,7 +489,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void updateInvisibleReceiverCompany() {
+	void updateInvisibleReceiverCompany() {
 		initSpringSecurityContext("mtuyer");
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setId(expected.getId());
@@ -503,7 +503,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void updateInvisibleReceiverGroup() {
+	void updateInvisibleReceiverGroup() {
 		initSpringSecurityContext("mtuyer");
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setId(expected.getId());
@@ -517,7 +517,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void updateForbiddenInvalidDelegateType() {
+	void updateForbiddenInvalidDelegateType() {
 		initSpringSecurityContext("mtuyer");
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setId(expected.getId());
@@ -530,7 +530,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void updateForbiddenInvalidDelegateTree() {
+	void updateForbiddenInvalidDelegateTree() {
 		initSpringSecurityContext("mtuyer");
 		final int id = em.createQuery("SELECT id FROM DelegateOrg WHERE receiver=:user AND dn=:dn", Integer.class)
 				.setParameter("user", "mtuyer").setParameter("dn", "ou=fonction,ou=groups,dc=sample,dc=com").getSingleResult();
@@ -545,7 +545,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void updateType() {
+	void updateType() {
 		initSpringSecurityContext("mtuyer");
 		final int id = em.createQuery("SELECT id FROM DelegateOrg WHERE receiver=:user AND type=:type", Integer.class)
 				.setParameter("type", DelegateType.COMPANY).setParameter("user", "mtuyer").getSingleResult();
@@ -574,7 +574,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	 * Try to update a delegate does not exist
 	 */
 	@Test
-	public void updateNotExist() {
+	void updateNotExist() {
 		initSpringSecurityContext("mtuyer");
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setId(-5);
@@ -587,7 +587,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void updateToSubTree() {
+	void updateToSubTree() {
 		initSpringSecurityContext("mtuyer");
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setName("cn=any,ou=fonction,ou=groups,dc=sample,dc=com");
@@ -617,7 +617,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void updateNoChange() {
+	void updateNoChange() {
 		initSpringSecurityContext("mtuyer");
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 
@@ -631,7 +631,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void updateNoChangeFromAnother() {
+	void updateNoChangeFromAnother() {
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setName("ou=fonction,ou=groups,dc=sample,dc=com");
 		vo.setReceiver("fdaugan");
@@ -642,7 +642,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void deleteFromBaseDn() {
+	void deleteFromBaseDn() {
 		final long initCount = repository.count();
 		em.clear();
 		resource.delete(expected.getId());
@@ -652,7 +652,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void deleteSubTreeGroup() {
+	void deleteSubTreeGroup() {
 		initSpringSecurityContext("fdaugan");
 		final int id = em.createQuery("SELECT id FROM DelegateOrg WHERE receiver=:user AND name=:name", Integer.class)
 				.setParameter("user", "someone").setParameter("name", "dig rha").getSingleResult();
@@ -665,7 +665,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void delete() {
+	void delete() {
 		final long initCount = repository.count();
 		em.clear();
 		resource.delete(expected.getId());
@@ -675,7 +675,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void deleteNotAdmin() {
+	void deleteNotAdmin() {
 		initSpringSecurityContext("someone");
 		final int id = em.createQuery("SELECT id FROM DelegateOrg WHERE receiver=:user AND name=:name", Integer.class)
 				.setParameter("user", "someone").setParameter("name", "dig rha").getSingleResult();
@@ -685,7 +685,7 @@ public class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	public void deleteUnknown() {
+	void deleteUnknown() {
 		Assertions.assertThrows(ObjectRetrievalFailureException.class, () -> {
 			resource.delete(-5);
 		});

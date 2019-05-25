@@ -26,10 +26,10 @@ import org.ligoj.bootstrap.core.NamedBean;
 /**
  * Test class of {@link CsvStreamingOutput}
  */
-public class CsvStreamingOutputTest {
+class CsvStreamingOutputTest {
 
 	@Test
-	public void write() throws IOException {
+	void write() throws IOException {
 		final ActivitiesComputations computations = new ActivitiesComputations();
 
 		// Nodes

@@ -30,7 +30,7 @@ import org.springframework.context.ApplicationContext;
 /**
  * Test class of {@link CacheLdapRepository}
  */
-public class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
+class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	private CompanyLdapRepository companyRepository;
 	private GroupLdapRepository groupRepository;
 	private UserLdapRepository userRepository;
@@ -46,7 +46,7 @@ public class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	private IdCacheDao cache;
 
 	@BeforeEach
-	public void init() {
+	void init() {
 		companyRepository = Mockito.mock(CompanyLdapRepository.class);
 		groupRepository = Mockito.mock(GroupLdapRepository.class);
 		userRepository = Mockito.mock(UserLdapRepository.class);
@@ -101,7 +101,7 @@ public class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
-	public void getLdapData() {
+	void getLdapData() {
 
 		// Only there for coverage
 
@@ -126,7 +126,7 @@ public class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
-	public void addUserToGroup() {
+	void addUserToGroup() {
 		Assertions.assertEquals(1, user.getGroups().size());
 
 		repository.addUserToGroup(user, groupLdap2);
@@ -137,7 +137,7 @@ public class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
-	public void removeUserFromGroup() {
+	void removeUserFromGroup() {
 		Assertions.assertEquals(1, user.getGroups().size());
 
 		repository.removeUserFromGroup(user, groupLdap);
@@ -147,7 +147,7 @@ public class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
-	public void addGroupToGroup() {
+	void addGroupToGroup() {
 		final GroupOrg parent = groupLdap2;
 		final GroupOrg child = groupLdap;
 
@@ -169,7 +169,7 @@ public class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
-	public void removeGroupFromGroup() {
+	void removeGroupFromGroup() {
 		final GroupOrg parent = groupLdap2;
 		final GroupOrg child = groupLdap;
 		parent.getSubGroups().add(child.getId());
@@ -191,7 +191,7 @@ public class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
-	public void createGroup() {
+	void createGroup() {
 		final GroupOrg newGroupLdap = new GroupOrg("dn3", "G3", new HashSet<>());
 
 		repository.create(newGroupLdap);
@@ -201,7 +201,7 @@ public class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
-	public void createCompany() {
+	void createCompany() {
 		final CompanyOrg newCompanyLdap = new CompanyOrg("dn3", "C3");
 
 		repository.create(newCompanyLdap);
@@ -211,7 +211,7 @@ public class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
-	public void createUser() {
+	void createUser() {
 		final UserOrg newUser = new UserOrg();
 		newUser.setId("u3");
 		newUser.setFirstName("f");
@@ -226,7 +226,7 @@ public class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
-	public void updateUser() {
+	void updateUser() {
 		user.setFirstName("L");
 
 		repository.update(user);
@@ -236,7 +236,7 @@ public class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
-	public void deleteGroup() {
+	void deleteGroup() {
 		Assertions.assertTrue(groups.containsKey("group"));
 		Assertions.assertTrue(user.getGroups().contains("group"));
 
@@ -247,7 +247,7 @@ public class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
-	public void deleteUser() {
+	void deleteUser() {
 		Assertions.assertEquals(1, user.getGroups().size());
 		Assertions.assertTrue(users.containsKey("u"));
 

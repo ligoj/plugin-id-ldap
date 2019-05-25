@@ -34,7 +34,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
+class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	@Autowired
 	private GroupResource resource;
@@ -43,7 +43,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	private UserOrgResource userResource;
 
 	@Test
-	public void findAll() {
+	void findAll() {
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "d"));
 		Assertions.assertEquals(5, groups.getRecordsTotal());
 
@@ -80,7 +80,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void findAll2() {
+	void findAll2() {
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "sea-octopus"));
 		Assertions.assertEquals(1, groups.getRecordsTotal());
 
@@ -96,7 +96,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void findAllDescNoCriteria() {
+	void findAllDescNoCriteria() {
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoDesc("name"));
 		Assertions.assertTrue(groups.getRecordsTotal() >= 16);
 
@@ -106,7 +106,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void findAllNotExistingGroup() {
+	void findAllNotExistingGroup() {
 		initSpringSecurityContext("any");
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "d"));
 		Assertions.assertEquals(0, groups.getRecordsTotal());
@@ -119,7 +119,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	 * involve delegates.
 	 */
 	@Test
-	public void findAllFromMembership() {
+	void findAllFromMembership() {
 		initSpringSecurityContext("mmartin");
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "hub"));
 		Assertions.assertEquals(2, groups.getRecordsTotal());
@@ -132,14 +132,14 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	 * "Hub *" group.
 	 */
 	@Test
-	public void findAllNoRight() {
+	void findAllNoRight() {
 		initSpringSecurityContext("jlast3");
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "hub"));
 		Assertions.assertEquals(0, groups.getRecordsTotal());
 	}
 
 	@Test
-	public void findAllLimitedRights() {
+	void findAllLimitedRights() {
 		initSpringSecurityContext("mmartin");
 		final TableItem<ContainerCountVo> groups = resource.findAll(newUriInfoAscSearch("name", "dig as"));
 		Assertions.assertEquals(1, groups.getRecordsTotal());
@@ -154,26 +154,26 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void findByNameNoType() {
+	void findByNameNoType() {
 		final ContainerWithScopeVo group = resource.findByName("business solution");
 		Assertions.assertEquals("Business Solution", group.getName());
 		Assertions.assertNull(group.getScope());
 	}
 
 	@Test
-	public void findByNameNotExistingGroup() {
+	void findByNameNotExistingGroup() {
 		Assertions.assertNull(resource.findByName("any"));
 	}
 
 	@Test
-	public void findById() {
+	void findById() {
 		final ContainerWithScopeVo group = resource.findByName("dig as");
 		Assertions.assertEquals("DIG AS", group.getName());
 		Assertions.assertEquals("Fonction", group.getScope());
 	}
 
 	@Test
-	public void findByIdNotExists() {
+	void findByIdNotExists() {
 		Assertions.assertNull(resource.findById("any"));
 	}
 
@@ -182,19 +182,19 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	 * does not exist anymore.
 	 */
 	@Test
-	public void findByIdUserNoRight() {
+	void findByIdUserNoRight() {
 		initSpringSecurityContext("assist");
 		Assertions.assertNull(resource.findById("business solution"));
 	}
 
 	@Test
-	public void findByNameNoRight() {
+	void findByNameNoRight() {
 		initSpringSecurityContext("any");
 		Assertions.assertNull(resource.findByName("dig as"));
 	}
 
 	@Test
-	public void findByNameLimitedRights() {
+	void findByNameLimitedRights() {
 		initSpringSecurityContext("mmartin");
 		final ContainerWithScopeVo group = resource.findByName("dig as");
 		Assertions.assertEquals("DIG AS", group.getName());
@@ -202,18 +202,18 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void exists() {
+	void exists() {
 		initSpringSecurityContext("mmartin");
 		Assertions.assertTrue(resource.exists("dig as"));
 	}
 
 	@Test
-	public void existsNot() {
+	void existsNot() {
 		Assertions.assertFalse(resource.exists("any"));
 	}
 
 	@Test
-	public void createNoWriteRight() {
+	void createNoWriteRight() {
 		final ContainerScope typeLdap = containerScopeRepository.findByName("Fonction");
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setName("New-Ax-1-z:Z 0");
@@ -225,7 +225,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void createAlreadyExists() {
+	void createAlreadyExists() {
 		final ContainerScope scope = containerScopeRepository.findByName("Fonction");
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setName("DIG");
@@ -236,7 +236,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void createInvalidParent() {
+	void createInvalidParent() {
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setParent("any");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
@@ -245,7 +245,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void createInvalidAssistant() {
+	void createInvalidAssistant() {
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setAssistants(Collections.singletonList("any"));
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
@@ -254,7 +254,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void createInvalidOwner() {
+	void createInvalidOwner() {
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setOwners(Collections.singletonList("any"));
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
@@ -263,7 +263,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void createInvalidTypeOfParent() {
+	void createInvalidTypeOfParent() {
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setDepartments(Collections.singletonList("SOME"));
 		group.setOwners(Collections.singletonList("fdaugan"));
@@ -275,7 +275,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void createEmptyDeleteWithParent() {
+	void createEmptyDeleteWithParent() {
 		final GroupEditionVo group = new GroupEditionVo();
 		group.setDepartments(Collections.singletonList("SOME"));
 		group.setOwners(Collections.singletonList("fdaugan"));
@@ -316,7 +316,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void createEmptyDelete() {
+	void createEmptyDelete() {
 		final GroupEditionVo group = new GroupEditionVo();
 		createInternal(group, "cn=new-ax-1-z:z 0,ou=fonction,ou=groups,dc=sample,dc=com");
 
@@ -378,7 +378,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void deleteNotExists() {
+	void deleteNotExists() {
 		initSpringSecurityContext("mmartin");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.delete("Any");
@@ -386,7 +386,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void deleteNoRight() {
+	void deleteNoRight() {
 		initSpringSecurityContext("mmartin");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.delete("dig rha");
@@ -394,7 +394,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void emptyNotExists() {
+	void emptyNotExists() {
 		initSpringSecurityContext("mmartin");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.empty("Any");
@@ -402,7 +402,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void emptyNoRight() {
+	void emptyNoRight() {
 		initSpringSecurityContext("mmartin");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.empty("dig rha");
@@ -413,7 +413,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	 * Check managed group is filtered against available groups for write.
 	 */
 	@Test
-	public void getContainersForWrite() {
+	void getContainersForWrite() {
 		initSpringSecurityContext("mlavoine");
 		final TableItem<String> managed = resource.getContainersForWrite(newUriInfo());
 		Assertions.assertEquals(0, managed.getRecordsFiltered());
@@ -426,7 +426,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	 * administration.
 	 */
 	@Test
-	public void getContainersForAdmin() {
+	void getContainersForAdmin() {
 		initSpringSecurityContext("mtuyer");
 		final TableItem<String> managed = resource.getContainersForAdmin(newUriInfo());
 
@@ -441,7 +441,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	 * administration.
 	 */
 	@Test
-	public void getContainersForAdminNoRight() {
+	void getContainersForAdminNoRight() {
 		initSpringSecurityContext("mlavoine");
 		final TableItem<String> managed = resource.getContainersForAdmin(newUriInfo());
 		Assertions.assertEquals(0, managed.getRecordsFiltered());
@@ -450,7 +450,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void getContainersDelegateTreeExactParentDn() {
+	void getContainersDelegateTreeExactParentDn() {
 		initSpringSecurityContext("mlavoine");
 		final TableItem<String> managed = resource.getContainers(newUriInfo());
 		Assertions.assertEquals(4, managed.getRecordsFiltered());
@@ -468,7 +468,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void getContainersDelegateTreeSubParentDn() {
+	void getContainersDelegateTreeSubParentDn() {
 		initSpringSecurityContext("mtuyer");
 		final UriInfo uriInfo = newUriInfo();
 		uriInfo.getQueryParameters().add(DataTableAttributes.PAGE_LENGTH, "100");
@@ -488,7 +488,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void getContainersNoDelegate() {
+	void getContainersNoDelegate() {
 		initSpringSecurityContext("any");
 		final TableItem<String> managed = resource.getContainers(newUriInfo());
 		Assertions.assertEquals(0, managed.getRecordsFiltered());
@@ -497,7 +497,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	public void getContainersDelegateGroup() {
+	void getContainersDelegateGroup() {
 		initSpringSecurityContext("someone");
 		final TableItem<String> managed = resource.getContainers(newUriInfo());
 		Assertions.assertEquals(1, managed.getRecordsFiltered());
@@ -512,7 +512,7 @@ public class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	 * "business solution", and its sub group "Sub Business Solution"
 	 */
 	@Test
-	public void findAllUsingDelegateReceiverCompany() {
+	void findAllUsingDelegateReceiverCompany() {
 		initSpringSecurityContext("flast1");
 		final TableItem<ContainerCountVo> tableItem = resource.findAll(newUriInfoAsc("id"));
 		Assertions.assertEquals(2, tableItem.getRecordsTotal());

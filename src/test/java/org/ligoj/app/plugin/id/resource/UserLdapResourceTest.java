@@ -31,16 +31,16 @@ import org.springframework.test.annotation.Rollback;
  */
 @Rollback
 @Transactional
-public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
+class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 
 	@Test
-	public void findById() {
+	void findById() {
 		final UserOrg userLdap = resource.findById("fdaugan");
 		findById(userLdap);
 	}
 
 	@Test
-	public void findByIdNoCache() {
+	void findByIdNoCache() {
 		final UserOrg userLdap = resource.findByIdNoCache("fdaugan");
 		Assertions.assertNotNull(userLdap);
 		Assertions.assertEquals("fdaugan", userLdap.getId());
@@ -51,13 +51,13 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void findByIdCaseInsensitive() {
+	void findByIdCaseInsensitive() {
 		final UserOrg userLdap = resource.findById("fdaugan");
 		findById(userLdap);
 	}
 
 	@Test
-	public void findBy() {
+	void findBy() {
 		final List<UserOrg> users = resource.findAllBy("mail", "marc.martin@sample.com");
 		Assertions.assertEquals(1, users.size());
 		final UserOrg userLdap = users.get(0);
@@ -67,14 +67,14 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void findByIdNotExists() {
+	void findByIdNotExists() {
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.findById("any");
 		}), "id", "unknown-id");
 	}
 
 	@Test
-	public void findByIdNotManagedUser() {
+	void findByIdNotManagedUser() {
 		initSpringSecurityContext("any");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.findById("fdaugan");
@@ -86,7 +86,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	 * group "dig rha", and matching to criteria "iRsT"
 	 */
 	@Test
-	public void findAllAllFiltersAllRights() {
+	void findAllAllFiltersAllRights() {
 
 		final TableItem<UserOrgVo> tableItem = resource.findAll("ing", "dig rha", "iRsT", newUriInfoAsc("id"));
 		Assertions.assertEquals(2, tableItem.getRecordsTotal());
@@ -110,7 +110,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void findAllAllFiltersReducesGroupsAscLogin() {
+	void findAllAllFiltersReducesGroupsAscLogin() {
 		initSpringSecurityContext("fdaugan");
 		final TableItem<UserOrgVo> tableItem = resource.findAll("ing", "dig rha", "iRsT", newUriInfoAsc("id"));
 		Assertions.assertEquals(2, tableItem.getRecordsTotal());
@@ -132,7 +132,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void findAllNotSecure() {
+	void findAllNotSecure() {
 		initSpringSecurityContext("fdaugan");
 		final List<UserOrg> tableItem = resource.findAllNotSecure("ing", "dig rha");
 		Assertions.assertEquals(4, tableItem.size());
@@ -153,7 +153,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void findAllDefaultDescFirstName() {
+	void findAllDefaultDescFirstName() {
 		final UriInfo uriInfo = newUriInfo();
 		uriInfo.getQueryParameters().add(DataTableAttributes.PAGE_LENGTH, "5");
 		uriInfo.getQueryParameters().add(DataTableAttributes.SORTED_COLUMN, "2");
@@ -181,7 +181,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void findAllDefaultDescMail() {
+	void findAllDefaultDescMail() {
 		final UriInfo uriInfo = newUriInfo();
 		uriInfo.getQueryParameters().add(DataTableAttributes.PAGE_LENGTH, "5");
 		uriInfo.getQueryParameters().add(DataTableAttributes.SORTED_COLUMN, "2");
@@ -203,7 +203,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	 * One delegation to members of group "ligoj-gstack" to see the company "ing"
 	 */
 	@Test
-	public void findAllUsingDelegateReceiverGroup() {
+	void findAllUsingDelegateReceiverGroup() {
 		initSpringSecurityContext("alongchu");
 		final TableItem<UserOrgVo> tableItem = resource.findAll(null, null, null, newUriInfoAsc("id"));
 
@@ -226,7 +226,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	 * within these company : ing(5) + socygan(1)
 	 */
 	@Test
-	public void findAllForMyCompany() {
+	void findAllForMyCompany() {
 		initSpringSecurityContext("assist");
 		final TableItem<UserOrgVo> tableItem = resource.findAll(null, null, null, newUriInfoAsc("id"));
 		Assertions.assertEquals(9, tableItem.getRecordsTotal());
@@ -246,7 +246,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	 * within this company : ing(5)
 	 */
 	@Test
-	public void findAllForMyCompanyFilter() {
+	void findAllForMyCompanyFilter() {
 		initSpringSecurityContext("assist");
 
 		final TableItem<UserOrgVo> tableItem = resource.findAll("ing", null, null, newUriInfoAsc("id"));
@@ -267,7 +267,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	 * search any user even in a different company this user can manage. <br>
 	 */
 	@Test
-	public void findAllForMyGroup() {
+	void findAllForMyGroup() {
 		initSpringSecurityContext("mmartin");
 		final TableItem<UserOrgVo> tableItem = resource.findAll(null, "dig as", null, newUriInfoAsc("id"));
 
@@ -288,7 +288,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	 * <br>
 	 */
 	@Test
-	public void findAllForMySubGroup() {
+	void findAllForMySubGroup() {
 		initSpringSecurityContext("mmartin");
 		final TableItem<UserOrgVo> tableItem = resource.findAll(null, "biz agency", "fdoe2", newUriInfoAsc("id"));
 		Assertions.assertEquals(1, tableItem.getRecordsTotal());
@@ -310,7 +310,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void findAllFullAscCompany() {
+	void findAllFullAscCompany() {
 		initSpringSecurityContext("fdaugan");
 		final TableItem<UserOrgVo> tableItem = resource.findAll(null, null, null, newUriInfoAsc("company"));
 
@@ -324,7 +324,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void findAllFullDescCompany() {
+	void findAllFullDescCompany() {
 		final TableItem<UserOrgVo> tableItem = resource.findAll(null, null, null, newUriInfoDesc("company"));
 		Assertions.assertEquals(16, tableItem.getRecordsTotal());
 		Assertions.assertEquals(16, tableItem.getRecordsFiltered());
@@ -338,7 +338,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void findAllFullAscLastName() {
+	void findAllFullAscLastName() {
 		initSpringSecurityContext("fdaugan");
 		final TableItem<UserOrgVo> tableItem = resource.findAll(null, null, null, newUriInfoAsc("lastName"));
 
@@ -352,7 +352,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void findAllMemberDifferentCase() {
+	void findAllMemberDifferentCase() {
 		final TableItem<UserOrgVo> tableItem = resource.findAll("LigoJ", "ProductioN", "mmarTIN", newUriInfoAsc("lastName"));
 		Assertions.assertEquals(1, tableItem.getRecordsTotal());
 		Assertions.assertEquals(1, tableItem.getRecordsFiltered());
@@ -366,7 +366,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	 * No available delegate for the current user -> 0
 	 */
 	@Test
-	public void findAllNoRight() {
+	void findAllNoRight() {
 		initSpringSecurityContext("any");
 
 		final TableItem<UserOrgVo> tableItem = resource.findAll(null, null, null, newUriInfoAsc("id"));
@@ -380,7 +380,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	 * search any user even in a different company this user can manage. <br>
 	 */
 	@Test
-	public void findAllNoWrite() {
+	void findAllNoWrite() {
 		initSpringSecurityContext("mlavoine");
 		final TableItem<UserOrgVo> tableItem = resource.findAll(null, null, "fdoe2", newUriInfoAsc("id"));
 		Assertions.assertEquals(1, tableItem.getRecordsTotal());
@@ -401,14 +401,14 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	 * Add filter by group, but this group does not exist/not visible. No match.
 	 */
 	@Test
-	public void findAllFilteredNonExistingGroup() {
+	void findAllFilteredNonExistingGroup() {
 		initSpringSecurityContext("fdaugan");
 		final TableItem<UserOrgVo> tableItem = resource.findAll(null, "any", null, newUriInfoAsc("id"));
 		Assertions.assertEquals(0, tableItem.getRecordsTotal());
 	}
 
 	@Test
-	public void createUserAlreadyExists() {
+	void createUserAlreadyExists() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast1");
 		user.setFirstName("FirstA");
@@ -425,7 +425,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void deleteUserNoDelegateCompany() {
+	void deleteUserNoDelegateCompany() {
 		initSpringSecurityContext("mmartin");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.delete("flast1");
@@ -433,14 +433,14 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void deleteLastMember() {
+	void deleteLastMember() {
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.delete("mmartin");
 		}), "id", "last-member-of-group");
 	}
 
 	@Test
-	public void deleteUserNoDelegateWriteCompany() {
+	void deleteUserNoDelegateWriteCompany() {
 		initSpringSecurityContext("mtuyer");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.delete("flast1");
@@ -448,7 +448,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void mergeUserNoChange() {
+	void mergeUserNoChange() {
 		final UserOrg userLdap2 = getUser().findById("flast1");
 		Assertions.assertNull(userLdap2.getDepartment());
 		Assertions.assertNull(userLdap2.getLocalId());
@@ -459,7 +459,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void mergeUser() {
+	void mergeUser() {
 		final UserOrg userLdap2 = getUser().findById("flast1");
 		Assertions.assertNull(userLdap2.getDepartment());
 		Assertions.assertNull(userLdap2.getLocalId());
@@ -481,7 +481,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	 * Update everything : attributes and mails
 	 */
 	@Test
-	public void update() {
+	void update() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast1");
 		user.setFirstName("FirstA");
@@ -518,7 +518,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateFirstName() {
+	void updateFirstName() {
 		// First name change only
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("jlast3");
@@ -545,7 +545,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateLastName() {
+	void updateLastName() {
 		// Last name change only
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("jlast3");
@@ -571,7 +571,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateMail() {
+	void updateMail() {
 		// Mail change only
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("jlast3");
@@ -598,7 +598,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateUserChangeCompanyAndBackAgain() {
+	void updateUserChangeCompanyAndBackAgain() {
 		Assertions.assertEquals("uid=flast0,ou=socygan,ou=external,ou=people,dc=sample,dc=com", getContext("flast0").getDn().toString());
 
 		final UserOrgEditionVo user = new UserOrgEditionVo();
@@ -629,7 +629,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateUserChangeDepartmentNotVisible() {
+	void updateUserChangeDepartmentNotVisible() {
 		initSpringSecurityContext("assist");
 		Assertions.assertEquals("uid=flast0,ou=socygan,ou=external,ou=people,dc=sample,dc=com", getContext("flast0").getDn().toString());
 
@@ -649,7 +649,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateUserChangeDepartmentAndBackAgain() {
+	void updateUserChangeDepartmentAndBackAgain() {
 		Assertions.assertEquals("uid=flast0,ou=socygan,ou=external,ou=people,dc=sample,dc=com", getContext("flast0").getDn().toString());
 
 		final UserOrgEditionVo user = new UserOrgEditionVo();
@@ -688,7 +688,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateUserChangeDepartmentNotExists() {
+	void updateUserChangeDepartmentNotExists() {
 		Assertions.assertEquals("uid=flast0,ou=socygan,ou=external,ou=people,dc=sample,dc=com", getContext("flast0").getDn().toString());
 
 		final UserOrgEditionVo user = new UserOrgEditionVo();
@@ -720,7 +720,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateUserCompanyNotExists() {
+	void updateUserCompanyNotExists() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("FirstA");
@@ -736,7 +736,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateUserGroupNotExists() {
+	void updateUserGroupNotExists() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast1");
 		user.setFirstName("FirstA");
@@ -753,7 +753,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateUserNoChange() {
+	void updateUserNoChange() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("jlast3");
 		user.setFirstName("John3");
@@ -781,7 +781,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateUserNoDelegate() {
+	void updateUserNoDelegate() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast1");
 		user.setFirstName("FirstW");
@@ -798,7 +798,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateNotVisibleTargetCompany() {
+	void updateNotVisibleTargetCompany() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("First0");
@@ -815,7 +815,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateUserNoDelegateCompany() {
+	void updateUserNoDelegateCompany() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("FirstA");
@@ -831,7 +831,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateUserNoDelegateCompanyChangeFirstName() {
+	void updateUserNoDelegateCompanyChangeFirstName() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("FirstA");
@@ -845,7 +845,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateUserNoDelegateCompanyChangeMail() {
+	void updateUserNoDelegateCompanyChangeMail() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("First0");
@@ -859,7 +859,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateUserNoDelegateCompanyNoChange() {
+	void updateUserNoDelegateCompanyNoChange() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast0");
 		user.setFirstName("First0");
@@ -871,7 +871,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateUserNoDelegateGroupForTarget() {
+	void updateUserNoDelegateGroupForTarget() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast1");
 		user.setFirstName("FirstA");
@@ -888,7 +888,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateUserNotExists() {
+	void updateUserNotExists() {
 		final UserOrgEditionVo user = new UserOrgEditionVo();
 		user.setId("flast11");
 		user.setFirstName("FirstA");
@@ -908,7 +908,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	 * current user.
 	 */
 	@Test
-	public void updateUserAddGroup() {
+	void updateUserAddGroup() {
 		// Pre condition, check the user "wuser", has not yet the group "DIG
 		// RHA" we want to be added by "fdaugan"
 		initSpringSecurityContext("fdaugan");
@@ -989,7 +989,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	 * Test user addition to a group this user is already member.
 	 */
 	@Test
-	public void addUserToGroup() {
+	void addUserToGroup() {
 		// Pre condition
 		Assertions.assertTrue(resource.findById("wuser").getGroups().contains("Biz Agency Manager"));
 
@@ -1000,7 +1000,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void deleteUserNoWriteRight() {
+	void deleteUserNoWriteRight() {
 		initSpringSecurityContext("mmartin");
 		Assertions.assertEquals(1, resource.findAll(null, null, "wuser", newUriInfo()).getData().size());
 		Assertions.assertNotNull(getUser().findByIdNoCache("wuser"));
@@ -1011,7 +1011,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void deleteUserNotExists() {
+	void deleteUserNotExists() {
 		initSpringSecurityContext("assist");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
 			resource.delete("any");
@@ -1019,7 +1019,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void updateMembership() {
+	void updateMembership() {
 		final UserLdapRepository repository = new UserLdapRepository();
 		repository.setGroupLdapRepository(Mockito.mock(GroupLdapRepository.class));
 		final List<String> groups = new ArrayList<>();
@@ -1033,7 +1033,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void convertUserRaw() {
+	void convertUserRaw() {
 		final UserOrg userLdap = getUser().toUser("jdoe5");
 		checkRawUser(userLdap);
 		Assertions.assertNotNull(userLdap.getGroups());
@@ -1041,7 +1041,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	@Test
-	public void convertUserNotExist() {
+	void convertUserNotExist() {
 		final UserOrg userLdap = getUser().toUser("any");
 		Assertions.assertNotNull(userLdap);
 		Assertions.assertEquals("any", userLdap.getId());
@@ -1056,7 +1056,7 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	 * Check a user can see all users from the same company
 	 */
 	@Test
-	public void findAllMyCompany() {
+	void findAllMyCompany() {
 		initSpringSecurityContext("mmartin");
 
 		final TableItem<UserOrgVo> tableItem = resource.findAll("ligoj", null, null, newUriInfoAsc("id"));
@@ -1073,14 +1073,14 @@ public class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	 * When the requested company does not exists, return an empty set.
 	 */
 	@Test
-	public void findAllUnknowFilteredCompany() {
+	void findAllUnknowFilteredCompany() {
 		final TableItem<UserOrgVo> tableItem = resource.findAll("any", null, null, newUriInfoAsc("id"));
 		Assertions.assertEquals(0, tableItem.getRecordsTotal());
 		Assertions.assertEquals(0, tableItem.getRecordsFiltered());
 	}
 
 	@Test
-	public void setIamProviderForTest() {
+	void setIamProviderForTest() {
 		// There for test by other plugin/application
 		new UserOrgResource().setIamProvider(new IamProvider[] { Mockito.mock(IamProvider.class) });
 	}

@@ -35,10 +35,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
+class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 
 	@Test
-	public void addUser() {
+	void addUser() {
 		final Set<String> users = new HashSet<>();
 		final GroupLdapRepository groupRepository = new GroupLdapRepository() {
 			@Override
@@ -66,7 +66,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
-	public void addUserAlreadyMember() {
+	void addUserAlreadyMember() {
 		final Set<String> users = new HashSet<>();
 		users.add("flast1");
 		final GroupLdapRepository groupRepository = new GroupLdapRepository() {
@@ -90,7 +90,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	 * Mock a not managed LDAP desynchronization
 	 */
 	@Test
-	public void addUserSyncError() {
+	void addUserSyncError() {
 		final GroupLdapRepository groupRepository = newGroupLdapRepository();
 		final LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
@@ -106,7 +106,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	 * Mock a managed LDAP desynchronization
 	 */
 	@Test
-	public void addUserSync1() {
+	void addUserSync1() {
 		final GroupLdapRepository groupRepository = newGroupLdapRepository();
 		final LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
@@ -120,7 +120,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	 * Mock a managed LDAP desynchronization
 	 */
 	@Test
-	public void addUserSync2() {
+	void addUserSync2() {
 		final GroupLdapRepository groupRepository = newGroupLdapRepository();
 		final LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
@@ -131,7 +131,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
-	public void removeUser() {
+	void removeUser() {
 		final GroupLdapRepository groupRepository = newGroupLdapRepository();
 		final LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
@@ -150,7 +150,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	 * Mock a managed LDAP schema violation
 	 */
 	@Test
-	public void removeUserNotMember() {
+	void removeUserNotMember() {
 		final GroupLdapRepository groupRepository = newGroupLdapRepository();
 		final LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
@@ -163,7 +163,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	 * Mock a managed LDAP schema violation
 	 */
 	@Test
-	public void removeUserSchema() {
+	void removeUserSchema() {
 		final GroupLdapRepository groupRepository = new GroupLdapRepository() {
 			@Override
 			public GroupOrg findById(final String name) {
@@ -184,7 +184,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
-	public void removeGroup() {
+	void removeGroup() {
 		final GroupLdapRepository groupRepository = newGroupLdapRepository();
 		final LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
@@ -192,7 +192,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
-	public void addGroup() {
+	void addGroup() {
 		final GroupLdapRepository groupRepository = newGroupLdapRepository();
 		final LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
@@ -203,7 +203,7 @@ public class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	 * Mock a managed LDAP desynchronization
 	 */
 	@Test
-	public void removeUserSync() {
+	void removeUserSync() {
 		final GroupLdapRepository groupRepository = new GroupLdapRepository() {
 			@Override
 			public GroupOrg findById(final String name) {
