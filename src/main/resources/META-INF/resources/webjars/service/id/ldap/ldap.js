@@ -21,8 +21,8 @@ define(function () {
 			result += '<div class="btn-group btn-link" data-container="body" data-toggle="tooltip" title="' + current.$messages['export'] + '">';
 			result += ' <i class="fas fa-download" data-toggle="dropdown"></i>';
 			result += ' <ul class="dropdown-menu dropdown-menu-right"><li>';
-			result += current.$super('renderServicelink')('file-excel-o', REST_PATH + 'service/id/ldap/activity/' + subscription.id + '/group-' + subscription.parameters['service:id:group'] + '-' + now.format('YYYY-MM-DD') + '.csv', null, 'service:id:activity-group', ' download');
-			result += current.$super('renderServicelink')('file-excel-o', REST_PATH + 'service/id/ldap/activity/' + subscription.id + '/project-' + subscription.parameters['service:id:group'] + '-' + now.format('YYYY-MM-DD') + '.csv', null, 'service:id:activity-project', ' download');
+			result += current.$super('renderServiceLink')('file-excel-o', REST_PATH + 'service/id/ldap/activity/' + subscription.id + '/group-' + subscription.parameters['service:id:group'] + '-' + now.format('YYYY-MM-DD') + '.csv', null, 'service:id:activity-group', ' download');
+			result += current.$super('renderServiceLink')('file-excel-o', REST_PATH + 'service/id/ldap/activity/' + subscription.id + '/project-' + subscription.parameters['service:id:group'] + '-' + now.format('YYYY-MM-DD') + '.csv', null, 'service:id:activity-project', ' download');
 			result += '</li></ul></div>';
 			return result;
 		},
