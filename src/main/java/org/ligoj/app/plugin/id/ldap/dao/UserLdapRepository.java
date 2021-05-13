@@ -763,7 +763,7 @@ public class UserLdapRepository implements IUserRepository {
 	@Override
 	public void setPassword(final UserOrg userLdap, final String password, final String newPassword) {
 		log.info("Changing password for {} ...", userLdap.getId());
-		final ModificationItem[] passwordChange = { new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
+		final var passwordChange = new ModificationItem[] { new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
 				new BasicAttribute(PASSWORD_ATTRIBUTE, digest(newPassword))) };
 
 		// Unlock account when the user is locked by ppolicy

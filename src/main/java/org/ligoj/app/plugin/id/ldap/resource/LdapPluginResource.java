@@ -30,14 +30,12 @@ import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.api.ServicePlugin;
 import org.ligoj.app.api.SubscriptionStatusWithData;
 import org.ligoj.app.iam.Activity;
-import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.IamConfiguration;
 import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.iam.UserOrg;
 import org.ligoj.app.model.CacheProjectGroup;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.model.Node;
-import org.ligoj.app.model.Project;
 import org.ligoj.app.model.Subscription;
 import org.ligoj.app.plugin.id.dao.CacheProjectGroupRepository;
 import org.ligoj.app.plugin.id.ldap.dao.CompanyLdapRepository;
@@ -48,7 +46,6 @@ import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.app.plugin.id.resource.AbstractPluginIdResource;
 import org.ligoj.app.plugin.id.resource.CompanyResource;
 import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
-import org.ligoj.app.plugin.id.resource.ContainerWithScopeVo;
 import org.ligoj.app.plugin.id.resource.GroupResource;
 import org.ligoj.app.plugin.id.resource.IdentityResource;
 import org.ligoj.app.resource.ActivitiesProvider;
@@ -209,20 +206,20 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	@Override
 	protected UserLdapRepository getUserRepository(final String node) {
 		log.info("Build ldap template for node {}", node);
-		final Map<String, String> parameters = pvResource.getNodeParameters(node);
-		final LdapContextSource contextSource = new LdapContextSource();
+		final var parameters = pvResource.getNodeParameters(node);
+		final var contextSource = new LdapContextSource();
 		contextSource.setReferral(parameters.get(PARAMETER_REFERRAL));
 		contextSource.setPassword(parameters.get(PARAMETER_PASSWORD));
 		contextSource.setUrl(parameters.get(PARAMETER_URL));
 		contextSource.setUserDn(parameters.get(PARAMETER_USER));
 		contextSource.setBase(parameters.get(PARAMETER_BASE_BN));
 		contextSource.afterPropertiesSet();
-		final LdapTemplate template = new LdapTemplate();
+		final var template = new LdapTemplate();
 		template.setContextSource(contextSource);
 		template.setIgnorePartialResultException(true);
 
 		// A new repository instance
-		final UserLdapRepository repository = new UserLdapRepository();
+		final var repository = new UserLdapRepository();
 		repository.setTemplate(template);
 		repository.setPeopleBaseDn(StringUtils.trimToEmpty(parameters.get(PARAMETER_PEOPLE_DN)));
 		repository.setPeopleInternalBaseDn(parameters.get(PARAMETER_PEOPLE_INTERNAL_DN));
@@ -250,10 +247,10 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * @return The {@link UserLdapRepository} instance. Cache is involved.
 	 */
 	public GroupLdapRepository newGroupLdapRepository(final String node, final LdapTemplate template) {
-		final Map<String, String> parameters = pvResource.getNodeParameters(node);
+		final var parameters = pvResource.getNodeParameters(node);
 
 		// A new repository instance
-		final GroupLdapRepository repository = new GroupLdapRepository();
+		final var repository = new GroupLdapRepository();
 		repository.setTemplate(template);
 		repository.setGroupsBaseDn(StringUtils.trimToEmpty(parameters.get(PARAMETER_GROUPS_DN)));
 
@@ -270,10 +267,10 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * @return The {@link UserLdapRepository} instance. Cache is involved.
 	 */
 	public CompanyLdapRepository newCompanyLdapRepository(final String node, final LdapTemplate template) {
-		final Map<String, String> parameters = pvResource.getNodeParameters(node);
+		final var parameters = pvResource.getNodeParameters(node);
 
 		// A new repository instance
-		final CompanyLdapRepository repository = new CompanyLdapRepository();
+		final var repository = new CompanyLdapRepository();
 		repository.setTemplate(template);
 		repository.setCompanyBaseDn(parameters.get(PARAMETER_COMPANIES_DN));
 		repository.setQuarantineBaseDn(parameters.get(PARAMETER_QUARANTINE_DN));
@@ -285,31 +282,31 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 
 	@Override
 	public boolean accept(final Authentication authentication, final String node) {
-		final Map<String, String> parameters = pvResource.getNodeParameters(node);
+		final var parameters = pvResource.getNodeParameters(node);
 		return !parameters.isEmpty() && authentication.getName()
 				.matches(StringUtils.defaultString(parameters.get(IdentityResource.PARAMETER_UID_PATTERN), ".*"));
 	}
 
 	@Override
 	public void create(final int subscription) {
-		final Map<String, String> parameters = subscriptionResource.getParameters(subscription);
-		final String group = parameters.get(IdentityResource.PARAMETER_GROUP);
-		final String parentGroup = parameters.get(IdentityResource.PARAMETER_PARENT_GROUP);
-		final String ou = parameters.get(IdentityResource.PARAMETER_OU);
-		final Project project = subscriptionRepository.findOne(subscription).getProject();
-		final String pkey = project.getPkey();
+		final var parameters = subscriptionResource.getParameters(subscription);
+		final var group = parameters.get(IdentityResource.PARAMETER_GROUP);
+		final var parentGroup = parameters.get(IdentityResource.PARAMETER_PARENT_GROUP);
+		final var ou = parameters.get(IdentityResource.PARAMETER_OU);
+		final var project = subscriptionRepository.findOne(subscription).getProject();
+		final var pkey = project.getPkey();
 
 		// Check the relationship between group, OU and project
 		validateGroup(group, ou, pkey);
 
 		// Check the relationship between group, and parent
-		final String parentDn = validateAndCreateParent(group, parentGroup, ou, pkey);
+		final var parentDn = validateAndCreateParent(group, parentGroup, ou, pkey);
 
 		// Create the group inside the parent (OU or parent CN)
-		final String groupDn = "cn=" + group + "," + parentDn;
+		final var groupDn = "cn=" + group + "," + parentDn;
 		log.info("New Group CN would be created {} project {} and subscription {}", group, pkey);
-		final GroupLdapRepository repository = getGroup();
-		final GroupOrg groupLdap = repository.create(groupDn, group);
+		final var repository = getGroup();
+		final var groupLdap = repository.create(groupDn, group);
 
 		// Complete as needed the relationship between parent and this new group
 		if (StringUtils.isNotBlank(parentGroup)) {
@@ -318,7 +315,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		}
 
 		// Associate the project to this group in the cache
-		final CacheProjectGroup projectGroup = new CacheProjectGroup();
+		final var projectGroup = new CacheProjectGroup();
 		projectGroup.setProject(project);
 		projectGroup.setGroup(repository.getCacheRepository().findOneExpected(groupLdap.getId()));
 		cacheProjectGroupRepository.saveAndFlush(projectGroup);
@@ -348,11 +345,11 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * Validate the group against its direct parent (a normalized OU) and return its DN.
 	 */
 	private String validateAndCreateParentOu(final String group, final String ou, final String pkey) {
-		final ContainerScope groupTypeLdap = containerScopeResource.findByName(ContainerScope.TYPE_PROJECT);
-		final String parentDn = groupTypeLdap.getDn();
+		final var groupTypeLdap = containerScopeResource.findByName(ContainerScope.TYPE_PROJECT);
+		final var parentDn = groupTypeLdap.getDn();
 
 		// Build the complete normalized DN from the OU and new Group
-		final String ouDn = "ou=" + ou + "," + parentDn;
+		final var ouDn = "ou=" + ou + "," + parentDn;
 
 		// Check the target OU exists or not and create the OU as needed
 		if (projectCustomerLdapRepository.findById(parentDn, ou) == null) {
@@ -369,7 +366,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * Validate the group against its parent and return the corresponding DN.
 	 */
 	private String validateParentGroup(final String group, final String parentGroup) {
-		final GroupOrg parentGroupLdap = groupLdapResource.findById(parentGroup);
+		final var parentGroupLdap = groupLdapResource.findById(parentGroup);
 		if (parentGroupLdap == null) {
 			// The parent group does not exists
 			throw new ValidationJsonException(IdentityResource.PARAMETER_PARENT_GROUP, BusinessException.KEY_UNKNOWN_ID,
@@ -388,7 +385,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 
 	@Override
 	public void link(final int subscription) {
-		final Map<String, String> parameters = subscriptionResource.getParameters(subscription);
+		final var parameters = subscriptionResource.getParameters(subscription);
 
 		// Validate the job settings
 		validateGroup(parameters);
@@ -445,19 +442,18 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 */
 	private ActivitiesComputations getActivities(final int subscription, final boolean global) throws Exception {
 		// Get users from other LDAP subscriptions
-		final Subscription main = subscriptionResource.checkVisible(subscription);
-		final List<Subscription> subscriptions = subscriptionRepository.findAllOnSameProject(subscription);
-		final Set<UserOrg> users = global ? getMembersOfAllSubscriptions(subscriptions)
-				: getMembersOfSubscription(main);
+		final var main = subscriptionResource.checkVisible(subscription);
+		final var subscriptions = subscriptionRepository.findAllOnSameProject(subscription);
+		final var users = global ? getMembersOfAllSubscriptions(subscriptions) : getMembersOfSubscription(main);
 
 		// Get the activities from each subscription of the same project,
-		final ActivitiesComputations result = new ActivitiesComputations();
+		final var result = new ActivitiesComputations();
 		result.setUsers(users);
-		final List<String> userLogins = users.stream().map(UserOrg::getId).collect(Collectors.toList());
-		final Map<String, Map<String, Activity>> activities = new HashMap<>();
-		final Set<INamableBean<String>> nodes = new LinkedHashSet<>();
-		for (final Subscription projectSubscription : subscriptions) {
-			final ServicePlugin resource = servicePluginLocator.getResource(projectSubscription.getNode().getId());
+		final var userLogins = users.stream().map(UserOrg::getId).collect(Collectors.toList());
+		final var activities = new HashMap<String, Map<String, Activity>>();
+		final var nodes = new LinkedHashSet<INamableBean<String>>();
+		for (final var projectSubscription : subscriptions) {
+			final var resource = servicePluginLocator.getResource(projectSubscription.getNode().getId());
 			addSubscriptionActivities(activities, userLogins, projectSubscription, resource, nodes);
 		}
 		result.setNodes(nodes);
@@ -477,8 +473,8 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * Return members of given subscription.
 	 */
 	private Set<UserOrg> getMembersOfSubscription(final Subscription subscription) {
-		final Set<UserOrg> users = new HashSet<>();
-		final ServicePlugin plugin = servicePluginLocator.getResource(subscription.getNode().getId());
+		final var users = new HashSet<UserOrg>();
+		final var plugin = servicePluginLocator.getResource(subscription.getNode().getId());
 		if (plugin instanceof LdapPluginResource) {
 			users.addAll(((LdapPluginResource) plugin).getMembers(subscription.getId()));
 		}
@@ -493,8 +489,8 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 */
 	public Collection<UserOrg> getMembers(final int subscription) {
 		// Get current subscription parameters
-		final Map<String, String> parameters = subscriptionResource.getParameters(subscription);
-		final String group = parameters.get(IdentityResource.PARAMETER_GROUP);
+		final var parameters = subscriptionResource.getParameters(subscription);
+		final var group = parameters.get(IdentityResource.PARAMETER_GROUP);
 		return userResource.findAllNotSecure(null, group);
 	}
 
@@ -514,9 +510,8 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 
 		// Collect activities of each subscription of unique node
 		if (plugin instanceof ActivitiesProvider && nodes.add(subscription.getNode())) {
-			final Map<String, Activity> subscriptionActivities = ((ActivitiesProvider) plugin)
-					.getActivities(subscription.getId(), users);
-			for (final Entry<String, Activity> userActivity : subscriptionActivities.entrySet()) {
+			final var subscriptionActivities = ((ActivitiesProvider) plugin).getActivities(subscription.getId(), users);
+			for (final var userActivity : subscriptionActivities.entrySet()) {
 				addUserActivities(activities, subscription.getNode(), userActivity);
 			}
 		}
@@ -527,7 +522,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 */
 	private void addUserActivities(final Map<String, Map<String, Activity>> activities, final Node node,
 			final Entry<String, Activity> userActivity) {
-		final String user = userActivity.getKey();
+		final var user = userActivity.getKey();
 		activities.computeIfAbsent(user, k -> new HashMap<>()).put(node.getId(), userActivity.getValue());
 	}
 
@@ -539,12 +534,13 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 */
 	protected INamableBean<String> validateGroup(final Map<String, String> parameters) {
 		// Get group configuration
-		final String group = parameters.get(IdentityResource.PARAMETER_GROUP);
-		final ContainerWithScopeVo groupLdap = groupLdapResource.findByName(group);
+		final var group = parameters.get(IdentityResource.PARAMETER_GROUP);
+		final var groupLdap = groupLdapResource.findByName(group);
 
 		// Check the group exists
 		if (groupLdap == null) {
-			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOWN_ID, group);
+			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOWN_ID,
+					group);
 		}
 
 		// Check the group has type TYPE_PROJECT
@@ -554,7 +550,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		}
 
 		// Return the nice name
-		final INamableBean<String> result = new NamedBean<>();
+		final var result = new NamedBean<String>();
 		result.setName(groupLdap.getName());
 		result.setId(group);
 		return result;
@@ -597,18 +593,18 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	@Path("group/{node}/{criteria}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public List<INamableBean<String>> findGroupsByName(@PathParam("criteria") final String criteria) {
-		final List<INamableBean<String>> result = new ArrayList<>();
-		final String criteriaClean = Normalizer.normalize(criteria);
-		final Set<GroupOrg> visibleGroups = groupLdapResource.getContainers();
-		final List<ContainerScope> types = containerScopeResource.findAllDescOrder(ContainerType.GROUP);
-		for (final GroupOrg group : visibleGroups) {
-			final ContainerScope scope = groupLdapResource.toScope(types, group);
+		final var result = new ArrayList<INamableBean<String>>();
+		final var criteriaClean = Normalizer.normalize(criteria);
+		final var visibleGroups = groupLdapResource.getContainers();
+		final var types = containerScopeResource.findAllDescOrder(ContainerType.GROUP);
+		for (final var group : visibleGroups) {
+			final var scope = groupLdapResource.toScope(types, group);
 
 			// Check type and criteria
 			if (scope != null && ContainerScope.TYPE_PROJECT.equals(scope.getName())
 					&& group.getId().contains(criteriaClean)) {
 				// Return the nice name
-				final INamableBean<String> bean = new NamedBean<>();
+				final var bean = new NamedBean<String>();
 				NamedBean.copy(group, bean);
 				result.add(bean);
 			}
@@ -629,15 +625,15 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	@Path("customer/{node}/{criteria}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Collection<INamableBean<String>> findCustomersByName(@PathParam("criteria") final String criteria) {
-		final Set<INamableBean<String>> result = new TreeSet<>();
-		final String criteriaClean = Normalizer.normalize(criteria);
-		final ContainerScope findByName = containerScopeResource.findByName(ContainerScope.TYPE_PROJECT);
-		final Collection<String> allCustomers = projectCustomerLdapRepository.findAll(findByName.getDn());
+		final var result = new TreeSet<INamableBean<String>>();
+		final var criteriaClean = Normalizer.normalize(criteria);
+		final var findByName = containerScopeResource.findByName(ContainerScope.TYPE_PROJECT);
+		final var allCustomers = projectCustomerLdapRepository.findAll(findByName.getDn());
 
 		// Check type and criteria
 		allCustomers.stream().filter(customer -> customer.contains(criteriaClean)).forEach(customer -> {
 			// Return the nice name
-			final INamableBean<String> bean = new NamedBean<>();
+			final var bean = new NamedBean<String>();
 			// Return the nice name
 			bean.setName(customer);
 			bean.setId(customer);
@@ -650,13 +646,13 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public void delete(final int subscription, final boolean deleteRemoteData) {
 		if (deleteRemoteData) {
 			// Data are removed from the LDAP
-			final Map<String, String> parameters = subscriptionResource.getParameters(subscription);
-			final String group = parameters.get(IdentityResource.PARAMETER_GROUP);
+			final var parameters = subscriptionResource.getParameters(subscription);
+			final var group = parameters.get(IdentityResource.PARAMETER_GROUP);
 
 			// Check the group exists, but is not required to continue the
 			// process
-			final GroupLdapRepository repository = getGroup();
-			final GroupOrg groupLdap = repository.findById(group);
+			final var repository = getGroup();
+			final var groupLdap = repository.findById(group);
 			if (groupLdap != null) {
 				// Perform the deletion
 				repository.delete(groupLdap);
@@ -685,13 +681,13 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 
 	@Override
 	public SubscriptionStatusWithData checkSubscriptionStatus(final Map<String, String> parameters) {
-		final GroupOrg groupLdap = getGroup().findById(parameters.get(IdentityResource.PARAMETER_GROUP));
+		final var groupLdap = getGroup().findById(parameters.get(IdentityResource.PARAMETER_GROUP));
 		if (groupLdap == null) {
 			return new SubscriptionStatusWithData(false);
 		}
 
 		// Non empty group, return amount of members
-		final SubscriptionStatusWithData result = new SubscriptionStatusWithData(true);
+		final var result = new SubscriptionStatusWithData(true);
 		result.put("members", groupLdap.getMembers().size());
 		return result;
 	}
