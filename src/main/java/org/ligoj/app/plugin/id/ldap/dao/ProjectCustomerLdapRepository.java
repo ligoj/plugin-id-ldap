@@ -42,8 +42,7 @@ public class ProjectCustomerLdapRepository {
 	 * Fetch and return all normalized customers for projects. Note the result use cache, so does not reflect the LDAP.
 	 * current state of LDAP.
 	 *
-	 * @param baseDn
-	 *            Base DN.
+	 * @param baseDn Base DN.
 	 * @return all normalized customers for projects. Note the result use cache, so does not reflect the LDAP. current
 	 *         state of LDAP. Key is the normalized name, Value is the DN.
 	 */
@@ -58,16 +57,13 @@ public class ProjectCustomerLdapRepository {
 	/**
 	 * Fetch the DN of the customer having the requested identifier.
 	 *
-	 * @param baseDn
-	 *            Base DN.
-	 * @param id
-	 *            The request customer identifier.
+	 * @param baseDn Base DN.
+	 * @param id     The request customer identifier.
 	 * @return all normalized customers for projects. Key is the DN, Value is the normalized name.
 	 */
 	@CacheResult(cacheName = "customers-by-id")
 	public String findById(@CacheKey final String baseDn, @CacheKey final String id) {
-		final AndFilter filter = new AndFilter()
-				.and(new EqualsFilter(UserLdapRepository.OBJECT_CLASS, CUSTOMER_OF_PROJECT))
+		final var filter = new AndFilter().and(new EqualsFilter(UserLdapRepository.OBJECT_CLASS, CUSTOMER_OF_PROJECT))
 				.and(new EqualsFilter("ou", id));
 		return getUser().getTemplate().search(baseDn, filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).stream()
 				.findAny().map(g -> g.getDn().toString()).orElse(null);
@@ -77,10 +73,9 @@ public class ProjectCustomerLdapRepository {
 	 * Create a new group. There is no synchronized block, so error could occur; this is assumed for performance
 	 * purpose.
 	 *
-	 * @param dn
-	 *            The DN of new customer. Must ends with the OU.
-	 * @param ou
-	 *            The formatted OU.
+	 * @param baseDn Base DN.
+	 * @param ou     The formatted OU.
+	 * @param dn     The DN of new customer. Must ends with the OU.
 	 */
 	@CachePut(cacheName = "customers-by-id")
 	public void create(@CacheKey final String baseDn, @CacheKey final String ou, @CacheValue final String dn) {
@@ -89,7 +84,7 @@ public class ProjectCustomerLdapRepository {
 
 		// First create the LDAP entry
 		log.info("Customer (OU) {} will be created as {}", ou, dn);
-		final DirContextAdapter context = new DirContextAdapter(dn);
+		final var context = new DirContextAdapter(dn);
 		context.setAttributeValues(UserLdapRepository.OBJECT_CLASS, new String[] { CUSTOMER_OF_PROJECT });
 		mapToContext(ou, context);
 		getUser().getTemplate().bind(context);
@@ -98,10 +93,8 @@ public class ProjectCustomerLdapRepository {
 	/**
 	 * Map a customer to LDAP.
 	 *
-	 * @param ou
-	 *            The OU to map.
-	 * @param context
-	 *            The target context to fill.
+	 * @param ou      The OU to map.
+	 * @param context The target context to fill.
 	 */
 	protected void mapToContext(final String ou, final DirContextOperations context) {
 		context.setAttributeValue("ou", ou);

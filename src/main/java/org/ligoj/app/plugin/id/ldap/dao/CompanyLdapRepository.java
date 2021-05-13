@@ -79,15 +79,15 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 	 */
 	@Override
 	public Map<String, CompanyOrg> findAllNoCache() {
-		final Map<String, CompanyOrg> companiesNameToDn = new HashMap<>();
-		for (final DirContextAdapter ldap : template.search(companyBaseDn, "objectClass=" + ORGANIZATIONAL_UNIT,
+		final var companiesNameToDn = new HashMap<String, CompanyOrg>();
+		for (final var ldap : template.search(companyBaseDn, "objectClass=" + ORGANIZATIONAL_UNIT,
 				(Object ctx) -> (DirContextAdapter) ctx)) {
-			final CompanyOrg company = new CompanyOrg(ldap.getDn().toString(), ldap.getStringAttributes("ou")[0]);
+			final var company = new CompanyOrg(ldap.getDn().toString(), ldap.getStringAttributes("ou")[0]);
 			companiesNameToDn.put(company.getId(), company);
 		}
 
 		// Also add/replace the quarantine zone
-		final CompanyOrg quarantine = new CompanyOrg(quarantineBaseDn, getQuarantineCompany());
+		final var quarantine = new CompanyOrg(quarantineBaseDn, getQuarantineCompany());
 		quarantine.setLocked(true);
 		companiesNameToDn.put(quarantine.getId(), quarantine);
 
@@ -144,8 +144,7 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 	/**
 	 * Remove the company from the memory cache.
 	 *
-	 * @param company
-	 *            The company to remove.
+	 * @param company The company to remove.
 	 */
 	private void removeFromJavaCache(final CompanyOrg company) {
 		// Update the raw cache

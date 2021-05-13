@@ -6,7 +6,6 @@ package org.ligoj.app.plugin.id.ldap.dao;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -39,10 +38,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * A LDAP container repository.
  *
- * @param <T>
- *            The container type.
- * @param <C>
- *            The container cache type.
+ * @param <T> The container type.
+ * @param <C> The container cache type.
  */
 @Slf4j
 public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C extends CacheContainer>
@@ -92,31 +89,27 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 	/**
 	 * Map a container to LDAP.
 	 *
-	 * @param entry
-	 *            The container entry to map.
-	 * @param context
-	 *            The target context to fill.
+	 * @param entry   The container entry to map.
+	 * @param context The target context to fill.
 	 */
 	protected abstract void mapToContext(T entry, DirContextOperations context);
 
 	/**
 	 * Create a new container bean. Not in LDAP repository.
 	 *
-	 * @param dn
-	 *            The unique DN of the container.
-	 * @param cn
-	 *            The human readable name (CN) that will be used to build the identifier.
+	 * @param dn The unique DN of the container.
+	 * @param cn The human readable name (CN) that will be used to build the identifier.
 	 * @return A new transient container bean. Never <code>null</code>.
 	 */
 	protected abstract T newContainer(String dn, String cn);
 
 	@Override
 	public T create(final String dn, final String cn) {
-		final T container = newContainer(dn, cn);
+		final var container = newContainer(dn, cn);
 
 		// First create the LDAP entry
 		log.info("{} {} will be created as {}", type.name(), container.getName(), dn);
-		final DirContextAdapter context = new DirContextAdapter(dn);
+		final var context = new DirContextAdapter(dn);
 		context.setAttributeValues("objectClass", new String[] { className });
 		mapToContext(container, context);
 		template.bind(context);
@@ -129,15 +122,15 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 	public Page<T> findAll(final Set<T> groups, final String criteria, final Pageable pageable,
 			final Map<String, Comparator<T>> customComparators) {
 		// Create the set with the right comparator
-		final List<Sort.Order> orders = IteratorUtils
+		final var orders = IteratorUtils
 				.toList(ObjectUtils.defaultIfNull(pageable.getSort(), new ArrayList<Sort.Order>()).iterator());
 		orders.add(DEFAULT_ORDER);
-		final Sort.Order order = orders.get(0);
-		Comparator<T> comparator = customComparators.get(order.getProperty());
+		final var order = orders.get(0);
+		var comparator = customComparators.get(order.getProperty());
 		if (order.getDirection() == Direction.DESC) {
 			comparator = Collections.reverseOrder(comparator);
 		}
-		final Set<T> result = new TreeSet<>(comparator);
+		final var result = new TreeSet<>(comparator);
 
 		// Filter the groups, filtering by the criteria
 		addFilteredByPattern(groups, criteria, result);
@@ -150,7 +143,7 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 	 * For each group, check and add it.
 	 */
 	private void addFilteredByPattern(final Set<T> visibleGroups, final String criteria, final Set<T> result) {
-		for (final T group : visibleGroups) {
+		for (final var group : visibleGroups) {
 			// Check the group matches
 			addFilteredByPattern(criteria, result, group);
 		}
@@ -176,10 +169,8 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 	/**
 	 * Find a container from its identifier. Security is applied regarding the given user.
 	 *
-	 * @param user
-	 *            The user requesting this container.
-	 * @param id
-	 *            The container's identifier. Will be normalized.
+	 * @param user The user requesting this container.
+	 * @param id   The container's identifier. Will be normalized.
 	 * @return The container from its identifier. <code>null</code> if the container is not found or cannot be seen by
 	 *         the given user.
 	 */

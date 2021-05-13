@@ -99,19 +99,19 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	 */
 	@Override
 	public Map<String, GroupOrg> findAllNoCache() {
-		final Map<String, GroupOrg> groups = new HashMap<>();
-		final Map<String, Set<String>> subGroupsDn = new HashMap<>();
-		final Map<String, GroupOrg> dnToGroups = new HashMap<>();
+		final var groups = new HashMap<String, GroupOrg>();
+		final var subGroupsDn = new HashMap<String, Set<String>>();
+		final var dnToGroups = new HashMap<String, GroupOrg>();
 
 		// First pass, collect the groups and dirty relationships
-		for (final DirContextAdapter ldap : template.search(groupsBaseDn,
+		for (final var ldap : template.search(groupsBaseDn,
 				new EqualsFilter("objectClass", GROUP_OF_UNIQUE_NAMES).encode(),
 				(Object ctx) -> (DirContextAdapter) ctx)) {
-			final Set<String> members = new HashSet<>();
-			final String dn = ldap.getDn().toString().toLowerCase(Locale.ENGLISH);
-			final String name = ldap.getStringAttribute("cn");
-			final HashSet<String> subGroups = new HashSet<>();
-			for (final String memberDN : ArrayUtils.nullToEmpty(ldap.getStringAttributes(UNIQUE_MEMBER))) {
+			final var members = new HashSet<String>();
+			final var dn = ldap.getDn().toString().toLowerCase(Locale.ENGLISH);
+			final var name = ldap.getStringAttribute("cn");
+			final var subGroups = new HashSet<String>();
+			for (final var memberDN : ArrayUtils.nullToEmpty(ldap.getStringAttributes(UNIQUE_MEMBER))) {
 				if (memberDN.startsWith("uid")) {
 					// User membership
 					members.add(memberDN);
@@ -120,7 +120,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 					subGroups.add(memberDN);
 				}
 			}
-			final GroupOrg group = new GroupOrg(dn, name, members);
+			final var group = new GroupOrg(dn, name, members);
 			subGroupsDn.put(group.getId(), subGroups);
 			groups.put(group.getId(), group);
 			dnToGroups.put(dn, group);
@@ -137,9 +137,9 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	 */
 	private void updateSubGroups(final Map<String, GroupOrg> groups, final Map<String, Set<String>> subGroupsDn,
 			final Map<String, GroupOrg> dnToGroups) {
-		for (final GroupOrg group : groups.values()) {
-			for (final String subGroupDn : subGroupsDn.get(group.getId())) {
-				final GroupOrg subGroup = dnToGroups.get(Normalizer.normalize(subGroupDn));
+		for (final var group : groups.values()) {
+			for (final var subGroupDn : subGroupsDn.get(group.getId())) {
+				final var subGroup = dnToGroups.get(Normalizer.normalize(subGroupDn));
 				if (subGroup == null) {
 					// The unique member previously found does not match to an existing group, report it
 					log.warn("Broken group reference found '{}' --> {}", group.getDn(), subGroupDn);
@@ -168,8 +168,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	 * Delete the given group. There is no synchronized block, so error could occur; this is assumed for performance
 	 * purpose.
 	 *
-	 * @param group
-	 *            the LDAP group.
+	 * @param group the LDAP group.
 	 */
 	@Override
 	public void delete(final GroupOrg group) {
@@ -201,14 +200,12 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	/**
 	 * Add an "uniqueMember" to given group. Cache is not updated there.
 	 *
-	 * @param element
-	 *            The new member to add.
-	 * @param group
-	 *            CN of the group to update. Must be normalized.
+	 * @param element The new member to add.
+	 * @param group   CN of the group to update. Must be normalized.
 	 * @return the target {@link GroupOrg}.
 	 */
 	private GroupOrg addMember(final ResourceOrg element, final String group) {
-		final GroupOrg groupLdap = findById(group);
+		final var groupLdap = findById(group);
 		if (!groupLdap.getMembers().contains(element.getId())) {
 			// Not useless operation
 			addAttributes(groupLdap.getDn(), UNIQUE_MEMBER, Collections.singletonList(element.getDn()));
@@ -219,16 +216,13 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	/**
 	 * Update the uniqueMember attribute of the user having changed DN. Cache is not updated since.
 	 *
-	 * @param oldUniqueMemberDn
-	 *            Old DN of the member to update.
-	 * @param newUniqueMemberDn
-	 *            New DN of the member to update. UID of the DN should unchanged.
-	 * @param group
-	 *            CN of the group to update.
+	 * @param oldUniqueMemberDn Old DN of the member to update.
+	 * @param newUniqueMemberDn New DN of the member to update. UID of the DN should unchanged.
+	 * @param group             CN of the group to update.
 	 */
 	public void updateMemberDn(final String group, final String oldUniqueMemberDn, final String newUniqueMemberDn) {
-		final GroupOrg groupLdap = findById(group);
-		final ModificationItem[] mods = new ModificationItem[2];
+		final var groupLdap = findById(group);
+		final var mods = new ModificationItem[2];
 		mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
 				new BasicAttribute(UNIQUE_MEMBER, oldUniqueMemberDn));
 		mods[1] = new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute(UNIQUE_MEMBER, newUniqueMemberDn));
@@ -256,10 +250,8 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	/**
 	 * Remove a group from another group. Cache is updated. There is no deletion.
 	 *
-	 * @param subGroup
-	 *            {@link GroupOrg} to remove.
-	 * @param group
-	 *            CN of the group to update.
+	 * @param subGroup {@link GroupOrg} to remove.
+	 * @param group    CN of the group to update.
 	 */
 	public void removeGroup(final GroupOrg subGroup, final String group) {
 		// Remove from Java cache and from SQL cache
@@ -269,18 +261,16 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	/**
 	 * Remove an "uniqueMember" from given group. Cache is not updated there.
 	 *
-	 * @param uniqueMember
-	 *            DN of the member to remove.
-	 * @param group
-	 *            CN of the group to update. Must be normalized.
+	 * @param uniqueMember DN of the member to remove.
+	 * @param group        CN of the group to update. Must be normalized.
 	 * @return the {@link GroupOrg} where the member has just been removed from.
 	 */
 	private GroupOrg removeMember(final ResourceOrg uniqueMember, final String group) {
-		final GroupOrg groupLdap = findById(group);
+		final var groupLdap = findById(group);
 		if (groupLdap.getMembers().contains(uniqueMember.getId())
 				|| groupLdap.getSubGroups().contains(uniqueMember.getId())) {
 			// Not useless LDAP operation, avoid LDAP duplicate deletion
-			final ModificationItem[] mods = new ModificationItem[1];
+			final var mods = new ModificationItem[1];
 			mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
 					new BasicAttribute(UNIQUE_MEMBER, uniqueMember.getDn()));
 			try {
@@ -323,7 +313,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 		}
 
 		// Build the modification operation
-		final ModificationItem[] mods = values.stream()
+		final var mods = values.stream()
 				.map(v -> new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute(attribute, v)))
 				.toArray(ModificationItem[]::new);
 		try {
@@ -339,7 +329,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 
 	@Override
 	public GroupOrg findByDepartment(final String department) {
-		final AndFilter filter = new AndFilter().and(new EqualsFilter("objectclass", GROUP_OF_UNIQUE_NAMES))
+		final var filter = new AndFilter().and(new EqualsFilter("objectclass", GROUP_OF_UNIQUE_NAMES))
 				.and(new EqualsFilter(DEPARTMENT_ATTRIBUTE, department));
 		return template.search(groupsBaseDn, filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).stream()
 				.findFirst().map(c -> c.getStringAttribute("cn")).map(Normalizer::normalize).map(this::findById)

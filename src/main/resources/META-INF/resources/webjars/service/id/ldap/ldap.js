@@ -106,9 +106,8 @@ define(function () {
 			validationManager.reset(_('service:id:group'));
 			var $input = _('service:id:group');
 			var simpleName = _('service:id:group-simple-name').val();
-			var organisation = _('service:id:ou').val();
-			var parent = _('service:id:parent-group').val();
-			var fullName = (parent ? parent + '-' : (organisation ? organisation + '-' : '')) + (simpleName || '').toLowerCase();
+			var prefix = _('service:id:parent-group').val() || _('service:id:ou').val();
+			var fullName = (prefix ? prefix + '-' : '') + (simpleName || '').toLowerCase();
 			$input.val(fullName).closest('.form-group').find('.form-control-feedback').remove().end().addClass('has-feedback');
 			if (fullName !== current.$super('model').pkey && !fullName.startsWith(current.$super('model').pkey + '-')) {
 				validationManager.addError($input, {

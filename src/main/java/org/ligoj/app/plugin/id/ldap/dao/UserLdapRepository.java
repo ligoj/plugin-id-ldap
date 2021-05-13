@@ -4,7 +4,6 @@
 package org.ligoj.app.plugin.id.ldap.dao;
 
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,7 +18,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -33,7 +31,6 @@ import javax.naming.directory.InvalidAttributeValueException;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.ldap.LdapContext;
-import javax.naming.ldap.LdapName;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IteratorUtils;
@@ -120,7 +117,6 @@ public class UserLdapRepository implements IUserRepository {
 	 * PPolicy module identifier.
 	 */
 	private static final String PPOLICY_NAME = "_ppolicy";
-	
 
 	/**
 	 * LDAP mapping attributes allowed for search.
@@ -259,11 +255,11 @@ public class UserLdapRepository implements IUserRepository {
 	@Override
 	public UserOrg create(final UserOrg user) {
 		// Build the DN
-		final Name dn = buildDn(user);
+		final var dn = buildDn(user);
 
 		// Create the LDAP entry
 		user.setDn(dn.toString());
-		final DirContextAdapter context = new DirContextAdapter(dn);
+		final var context = new DirContextAdapter(dn);
 		context.setAttributeValues(OBJECT_CLASS, new String[] { peopleClass });
 		mapToContext(user, context);
 		template.bind(context);
@@ -275,15 +271,12 @@ public class UserLdapRepository implements IUserRepository {
 	/**
 	 * Replace a value by another one without touching other values.
 	 *
-	 * @param dn
-	 *            the DN of entry.
-	 * @param attribute
-	 *            The attribute name, single value.
-	 * @param value
-	 *            the new value.
+	 * @param dn        the DN of entry.
+	 * @param attribute The attribute name, single value.
+	 * @param value     the new value.
 	 */
 	public void set(final Name dn, final String attribute, final String value) {
-		final ModificationItem[] mods = new ModificationItem[1];
+		final var mods = new ModificationItem[1];
 		mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(attribute, value));
 		template.modifyAttributes(org.springframework.ldap.support.LdapUtils.newLdapName(dn), mods);
 	}
@@ -291,12 +284,9 @@ public class UserLdapRepository implements IUserRepository {
 	/**
 	 * Replace a value by another one without touching other values.
 	 *
-	 * @param user
-	 *            The entry to update.
-	 * @param attribute
-	 *            The attribute name, single value.
-	 * @param value
-	 *            the new value.
+	 * @param user      The entry to update.
+	 * @param attribute The attribute name, single value.
+	 * @param value     the new value.
 	 */
 	public void set(final UserOrg user, final String attribute, final String value) {
 		set(org.springframework.ldap.support.LdapUtils.newLdapName(user.getDn()), attribute, value);
@@ -309,7 +299,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	@Override
 	public List<UserOrg> findAllBy(final String attribute, final String value) {
-		final AndFilter filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, peopleClass))
+		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, peopleClass))
 				.and(new EqualsFilter(SEARCH_MAPPER.getOrDefault(attribute, attribute), value));
 		return template.search(peopleBaseDn, filter.encode(), mapper).stream()
 				.map(u -> Optional.ofNullable(findById(u.getId())).orElse(u)).collect(Collectors.toList());
@@ -325,26 +315,25 @@ public class UserLdapRepository implements IUserRepository {
 	public Page<UserOrg> findAll(final Collection<GroupOrg> requiredGroups, final Set<String> companies,
 			final String criteria, final Pageable pageable) {
 		// Create the set with the right comparator
-		final List<Sort.Order> orders = IteratorUtils
+		final var orders = IteratorUtils
 				.toList(ObjectUtils.defaultIfNull(pageable.getSort(), new ArrayList<Sort.Order>()).iterator());
 		orders.add(DEFAULT_ORDER);
-		final Sort.Order order = orders.get(0);
-		Comparator<UserOrg> comparator = ObjectUtils.defaultIfNull(COMPARATORS.get(order.getProperty()),
-				DEFAULT_COMPARATOR);
+		final var order = orders.get(0);
+		var comparator = ObjectUtils.defaultIfNull(COMPARATORS.get(order.getProperty()), DEFAULT_COMPARATOR);
 		if (order.getDirection() == Direction.DESC) {
 			comparator = Collections.reverseOrder(comparator);
 		}
-		final Set<UserOrg> result = new TreeSet<>(comparator);
+		final var result = new TreeSet<>(comparator);
 
 		// Filter the users traversing firstly the required groups and their members,
 		// the companies, then the criteria
-		final Map<String, UserOrg> users = findAll();
+		final var users = findAll();
 		if (requiredGroups == null) {
 			// No constraint on group
 			addFilteredByCompaniesAndPattern(users.keySet(), companies, criteria, result, users);
 		} else {
 			// User must be within one the given groups
-			for (final GroupOrg requiredGroup : requiredGroups) {
+			for (final var requiredGroup : requiredGroups) {
 				addFilteredByCompaniesAndPattern(requiredGroup.getMembers(), companies, criteria, result, users);
 			}
 		}
@@ -356,31 +345,29 @@ public class UserLdapRepository implements IUserRepository {
 	/**
 	 * Return all user entries.
 	 *
-	 * @param groups
-	 *            The existing groups. They will be be used to complete the membership of each returned user.
+	 * @param groups The existing groups. They will be be used to complete the membership of each returned user.
 	 * @return all user entries. Key is the user login.
 	 */
 	@Override
 	public Map<String, UserOrg> findAllNoCache(final Map<String, GroupOrg> groups) {
 
 		// List of attributes to retrieve from LDAP.
-		final String[] returnAttrs = new String[] { SN_ATTRIBUTE, GIVEN_NAME_ATTRIBUTE, PASSWORD_ATTRIBUTE,
-				MAIL_ATTRIBUTE, uidAttribute, departmentAttribute, localIdAttribute, lockedAttribute,
-				PWD_ACCOUNT_LOCKED_ATTRIBUTE };
+		final var returnAttrs = new String[] { SN_ATTRIBUTE, GIVEN_NAME_ATTRIBUTE, PASSWORD_ATTRIBUTE, MAIL_ATTRIBUTE,
+				uidAttribute, departmentAttribute, localIdAttribute, lockedAttribute, PWD_ACCOUNT_LOCKED_ATTRIBUTE };
 
 		// Fetch users and their direct attributes
-		final List<UserOrg> users = template.search(peopleBaseDn, new EqualsFilter(OBJECT_CLASS, peopleClass).encode(),
+		final var users = template.search(peopleBaseDn, new EqualsFilter(OBJECT_CLASS, peopleClass).encode(),
 				SearchControls.SUBTREE_SCOPE, returnAttrs, mapper);
 
 		// INdex the users by the identifier
-		final Map<String, UserOrg> result = new HashMap<>();
-		for (final UserOrg user : users) {
+		final var result = new HashMap<String, UserOrg>();
+		for (final var user : users) {
 			user.setGroups(new ArrayList<>());
 			result.put(user.getId(), user);
 		}
 
 		// Update the memberships of this user
-		for (final Entry<String, GroupOrg> groupEntry : groups.entrySet()) {
+		for (final var groupEntry : groups.entrySet()) {
 			updateMembership(result, groupEntry);
 		}
 		return result;
@@ -399,17 +386,17 @@ public class UserLdapRepository implements IUserRepository {
 	 * Update the membership of given group. All users are checked.
 	 */
 	private void updateMembership(final Map<String, UserOrg> result, final Entry<String, GroupOrg> groupEntry) {
-		final GroupOrg groupLdap = groupEntry.getValue();
-		final String group = groupLdap.getId();
+		final var groupLdap = groupEntry.getValue();
+		final var group = groupLdap.getId();
 		new ArrayList<>(groupLdap.getMembers()).forEach(dn -> {
 			// Extract the UID
-			final String uid = DnUtils.toRdn(dn);
+			final var uid = DnUtils.toRdn(dn);
 
 			// Remove this DN from the members, it would be replaced by the RDN form
 			groupLdap.getMembers().remove(dn);
 
 			// Check the broken UID reference
-			final UserOrg user = result.get(uid);
+			final var user = result.get(uid);
 			if (user == null) {
 				if (!dn.startsWith(GroupLdapRepository.DEFAULT_MEMBER_DN)) {
 					// It is a real broken reference
@@ -436,8 +423,7 @@ public class UserLdapRepository implements IUserRepository {
 	/**
 	 * Return DN from entry.
 	 *
-	 * @param entry
-	 *            LDAP entry to convert to DN.
+	 * @param entry LDAP entry to convert to DN.
 	 * @return DN from entry.
 	 */
 	public Name buildDn(final UserOrg entry) {
@@ -448,10 +434,8 @@ public class UserLdapRepository implements IUserRepository {
 	/**
 	 * Return DN from entry.
 	 *
-	 * @param login
-	 *            The user login to create.
-	 * @param companyDn
-	 *            The target company DN.
+	 * @param login     The user login to create.
+	 * @param companyDn The target company DN.
 	 * @return DN from entry.
 	 */
 	private String buildDn(final String login, final String companyDn) {
@@ -474,7 +458,7 @@ public class UserLdapRepository implements IUserRepository {
 
 		@Override
 		public UserOrg doMapFromContext(final DirContextOperations context) {
-			final UserOrg user = new UserOrg();
+			final var user = new UserOrg();
 			user.setDn(context.getDn().toString());
 			user.setLastName(context.getStringAttribute(SN_ATTRIBUTE));
 			user.setFirstName(context.getStringAttribute(GIVEN_NAME_ATTRIBUTE));
@@ -504,15 +488,13 @@ public class UserLdapRepository implements IUserRepository {
 		 * Extract the {@link Date}, author, and the previous company from the locked attribute if available and matched
 		 * to the expected {@link UserLdapRepository#lockedValue}
 		 *
-		 * @param user
-		 *            The user to update.
-		 * @param lockedValue
-		 *            The locked value flag. May be <code>null</code>.
+		 * @param user        The user to update.
+		 * @param lockedValue The locked value flag. May be <code>null</code>.
 		 */
 		private void fillLockedData(final SimpleUserOrg user, final String lockedValue) {
 			if (StringUtils.startsWith(lockedValue, UserLdapRepository.this.lockedValue)) {
 				// A locked account
-				final String[] fragments = StringUtils.splitPreserveAllTokens(lockedValue, '|');
+				final var fragments = StringUtils.splitPreserveAllTokens(lockedValue, '|');
 				user.setLocked(new Date(Long.parseLong(fragments[1])));
 				user.setLockedBy(fragments[2]);
 				user.setIsolated(StringUtils.defaultIfEmpty(fragments[3], null));
@@ -523,12 +505,11 @@ public class UserLdapRepository implements IUserRepository {
 	/**
 	 * Extract the company from the DN of this user.
 	 *
-	 * @param dn
-	 *            The user DN.
+	 * @param dn The user DN.
 	 * @return The company identifier from the DN of the user.
 	 */
 	protected String toCompany(final String dn) {
-		final Matcher matcher = companyPattern.matcher(Normalizer.normalize(dn));
+		final var matcher = companyPattern.matcher(Normalizer.normalize(dn));
 		if (matcher.matches()) {
 			if (matcher.groupCount() > 0) {
 				return Normalizer.normalize(matcher.group(1));
@@ -552,8 +533,8 @@ public class UserLdapRepository implements IUserRepository {
 	private void addFilteredByCompaniesAndPattern(final Set<String> members, final Set<String> companies,
 			final String criteria, final Set<UserOrg> result, final Map<String, UserOrg> users) {
 		// Filter by company for each members
-		for (final String member : members) {
-			final UserOrg userLdap = users.get(member);
+		for (final var member : members) {
+			final var userLdap = users.get(member);
 
 			// User is always found since #findAll() ensure the members of the groups exist
 			addFilteredByCompaniesAndPattern(companies, criteria, result, userLdap);
@@ -563,7 +544,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	private void addFilteredByCompaniesAndPattern(final Set<String> companies, final String criteria,
 			final Set<UserOrg> result, final UserOrg userLdap) {
-		final List<CompanyOrg> userCompanies = companyRepository.findAll().get(userLdap.getCompany()).getCompanyTree();
+		final var userCompanies = companyRepository.findAll().get(userLdap.getCompany()).getCompanyTree();
 		if (userCompanies.stream().map(CompanyOrg::getId).anyMatch(companies::contains)) {
 			addFilteredByPattern(criteria, result, userLdap);
 		}
@@ -589,10 +570,8 @@ public class UserLdapRepository implements IUserRepository {
 	/**
 	 * Add the user from the given groups. Cache is also updated.
 	 *
-	 * @param user
-	 *            The user to add to the given groups.
-	 * @param groups
-	 *            the groups to add, normalized.
+	 * @param user   The user to add to the given groups.
+	 * @param groups the groups to add, normalized.
 	 */
 	protected void addUserToGroups(final UserOrg user, final Collection<String> groups) {
 		groups.forEach(g -> groupLdapRepository.addUser(user, g));
@@ -601,10 +580,8 @@ public class UserLdapRepository implements IUserRepository {
 	/**
 	 * Remove the user from the given groups.Cache is also updated.
 	 *
-	 * @param user
-	 *            The user to remove from the given groups.
-	 * @param groups
-	 *            the groups to remove, normalized.
+	 * @param user   The user to remove from the given groups.
+	 * @param groups the groups to remove, normalized.
 	 */
 	protected void removeUserFromGroups(final UserOrg user, final Collection<String> groups) {
 		groups.forEach(g -> groupLdapRepository.removeUser(user, g));
@@ -612,13 +589,13 @@ public class UserLdapRepository implements IUserRepository {
 
 	@Override
 	public void updateUser(final UserOrg user) {
-		final DirContextOperations context = template
+		final var context = template
 				.lookupContext(org.springframework.ldap.support.LdapUtils.newLdapName(user.getDn()));
 		mapToContext(user, context);
 		template.modifyAttributes(context);
 
 		// Also, update the cache
-		final UserOrg userLdap = findById(user.getId());
+		final var userLdap = findById(user.getId());
 		user.copy((SimpleUser) userLdap);
 		userLdap.setMails(user.getMails());
 
@@ -627,7 +604,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	@Override
 	public void delete(final UserOrg user) {
-		final Name userDn = org.springframework.ldap.support.LdapUtils.newLdapName(user.getDn());
+		final var userDn = org.springframework.ldap.support.LdapUtils.newLdapName(user.getDn());
 
 		// Delete the user from LDAP
 		template.unbind(userDn);
@@ -651,18 +628,15 @@ public class UserLdapRepository implements IUserRepository {
 	 * <li>Set the disabled flag.</li>
 	 * </ul>
 	 *
-	 * @param principal
-	 *            Principal user requesting the lock.
-	 * @param user
-	 *            The LDAP user to disable.
-	 * @param isolate
-	 *            When <code>true</code>, the user will be isolated in addition.
+	 * @param principal Principal user requesting the lock.
+	 * @param user      The LDAP user to disable.
+	 * @param isolate   When <code>true</code>, the user will be isolated in addition.
 	 */
 	private void lock(final String principal, final UserOrg user, final boolean isolate) {
 		if (user.getLockedBy() == null) {
 			// Not yet locked
-			final ModificationItem[] mods = new ModificationItem[2];
-			final long timeInMillis = DateUtils.newCalendar().getTimeInMillis();
+			final var mods = new ModificationItem[2];
+			final var timeInMillis = DateUtils.newCalendar().getTimeInMillis();
 			mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(lockedAttribute, String
 					.format("%s|%s|%s|%s|", lockedValue, timeInMillis, principal, isolate ? user.getCompany() : "")));
 			mods[1] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_ATTRIBUTE, null));
@@ -679,7 +653,7 @@ public class UserLdapRepository implements IUserRepository {
 		if (user.getIsolated() == null) {
 			// Not yet isolated
 			lock(principal, user, true);
-			final String previousCompany = user.getCompany();
+			final var previousCompany = user.getCompany();
 			move(user, companyRepository.findById(companyRepository.getQuarantineCompany()));
 			user.setIsolated(previousCompany);
 		}
@@ -696,9 +670,9 @@ public class UserLdapRepository implements IUserRepository {
 
 	@Override
 	public void move(final UserOrg user, final CompanyOrg company) {
-		final LdapName newDn = org.springframework.ldap.support.LdapUtils
+		final var newDn = org.springframework.ldap.support.LdapUtils
 				.newLdapName(buildDn(user.getId(), company.getDn()));
-		final LdapName oldDn = org.springframework.ldap.support.LdapUtils.newLdapName(user.getDn());
+		final var oldDn = org.springframework.ldap.support.LdapUtils.newLdapName(user.getDn());
 		template.rename(oldDn, newDn);
 		user.setDn(newDn.toString());
 		user.setCompany(company.getId());
@@ -727,10 +701,10 @@ public class UserLdapRepository implements IUserRepository {
 	@Override
 	public boolean authenticate(final String name, final String password) {
 		log.info("Authenticating {} ...", name);
-		final String property = getAuthenticateProperty(name);
-		final AndFilter filter = new AndFilter().and(new EqualsFilter("objectclass", peopleClass))
+		final var property = getAuthenticateProperty(name);
+		final var filter = new AndFilter().and(new EqualsFilter("objectclass", peopleClass))
 				.and(new EqualsFilter(property, name));
-		final boolean result = template.authenticate(peopleBaseDn, filter.encode(), password);
+		final var result = template.authenticate(peopleBaseDn, filter.encode(), password);
 		log.info("Authenticate {} : {}", name, result);
 		return result;
 	}
@@ -738,8 +712,7 @@ public class UserLdapRepository implements IUserRepository {
 	/**
 	 * Return the property name used to match the user name.
 	 *
-	 * @param name
-	 *            The current principal.
+	 * @param name The current principal.
 	 * @return the property name used to match the user name.
 	 */
 	public String getAuthenticateProperty(final String name) {
@@ -748,7 +721,7 @@ public class UserLdapRepository implements IUserRepository {
 
 	@Override
 	public String getToken(final String login) {
-		final AndFilter filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, peopleClass))
+		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, peopleClass))
 				.and(new EqualsFilter(uidAttribute, login));
 		return template.search(peopleBaseDn, filter.encode(), new AbstractContextMapper<String>() {
 			@Override
@@ -764,8 +737,7 @@ public class UserLdapRepository implements IUserRepository {
 	/**
 	 * Validate and set the company pattern.
 	 *
-	 * @param companyPattern
-	 *            Pattern capturing the company from the DN of the user. May be a row string for constant.
+	 * @param companyPattern Pattern capturing the company from the DN of the user. May be a row string for constant.
 	 */
 	public void setCompanyPattern(final String companyPattern) {
 		this.companyPattern = Pattern.compile(companyPattern);
@@ -774,8 +746,7 @@ public class UserLdapRepository implements IUserRepository {
 	/**
 	 * Digest with SSHA the given clear password.
 	 *
-	 * @param password
-	 *            the clear password to digest.
+	 * @param password the clear password to digest.
 	 * @return a SSHA digest.
 	 */
 	@SuppressWarnings("deprecation")
@@ -802,7 +773,7 @@ public class UserLdapRepository implements IUserRepository {
 		template.executeReadWrite(new ContextExecutor<>() {
 			@Override
 			public Object executeWithContext(final DirContext dirCtx) throws NamingException {
-				LdapContext ctx = (LdapContext) dirCtx;
+				final var ctx = (LdapContext) dirCtx;
 				ctx.removeFromEnvironment(LDAP_CONNECT_POOL);
 				ctx.addToEnvironment(Context.SECURITY_PRINCIPAL, userLdap.getDn());
 				ctx.addToEnvironment(Context.SECURITY_CREDENTIALS,
@@ -826,12 +797,11 @@ public class UserLdapRepository implements IUserRepository {
 	/**
 	 * Generate and set a temporary password to specified user.
 	 *
-	 * @param user
-	 *            User to update.
+	 * @param user User to update.
 	 * @return current user password.
 	 */
 	private String getTmpPassword(final UserOrg user) {
-		final String tmpPassword = GENERATOR.generate(10);
+		final var tmpPassword = GENERATOR.generate(10);
 		// set the new generated password
 		setPassword(user, tmpPassword);
 		return tmpPassword;
@@ -840,16 +810,15 @@ public class UserLdapRepository implements IUserRepository {
 	/**
 	 * Normalize OpenLdap date format.
 	 *
-	 * @param utc
-	 *            OpenLdap date format.
+	 * @param utc OpenLdap date format.
 	 * @return normalized date.
 	 */
 	public Date parseLdapDate(final String utc) {
 		Date date = null;
 		// setup x.208 generalized time formatter
-		final DateFormat formatter = new SimpleDateFormat(OPEN_LDAP_DATE_FORMAT);
+		final var formatter = new SimpleDateFormat(OPEN_LDAP_DATE_FORMAT);
 		try {
-			// parse utc into Date
+			// Parse UTC into Date
 			date = formatter.parse(utc);
 		} catch (final ParseException e) {
 			log.info("Error while parsing date {}: {}", utc, e.getMessage());
@@ -861,9 +830,9 @@ public class UserLdapRepository implements IUserRepository {
 	@Override
 	public void checkLockStatus(final UserOrg user) {
 		// List of attributes to retrieve from LDAP.
-		final String[] returnAttrs = new String[] { PWD_ACCOUNT_LOCKED_ATTRIBUTE };
+		final var returnAttrs = new String[] { PWD_ACCOUNT_LOCKED_ATTRIBUTE };
 
-		final AndFilter filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, peopleClass))
+		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, peopleClass))
 				.and(new EqualsFilter(uidAttribute, user.getId()));
 		template.search(peopleBaseDn, filter.encode(), SearchControls.SUBTREE_SCOPE, returnAttrs,
 				new AbstractContextMapper<UserOrg>() {

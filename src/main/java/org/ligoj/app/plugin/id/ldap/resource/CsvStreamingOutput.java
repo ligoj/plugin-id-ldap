@@ -16,7 +16,6 @@ import javax.ws.rs.core.StreamingOutput;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.ligoj.app.iam.Activity;
 import org.ligoj.app.iam.UserOrg;
-import org.ligoj.bootstrap.core.INamableBean;
 
 /**
  * CSV output writer for user activities.
@@ -28,8 +27,7 @@ public class CsvStreamingOutput implements StreamingOutput {
 	/**
 	 * Constructor for database offline data.
 	 * 
-	 * @param computations
-	 *            Activities computations with issues.
+	 * @param computations Activities computations with issues.
 	 */
 	public CsvStreamingOutput(final ActivitiesComputations computations) {
 		this.computations = computations;
@@ -37,8 +35,8 @@ public class CsvStreamingOutput implements StreamingOutput {
 
 	@Override
 	public void write(final OutputStream output) throws IOException {
-		final Writer writer = new BufferedWriter(new OutputStreamWriter(output, "cp1252"));
-		final FastDateFormat df = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss");
+		final var writer = new BufferedWriter(new OutputStreamWriter(output, "cp1252"));
+		final var df = FastDateFormat.getInstance("yyyy/MM/dd HH:mm:ss");
 
 		// Write headers
 		writeHeaders(writer);
@@ -70,7 +68,7 @@ public class CsvStreamingOutput implements StreamingOutput {
 	 */
 	private void writeNodeHeaders(final Writer writer) throws IOException {
 		// Iterate over audited nodes
-		for (final INamableBean<String> node : computations.getNodes()) {
+		for (final var node : computations.getNodes()) {
 			writer.write(";");
 			writer.write(node.getName());
 		}
@@ -80,12 +78,12 @@ public class CsvStreamingOutput implements StreamingOutput {
 	 * Write activities data. Ends with new line.
 	 */
 	private void writeData(final Writer writer, final Format df) throws IOException {
-		for (final UserOrg user : computations.getUsers()) {
+		for (final var user : computations.getUsers()) {
 			// Write user data
 			writeUserData(writer, user);
 
 			// Write activities of this user
-			final Map<String, Activity> activities = computations.getActivities().get(user.getId());
+			final var activities = computations.getActivities().get(user.getId());
 			if (activities != null) {
 				// At least one activity for this user
 				writeNodeActivities(activities, writer, df);
@@ -110,12 +108,13 @@ public class CsvStreamingOutput implements StreamingOutput {
 	/**
 	 * Write user's activities
 	 */
-	private void writeNodeActivities(final Map<String, Activity> activities, final Writer writer, final Format df) throws IOException {
-		for (final INamableBean<String> node : computations.getNodes()) {
+	private void writeNodeActivities(final Map<String, Activity> activities, final Writer writer, final Format df)
+			throws IOException {
+		for (final var node : computations.getNodes()) {
 			writer.write(';');
 
 			// Last connection, if available
-			final Activity activity = activities.get(node.getId());
+			final var activity = activities.get(node.getId());
 			if (activity != null) {
 				// There is an activity for this user and this node
 				writer.write(df.format(activity.getLastConnection()));
