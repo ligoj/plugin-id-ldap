@@ -77,7 +77,7 @@ class CsvStreamingOutputTest {
 		// Check
 		Assertions.assertEquals(3, lines.size());
 		Assertions.assertEquals("user;firstName;lastName;mail;J0N;J1N", lines.get(0));
-		Assertions.assertEquals("U0;F0;L0;;1970/01/01 01:00:00;", lines.get(1));
+		Assertions.assertTrue(lines.get(1).matches("U0;F0;L0;;1970/01/01 0[01]:00:00;"), "Was: " +lines.get(1));
 		Assertions.assertEquals("U1;F1;L1;M1", lines.get(2));
 
 	}

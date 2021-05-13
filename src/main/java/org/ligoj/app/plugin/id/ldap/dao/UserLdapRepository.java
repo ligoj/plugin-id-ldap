@@ -814,17 +814,15 @@ public class UserLdapRepository implements IUserRepository {
 	 * @return normalized date.
 	 */
 	public Date parseLdapDate(final String utc) {
-		Date date = null;
 		// setup x.208 generalized time formatter
 		final var formatter = new SimpleDateFormat(OPEN_LDAP_DATE_FORMAT);
 		try {
 			// Parse UTC into Date
-			date = formatter.parse(utc);
+			return formatter.parse(utc);
 		} catch (final ParseException e) {
 			log.info("Error while parsing date {}: {}", utc, e.getMessage());
 			throw new BusinessException(BusinessException.KEY_UNKNOWN_ID);
 		}
-		return date;
 	}
 
 	@Override

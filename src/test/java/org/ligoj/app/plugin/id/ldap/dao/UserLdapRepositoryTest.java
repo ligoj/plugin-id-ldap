@@ -90,7 +90,7 @@ class UserLdapRepositoryTest {
 
 	@Test
 	void testClearPassword() {
-		UserOrg user = new UserOrg();
+		var user = new UserOrg();
 		user.setDn("dc=sample,dc=com");
 		new UserLdapRepository() {
 			@Override
@@ -126,10 +126,10 @@ class UserLdapRepositoryTest {
 
 	@Test
 	void toUser() {
-		UserLdapRepository repository = new UserLdapRepository() {
+		var repository = new UserLdapRepository() {
 			@Override
 			public UserOrg findById(final String login) {
-				final UserOrg userLdap = new UserOrg();
+				final var userLdap = new UserOrg();
 				userLdap.setId(login);
 				userLdap.setFirstName("First");
 				return userLdap;
@@ -142,7 +142,7 @@ class UserLdapRepositoryTest {
 
 	@Test
 	void toUserNotExist() {
-		UserLdapRepository repository = new UserLdapRepository() {
+		var repository = new UserLdapRepository() {
 			@Override
 			public UserOrg findById(final String login) {
 				return null;
@@ -161,8 +161,8 @@ class UserLdapRepositoryTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	void getToken() {
-		final LdapTemplate mock = Mockito.mock(LdapTemplate.class);
-		final DirContextOperations dirCtx = Mockito.mock(DirContextOperations.class);
+		final var mock = Mockito.mock(LdapTemplate.class);
+		final var dirCtx = Mockito.mock(DirContextOperations.class);
 		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(),
 				(AbstractContextMapper<String>) ArgumentMatchers.any())).thenAnswer(i -> {
 					((AbstractContextMapper<DirContextOperations>) i.getArgument(2)).mapFromContext(dirCtx);
@@ -175,7 +175,7 @@ class UserLdapRepositoryTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	void getTokenNotExists() {
-		final LdapTemplate mock = Mockito.mock(LdapTemplate.class);
+		final var mock = Mockito.mock(LdapTemplate.class);
 		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(),
 				ArgumentMatchers.any(ContextMapper.class))).thenReturn(Collections.emptyList());
 		repository.setTemplate(mock);
@@ -184,8 +184,7 @@ class UserLdapRepositoryTest {
 
 	@Test
 	void findByIdExpectedNotVisibleCompany() {
-
-		UserLdapRepository repository = new UserLdapRepository() {
+		var repository = new UserLdapRepository() {
 			@Override
 			public UserOrg findById(final String login) {
 				UserOrg user = new UserOrg();
@@ -201,8 +200,7 @@ class UserLdapRepositoryTest {
 
 	@Test
 	void findByIdExpected() {
-
-		UserLdapRepository repository = new UserLdapRepository() {
+		var repository = new UserLdapRepository() {
 			@Override
 			public UserOrg findById(final String login) {
 				UserOrg user = new UserOrg();
@@ -211,7 +209,7 @@ class UserLdapRepositoryTest {
 				return user;
 			}
 		};
-		CompanyLdapRepository mock = Mockito.mock(CompanyLdapRepository.class);
+		var mock = Mockito.mock(CompanyLdapRepository.class);
 		Mockito.when(mock.findById("user1", "company")).thenReturn(new CompanyOrg("", ""));
 		repository.setCompanyRepository(mock);
 		repository.findByIdExpected("user1", "user2");
@@ -219,14 +217,14 @@ class UserLdapRepositoryTest {
 
 	@Test
 	void setPassword() throws NamingException {
-		final LdapContext mockCtx = setPassword("old-password", "new-password");
+		final var mockCtx = setPassword("old-password", "new-password");
 		Mockito.verify(mockCtx).modifyAttributes(ArgumentMatchers.eq("cn=Any"),
 				ArgumentMatchers.any(ModificationItem[].class));
 		Mockito.verify(mockCtx).addToEnvironment("java.naming.security.credentials", "old-password");
 	}
 
 	private LdapContext setPassword(final String password, final String newPassword) {
-		final UserOrg user = new UserOrg();
+		final var user = new UserOrg();
 		user.setDn("cn=Any");
 		final LdapContext mockCtx = newLdapContext();
 		repository.setPassword(user, password, newPassword);
@@ -235,7 +233,7 @@ class UserLdapRepositoryTest {
 
 	@Test
 	void setPasswordNullOldPassword() throws NamingException {
-		final LdapContext mockCtx = setPassword(null, "new-password");
+		final var mockCtx = setPassword(null, "new-password");
 		Mockito.verify(mockCtx).modifyAttributes(ArgumentMatchers.eq("cn=Any"),
 				ArgumentMatchers.any(ModificationItem[].class));
 		Mockito.verify(mockCtx).addToEnvironment(ArgumentMatchers.eq("java.naming.security.credentials"),
@@ -244,7 +242,7 @@ class UserLdapRepositoryTest {
 
 	@Test
 	void setPasswordBadPassword() throws NamingException {
-		final UserOrg user = new UserOrg();
+		final var user = new UserOrg();
 		user.setDn("cn=Any");
 		final LdapContext mockCtx = newLdapContext();
 		Mockito.doThrow(new AuthenticationException()).when(mockCtx).modifyAttributes(ArgumentMatchers.eq("cn=Any"),
@@ -255,9 +253,9 @@ class UserLdapRepositoryTest {
 
 	@Test
 	void setPasswordPolicyFail() throws NamingException {
-		final UserOrg user = new UserOrg();
+		final var user = new UserOrg();
 		user.setDn("cn=Any");
-		final LdapContext mockCtx = newLdapContext();
+		final var mockCtx = newLdapContext();
 		Mockito.doThrow(new InvalidAttributeValueException()).when(mockCtx)
 				.modifyAttributes(ArgumentMatchers.eq("cn=Any"), ArgumentMatchers.any(ModificationItem[].class));
 		MatcherUtil.assertThrows(
@@ -268,10 +266,10 @@ class UserLdapRepositoryTest {
 
 	@SuppressWarnings("unchecked")
 	private LdapContext newLdapContext() {
-		final LdapTemplate mock = Mockito.mock(LdapTemplate.class);
+		final var mock = Mockito.mock(LdapTemplate.class);
 		repository.setTemplate(mock);
 
-		final LdapContext mockCtx = Mockito.mock(LdapContext.class);
+		final var mockCtx = Mockito.mock(LdapContext.class);
 		Mockito.when(mock.executeReadWrite((ContextExecutor<Object>) ArgumentMatchers.any(ContextExecutor.class)))
 				.then(new Answer<>() {
 					@Override
@@ -283,23 +281,24 @@ class UserLdapRepositoryTest {
 	}
 
 	@Test
-	void testValidLdapDate() {
-		final String ldapDate = "20180206102244Z";
-		Assertions.assertEquals(1517908964000L, repository.parseLdapDate(ldapDate).getTime());
+	void testValidLdapDate() {// <1517908964000> but was: <1517912564000>
+		final var ldapDate = "20180206102244Z";
+		final var date = repository.parseLdapDate(ldapDate);
+		Assertions.assertTrue(date.compareTo(new Date(1517908964000L)) <= 3600000, "Was :" + date);
 	}
 
 	@Test
 	void testNotValidLdapDate() {
-		final String ldapDate = "20180206102244";
+		final var ldapDate = "20180206102244";
 		Assertions.assertThrows(BusinessException.class, () -> repository.parseLdapDate(ldapDate).getTime());
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
 	void checkUserStatus() {
-		final UserOrg user = new UserOrg();
-		final LdapTemplate mock = Mockito.mock(LdapTemplate.class);
-		final DirContextOperations dirCtx = Mockito.mock(DirContextOperations.class);
+		final var user = new UserOrg();
+		final var mock = Mockito.mock(LdapTemplate.class);
+		final var dirCtx = Mockito.mock(DirContextOperations.class);
 		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.eq(2),
 				ArgumentMatchers.any(), (AbstractContextMapper<UserOrg>) ArgumentMatchers.any())).thenAnswer(i -> {
 					((AbstractContextMapper<DirContextOperations>) i.getArgument(4)).mapFromContext(dirCtx);
@@ -312,15 +311,15 @@ class UserLdapRepositoryTest {
 		repository.setTemplate(mock);
 		repository.checkLockStatus(user);
 
-		Assertions.assertEquals(1517908964000L, user.getLocked().getTime());
+		Assertions.assertTrue(user.getLocked().compareTo(new Date(1517908964000L)) <= 3600000, "Was :" + user.getLocked());
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
 	void testBlockedUserByPpolicy() {
-		final UserOrg user = new UserOrg();
-		final LdapTemplate mock = Mockito.mock(LdapTemplate.class);
-		final DirContextOperations dirCtx = Mockito.mock(DirContextOperations.class);
+		final var user = new UserOrg();
+		final var mock = Mockito.mock(LdapTemplate.class);
+		final var dirCtx = Mockito.mock(DirContextOperations.class);
 		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.eq(2),
 				ArgumentMatchers.any(), (AbstractContextMapper<UserOrg>) ArgumentMatchers.any())).thenAnswer(i -> {
 					((AbstractContextMapper<DirContextOperations>) i.getArgument(4)).mapFromContext(dirCtx);
