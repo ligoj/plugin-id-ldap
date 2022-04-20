@@ -153,8 +153,7 @@ public class ArrayMarshaller<E> implements Marshaller<ArrayTree<E>>
             if ( ( data.length == 1 ) && ( data[0] == 0 ) )
             {
                 E[] array = (E[])new Object[]{};
-                ArrayTree<E> tree = new ArrayTree<E>( comparator, array );
-                return tree;
+                return new ArrayTree<>( comparator, array );
             }
     
             ByteArrayInputStream bin = new ByteArrayInputStream( data );
@@ -185,9 +184,7 @@ public class ArrayMarshaller<E> implements Marshaller<ArrayTree<E>>
                 }
             }
 
-            ArrayTree<E> arrayTree = new ArrayTree<E>( comparator, nodes );
-            
-            return arrayTree;
+            return new ArrayTree<>( comparator, nodes );
         }
         catch (NullPointerException npe )
         {
