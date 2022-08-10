@@ -449,7 +449,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		// Get the activities from each subscription of the same project,
 		final var result = new ActivitiesComputations();
 		result.setUsers(users);
-		final var userLogins = users.stream().map(UserOrg::getId).collect(Collectors.toList());
+		final var userLogins = users.stream().map(UserOrg::getId).toList();
 		final var activities = new HashMap<String, Map<String, Activity>>();
 		final var nodes = new LinkedHashSet<INamableBean<String>>();
 		for (final var projectSubscription : subscriptions) {

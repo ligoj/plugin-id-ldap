@@ -7,7 +7,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.naming.ldap.LdapName;
 
@@ -111,7 +110,7 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 		// Collect all parents and sorted from parent to the leaf
 		company.setCompanyTree(
 				companies.values().stream().filter(c -> DnUtils.equalsOrParentOf(c.getDn(), company.getDn()))
-						.sorted(Comparator.comparing(CompanyOrg::getLdapName)).collect(Collectors.toList()));
+						.sorted(Comparator.comparing(CompanyOrg::getLdapName)).toList());
 	}
 
 	/**
@@ -158,8 +157,8 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 		 * Remove from this company, all companies within (sub LDAP DN) this company. This operation is needed since we
 		 * are not rebuilding the cache from the LDAP. This save a lot of computations.
 		 */
-		findAll().values().stream().filter(g -> DnUtils.equalsOrParentOf(container.getDn(), g.getDn()))
-				.collect(Collectors.toList()).forEach(this::removeFromJavaCache);
+		findAll().values().stream().filter(g -> DnUtils.equalsOrParentOf(container.getDn(), g.getDn())).toList()
+				.forEach(this::removeFromJavaCache);
 
 		// Remove from LDAP the recursively the company. Anything that was not nicely cleaned will be deleted there.
 		template.unbind(container.getDn(), true);

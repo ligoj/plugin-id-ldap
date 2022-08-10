@@ -19,7 +19,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
@@ -302,7 +301,7 @@ public class UserLdapRepository implements IUserRepository {
 		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, peopleClass))
 				.and(new EqualsFilter(SEARCH_MAPPER.getOrDefault(attribute, attribute), value));
 		return template.search(peopleBaseDn, filter.encode(), mapper).stream()
-				.map(u -> Optional.ofNullable(findById(u.getId())).orElse(u)).collect(Collectors.toList());
+				.map(u -> Optional.ofNullable(findById(u.getId())).orElse(u)).toList();
 	}
 
 	@Override
