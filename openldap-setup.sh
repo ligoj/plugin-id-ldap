@@ -20,3 +20,6 @@ rootdn          "cn=Manager,dc=example,dc=com"
 rootpw      {SSHA}....
 
 sudo /usr/libexec/slapd -d3
+
+
+ldapadd -x -D "cn=Manager,dc=sample,dc=com" -W -H ldap:// -f /Users/fabdouglas/git/ligoj-plugins/plugin-id-ldap-embedded/src/main/resources/export/base.ldif
