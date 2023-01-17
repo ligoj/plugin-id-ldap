@@ -108,7 +108,7 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 		final Map<CacheDataType, Map<String, ? extends ResourceOrg>> ldapData = repository.getData();
 
 		Assertions.assertEquals("Company", ((CompanyOrg) ldapData.get(CacheDataType.COMPANY).get("company")).getName());
-		Assertions.assertEquals("dnc", ((CompanyOrg) ldapData.get(CacheDataType.COMPANY).get("company")).getDn());
+		Assertions.assertEquals("dnc", ldapData.get(CacheDataType.COMPANY).get("company").getDn());
 		final GroupOrg groupLdap = (GroupOrg) ldapData.get(CacheDataType.GROUP).get("group");
 		Assertions.assertEquals("dn", groupLdap.getDn());
 		Assertions.assertEquals("group", groupLdap.getId());

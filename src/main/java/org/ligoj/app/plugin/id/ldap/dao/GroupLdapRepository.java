@@ -125,14 +125,14 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 			dnToGroups.put(dn, group);
 		}
 
-		// Second pass to validate the sub-groups and complete the opposite relation
+		// Second pass to validate the subgroups and complete the opposite relation
 		updateSubGroups(groups, subGroupsDn, dnToGroups);
 
 		return groups;
 	}
 
 	/**
-	 * Complete the sub-groups hierarchy and update the two-ways relationship
+	 * Complete the subgroups hierarchy and update the two-ways relationship
 	 */
 	private void updateSubGroups(final Map<String, GroupOrg> groups, final Map<String, Set<String>> subGroupsDn,
 			final Map<String, GroupOrg> dnToGroups) {
@@ -143,7 +143,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 					// The unique member previously found does not match to an existing group, report it
 					log.warn("Broken group reference found '{}' --> {}", group.getDn(), subGroupDn);
 				} else {
-					// This is a valid sub group, create both sides of this relation. Raw CN are used
+					// This is a valid subgroup, create both sides of this relation. Raw CN are used
 					group.getSubGroups().add(subGroup.getId());
 					subGroup.getGroups().add(group.getId());
 				}
@@ -152,7 +152,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	}
 
 	private void removeFromJavaCache(final GroupOrg group) {
-		// Remove the sub groups from LDAP
+		// Remove the subgroups from LDAP
 		new ArrayList<>(group.getSubGroups()).stream().map(this::findById).filter(Objects::nonNull)
 				.forEach(child -> removeGroup(child, group.getId()));
 
@@ -179,7 +179,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 		findAll().values().stream().filter(g -> DnUtils.equalsOrParentOf(group.getDn(), g.getDn())).toList()
 				.forEach(this::removeFromJavaCache);
 
-		// Remove from LDAP the recursively the group. Anything that was not nicely cleaned will be deleted there.
+		// Remove recursively from LDAP the group. Anything that was not nicely cleaned will be deleted there.
 		template.unbind(org.springframework.ldap.support.LdapUtils.newLdapName(group.getDn()), true);
 
 		// Also, update the cache
@@ -276,11 +276,11 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 				template.modifyAttributes(org.springframework.ldap.support.LdapUtils.newLdapName(groupLdap.getDn()),
 						mods);
 			} catch (final org.springframework.ldap.AttributeInUseException aiue) {
-				// Even if the membership update failed, the user does not exist anymore. A broken reference can remains
+				// Even if the membership update failed, the user does not exist anymore. A broken reference can remain
 				// in LDAP, but this case is well managed.
 				log.info("Unable to remove user {} from the group {} : {}", uniqueMember.getDn(), group, aiue);
 			} catch (final org.springframework.ldap.SchemaViolationException sve) { // NOSONAR - Exception is logged
-				// Occurs when there is a LDAP schema violation such as as last member removed
+				// Occurs when there is a LDAP schema violation such as last member removed
 				log.warn("Unable to remove user {} from the group {}", uniqueMember.getDn(), group, sve);
 				throw new ValidationJsonException("groups", "last-member-of-group", "user", uniqueMember.getId(),
 						"group", group);

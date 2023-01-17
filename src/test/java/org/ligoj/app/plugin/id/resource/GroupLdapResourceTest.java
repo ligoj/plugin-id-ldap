@@ -114,7 +114,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 	/**
 	 * User "mmartin" is member of group "Production", so can see this group and
-	 * all sub-groups. Including the 7 groups "Hub *". These groups are only
+	 * all subgroups. Including the 7 groups "Hub *". These groups are only
 	 * visible because of the membership of group "Production" and does not
 	 * involve delegates.
 	 */
@@ -509,7 +509,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	/**
 	 * flast1 is member of company "ing".<br>
 	 * There is a delegation to members of company "ing" to see the group
-	 * "business solution", and its sub group "Sub Business Solution"
+	 * "business solution", and its subgroup "Sub Business Solution"
 	 */
 	@Test
 	void findAllUsingDelegateReceiverCompany() {

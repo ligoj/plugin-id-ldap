@@ -65,7 +65,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 
 	@Test
 	void findAllFewVisible() {
-		// create a mock URI info with pagination informations
+		// Create a mock URI info with pagination information
 		final UriInfo uriInfo = newFindAllParameters();
 		initSpringSecurityContext("someone");
 
@@ -107,7 +107,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 
 	@Test
 	void findAllSelf() {
-		// create a mock URI info with pagination informations
+		// Create a mock URI info with pagination information
 		final UriInfo uriInfo = newFindAllParameters();
 		initSpringSecurityContext("mlavoine");
 		final TableItem<DelegateOrgLightVo> result = resource.findAll(uriInfo, null);
@@ -140,7 +140,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 
 	@Test
 	void findAll() {
-		// create a mock URI info with pagination informations
+		// Create a mock URI info with pagination information
 		final UriInfo uriInfo = newFindAllParameters();
 		uriInfo.getQueryParameters().putSingle("length", "12");
 
@@ -175,7 +175,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 
 	@Test
 	void findAllReceiverCompany() {
-		// create a mock URI info with pagination informations
+		// Create a mock URI info with pagination information
 		final UriInfo uriInfo = newFindAllParameters();
 		initSpringSecurityContext("jdoe5");
 		final TableItem<DelegateOrgLightVo> result = resource.findAll(uriInfo, null);
@@ -191,7 +191,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 
 	@Test
 	void findAllGlobalSearch() {
-		// create a mock URI info with pagination informations
+		// Create a mock URI info with pagination information
 		final UriInfo uriInfo = newFindAllParameters();
 		uriInfo.getQueryParameters().add(DataTableAttributes.SEARCH, "dig");
 
@@ -203,7 +203,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 
 	@Test
 	void findAllGlobalSearchGroup() {
-		// create a mock URI info with pagination informations
+		// Create a mock URI info with pagination information
 		final UriInfo uriInfo = newFindAllParameters();
 		uriInfo.getQueryParameters().add(DataTableAttributes.SEARCH, "dig");
 
@@ -215,7 +215,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 
 	@Test
 	void findAllGlobalSearchCompany() {
-		// create a mock URI info with pagination informations
+		// Create a mock URI info with pagination information
 		final UriInfo uriInfo = newFindAllParameters();
 		uriInfo.getQueryParameters().add(DataTableAttributes.SEARCH, "dig");
 

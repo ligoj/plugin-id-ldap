@@ -193,18 +193,18 @@ public class UserLdapRepository implements IUserRepository {
 	private String peopleBaseDn;
 
 	/**
-	 * Compiled pattern capturing the company from the DN of the user. May be a row string for constant.
+	 * Compiled pattern capturing the company from the DN of the user. Can be a row string for constant.
 	 */
 	private Pattern companyPattern = Pattern.compile("");
 
 	/**
-	 * Special company that will contains the isolated accounts.
+	 * Special company that will contain the isolated accounts.
 	 */
 	@Setter
 	private String quarantineBaseDn;
 
 	/**
-	 * LDAP Attribute used to tag a locked user. This attribute will contains several serialized values such as
+	 * LDAP Attribute used to tag a locked user. This attribute will contain several serialized values such as
 	 * #lockedValue, author, date and previous company when this user is in the isolate state.<br>
 	 * The structure of this attribute is composed by several fragments with pipe "|" as separator. The whole structure
 	 * is : <code>FLAG|locked date as milliseconds|author|[optional old company for restore]</code>.
@@ -358,7 +358,7 @@ public class UserLdapRepository implements IUserRepository {
 		final var users = template.search(peopleBaseDn, new EqualsFilter(OBJECT_CLASS, peopleClass).encode(),
 				SearchControls.SUBTREE_SCOPE, returnAttrs, mapper);
 
-		// INdex the users by the identifier
+		// Index the users by the identifier
 		final var result = new HashMap<String, UserOrg>();
 		for (final var user : users) {
 			user.setGroups(new ArrayList<>());
@@ -709,10 +709,10 @@ public class UserLdapRepository implements IUserRepository {
 	}
 
 	/**
-	 * Return the property name used to match the user name.
+	 * Return the property name used to match the username.
 	 *
 	 * @param name The current principal.
-	 * @return the property name used to match the user name.
+	 * @return the property name used to match the username.
 	 */
 	public String getAuthenticateProperty(final String name) {
 		return new EmailValidator().isValid(name, null) ? MAIL_ATTRIBUTE : uidAttribute;
@@ -736,7 +736,7 @@ public class UserLdapRepository implements IUserRepository {
 	/**
 	 * Validate and set the company pattern.
 	 *
-	 * @param companyPattern Pattern capturing the company from the DN of the user. May be a row string for constant.
+	 * @param companyPattern Pattern capturing the company from the DN of the user. Can be a row string for constant.
 	 */
 	public void setCompanyPattern(final String companyPattern) {
 		this.companyPattern = Pattern.compile(companyPattern);

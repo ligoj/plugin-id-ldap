@@ -63,7 +63,7 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 	private final String className;
 
 	/**
-	 * Human readable type name.
+	 * Human-readable type name.
 	 */
 	@Getter
 	protected final String typeName;
@@ -98,7 +98,7 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 	 * Create a new container bean. Not in LDAP repository.
 	 *
 	 * @param dn The unique DN of the container.
-	 * @param cn The human readable name (CN) that will be used to build the identifier.
+	 * @param cn The human-readable name (CN) that will be used to build the identifier.
 	 * @return A new transient container bean. Never <code>null</code>.
 	 */
 	protected abstract T newContainer(String dn, String cn);

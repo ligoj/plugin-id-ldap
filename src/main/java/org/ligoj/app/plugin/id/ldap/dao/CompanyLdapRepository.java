@@ -38,7 +38,7 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 	private String companyBaseDn;
 
 	/**
-	 * Special company that will contains the isolated accounts.
+	 * Special company that will contain the isolated accounts.
 	 */
 	@Setter
 	private String quarantineBaseDn;
@@ -160,7 +160,7 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 		findAll().values().stream().filter(g -> DnUtils.equalsOrParentOf(container.getDn(), g.getDn())).toList()
 				.forEach(this::removeFromJavaCache);
 
-		// Remove from LDAP the recursively the company. Anything that was not nicely cleaned will be deleted there.
+		// Remove recursively from LDAP the company. Anything that was not nicely cleaned will be deleted there.
 		template.unbind(container.getDn(), true);
 
 		// Also, update the SQL cache

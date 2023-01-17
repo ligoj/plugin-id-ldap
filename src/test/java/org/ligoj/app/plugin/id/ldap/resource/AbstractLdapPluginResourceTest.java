@@ -108,7 +108,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 	}
 
 	/**
-	 * Create a group in a existing OU "sea". Most Simple case. Group matches exactly to the pkey of the project.
+	 * Create a group in an existing OU "sea". Most Simple case. Group matches exactly to the pkey of the project.
 	 *
 	 * @return the created subscription.
 	 */

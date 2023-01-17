@@ -133,7 +133,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	/**
-	 * Create a group in a existing OU. Most Simple case. Group matches exactly to the pkey of the project.
+	 * Create a group in an existing OU. Most Simple case. Group matches exactly to the pkey of the project.
 	 */
 	@Test
 	void create() {

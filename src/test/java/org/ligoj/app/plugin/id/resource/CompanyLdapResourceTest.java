@@ -405,21 +405,21 @@ class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	@Test
-	void isUserInternalCommpanyExternal() {
+	void isUserInternalCompanyExternal() {
 		initSpringSecurityContext("mlavoine");
-		Assertions.assertFalse(resource.isUserInternalCommpany());
+		Assertions.assertFalse(resource.isUserInternalCompany());
 	}
 
 	@Test
-	void isUserInternalCommpanyAny() {
+	void isUserInternalCompanyAny() {
 		initSpringSecurityContext("any");
-		Assertions.assertFalse(resource.isUserInternalCommpany());
+		Assertions.assertFalse(resource.isUserInternalCompany());
 	}
 
 	@Test
-	void isUserInternalCommpany() {
+	void isUserInternalCompany() {
 		initSpringSecurityContext("mmartin");
-		Assertions.assertTrue(resource.isUserInternalCommpany());
+		Assertions.assertTrue(resource.isUserInternalCompany());
 	}
 
 }

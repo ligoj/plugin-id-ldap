@@ -300,11 +300,11 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		validateGroup(group, ou, pkey);
 
 		// Check the relationship between group, and parent
-		final var parentDn = validateAndCreateParent(group, parentGroup, ou, pkey);
+		final var parentDn = validateAndCreateParent(group, parentGroup, ou, pkey, subscription);
 
 		// Create the group inside the parent (OU or parent CN)
 		final var groupDn = "cn=" + group + "," + parentDn;
-		log.info("New Group CN would be created {} project {} and subscription {}", group, pkey);
+		log.info("New Group CN would be created {} project {} and subscription {}", group, pkey, subscription);
 		final var repository = getGroup();
 		final var groupLdap = repository.create(groupDn, group);
 
@@ -329,12 +329,12 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * Validate the parent and return its DN. OU must be normalized.
 	 */
 	private String validateAndCreateParent(final String group, final String parentGroup, final String ou,
-			final String pkey) {
+			final String pkey, final int subscription) {
 		// Check the creation mode
 		if (StringUtils.isBlank(parentGroup)) {
 			// Parent as not been defined, so will be the specified OU. that
 			// would be created if it does not exist
-			return validateAndCreateParentOu(group, ou, pkey);
+			return validateAndCreateParentOu(group, ou, pkey, subscription);
 		}
 
 		// Parent has been specified, so will be another group we need to check
@@ -344,7 +344,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	/**
 	 * Validate the group against its direct parent (a normalized OU) and return its DN.
 	 */
-	private String validateAndCreateParentOu(final String group, final String ou, final String pkey) {
+	private String validateAndCreateParentOu(final String group, final String ou, final String pkey, final int subscription) {
 		final var groupTypeLdap = containerScopeResource.findByName(ContainerScope.TYPE_PROJECT);
 		final var parentDn = groupTypeLdap.getDn();
 
@@ -354,7 +354,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		// Check the target OU exists or not and create the OU as needed
 		if (projectCustomerLdapRepository.findById(parentDn, ou) == null) {
 			// Create the OU in LDAP
-			log.info("New OU would be created {} for group {}, project {} and subscription {}", ou, group, pkey);
+			log.info("New OU would be created {} for group {}, project {} and subscription {}", ou, group, pkey, subscription);
 			projectCustomerLdapRepository.create(parentDn, ou, ouDn);
 		}
 

@@ -27,7 +27,7 @@ public class CacheLdapRepository extends AbstractMemCacheRepository {
 
 	/**
 	 * Reset the database cache with the LDAP data. Note there is no synchronization for this method. Initial first
-	 * concurrent calls may note involve the cache.
+	 * concurrent calls may not involve the cache.
 	 *
 	 * @return The cached LDAP data..
 	 */

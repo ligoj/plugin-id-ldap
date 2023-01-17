@@ -167,7 +167,7 @@ class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 		final GroupLdapRepository groupRepository = new GroupLdapRepository() {
 			@Override
 			public GroupOrg findById(final String name) {
-				// The group has only the user user we want to remove
+				// The group has only the user we want to remove
 				return new GroupOrg("dc=" + name, name, Collections.singleton("flast1"));
 			}
 
@@ -207,7 +207,7 @@ class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 		final GroupLdapRepository groupRepository = new GroupLdapRepository() {
 			@Override
 			public GroupOrg findById(final String name) {
-				// The group has only the user user we want to remove
+				// The group has only the user we want to remove
 				return new GroupOrg("dc=" + name, name, Collections.singleton("flast1"));
 			}
 
