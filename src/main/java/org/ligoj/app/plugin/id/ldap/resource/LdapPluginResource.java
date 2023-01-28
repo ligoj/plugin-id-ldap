@@ -154,7 +154,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String PARAMETER_PEOPLE_CLASS = KEY + ":people-class";
 
 	/**
-	 * Pattern capturing the company from the DN of the user. May be a row string for constant.
+	 * Pattern capturing the company from the DN of the user. Can be a raw string for constant.
 	 */
 	public static final String PARAMETER_COMPANY_PATTERN = KEY + ":company-pattern";
 
@@ -164,12 +164,12 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String PARAMETER_GROUPS_DN = KEY + ":groups-dn";
 
 	/**
-	 * DN of location of companies
+	 * DN of location of companies. Should be inside or the same as the people OU.
 	 */
 	public static final String PARAMETER_COMPANIES_DN = KEY + ":companies-dn";
 
 	/**
-	 * DN of location of people considered as internal. May be the same than people
+	 * DN of location of people considered as internal. Can be the same as people DN.
 	 */
 	public static final String PARAMETER_PEOPLE_INTERNAL_DN = KEY + ":people-internal-dn";
 
