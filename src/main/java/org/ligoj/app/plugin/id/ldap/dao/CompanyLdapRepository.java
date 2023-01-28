@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.naming.ldap.LdapName;
 
+import lombok.extern.slf4j.Slf4j;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.ICompanyRepository;
 import org.ligoj.app.iam.dao.CacheCompanyRepository;
@@ -26,6 +27,7 @@ import lombok.Setter;
 /**
  * Company LDAP repository
  */
+@Slf4j
 public class CompanyLdapRepository extends AbstractContainerLdapRepository<CompanyOrg, CacheCompany>
 		implements ICompanyRepository {
 
@@ -78,22 +80,33 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 	 */
 	@Override
 	public Map<String, CompanyOrg> findAllNoCache() {
-		final var companiesNameToDn = new HashMap<String, CompanyOrg>();
-		for (final var ldap : template.search(companyBaseDn, "objectClass=" + ORGANIZATIONAL_UNIT,
-				(Object ctx) -> (DirContextAdapter) ctx)) {
-			final var company = new CompanyOrg(ldap.getDn().toString(), ldap.getStringAttributes("ou")[0]);
-			companiesNameToDn.put(company.getId(), company);
-		}
+		final var nameToDn = new HashMap<String, CompanyOrg>();
 
-		// Also add/replace the quarantine zone
+		// Also add the quarantine zone
 		final var quarantine = new CompanyOrg(quarantineBaseDn, getQuarantineCompany());
 		quarantine.setLocked(true);
-		companiesNameToDn.put(quarantine.getId(), quarantine);
+		nameToDn.put(quarantine.getId(), quarantine);
 
-		// The complete the hierarchy of companies
-		companiesNameToDn.values().forEach(this::buildLdapName);
-		companiesNameToDn.values().forEach(c -> this.buildHierarchy(companiesNameToDn, c));
-		return companiesNameToDn;
+		// Complete with LDAP query result
+		template.search(companyBaseDn, "objectClass=" + ORGANIZATIONAL_UNIT,
+						(Object ctx) -> (DirContextAdapter) ctx).stream()
+				.map(ldap -> new CompanyOrg(ldap.getDn().toString(), ldap.getStringAttributes("ou")[0]))
+				.forEach(c -> {
+					if (nameToDn.containsKey(c.getId())) {
+						log.warn("Duplicate company name {} with too different DNs: {} and {}. Keep only the first one.",
+								nameToDn.get(c.getId()), c.getId(), c.getDn());
+					} else {
+						nameToDn.put(c.getId(), c);
+					}
+				});
+
+		// Complete the hierarchy of companies
+		log.warn("Companies {}, keys: {}, ids: {}, names: {}", nameToDn.size(), nameToDn.keySet(),
+				nameToDn.values().stream().map(v -> v.getId()),
+				nameToDn.values().stream().map(v -> v.getName()));
+		nameToDn.values().forEach(this::buildLdapName);
+		nameToDn.values().forEach(c -> this.buildHierarchy(nameToDn, c));
+		return nameToDn;
 	}
 
 	/**
