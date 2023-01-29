@@ -1,9 +1,12 @@
 id;data;mandatory;secured;type;owner.id;defaultValue;mode
 service:id:ldap:base-dn;;false;false;TEXT;service:id:ldap
 service:id:ldap:companies-dn;;false;false;TEXT;service:id:ldap;ou=people,dc=sample,dc=com
+service:id:ldap:companies-class;;false;false;TEXT;service:id:ldap;organizationalUnit
 service:id:ldap:company-pattern;;false;false;TEXT;service:id:ldap;[^,]+,ou=([^,]+),.*
 service:id:ldap:department-attribute;;false;false;TEXT;service:id:ldap
 service:id:ldap:groups-dn;;false;false;TEXT;service:id:ldap;dc=sample,dc=com
+service:id:ldap:groups-class;;false;false;TEXT;service:id:ldap;groupOfUniqueNames
+service:id:ldap:groups-member-attribute;;false;false;TEXT;service:id:ldap;uniqueMember
 service:id:ldap:local-id-attribute;;false;false;TEXT;service:id:ldap;employeeNumber
 service:id:ldap:locked-attribute;;false;false;TEXT;service:id:ldap;employeeType
 service:id:ldap:locked-value;;false;false;TEXT;service:id:ldap;LOCKED

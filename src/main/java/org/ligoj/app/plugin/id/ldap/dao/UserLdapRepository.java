@@ -3,34 +3,9 @@
  */
 package org.ligoj.app.plugin.id.ldap.dao;
 
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Pattern;
-
-import javax.naming.AuthenticationException;
-import javax.naming.Context;
-import javax.naming.Name;
-import javax.naming.NamingException;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.InvalidAttributeValueException;
-import javax.naming.directory.ModificationItem;
-import javax.naming.directory.SearchControls;
-import javax.naming.ldap.LdapContext;
-
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.CharUtils;
@@ -39,19 +14,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.RandomStringGenerator;
 import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
 import org.ligoj.app.api.Normalizer;
-import org.ligoj.app.iam.CompanyOrg;
-import org.ligoj.app.iam.GroupOrg;
-import org.ligoj.app.iam.IUserRepository;
-import org.ligoj.app.iam.SimpleUser;
-import org.ligoj.app.iam.SimpleUserOrg;
-import org.ligoj.app.iam.UserOrg;
+import org.ligoj.app.iam.*;
 import org.ligoj.app.plugin.id.DnUtils;
 import org.ligoj.app.plugin.id.dao.AbstractMemCacheRepository.CacheDataType;
-import org.ligoj.app.plugin.id.model.CompanyComparator;
-import org.ligoj.app.plugin.id.model.FirstNameComparator;
-import org.ligoj.app.plugin.id.model.LastNameComparator;
-import org.ligoj.app.plugin.id.model.LoginComparator;
-import org.ligoj.app.plugin.id.model.MailComparator;
+import org.ligoj.app.plugin.id.model.*;
 import org.ligoj.bootstrap.core.DateUtils;
 import org.ligoj.bootstrap.core.json.InMemoryPagination;
 import org.ligoj.bootstrap.core.resource.BusinessException;
@@ -70,15 +36,24 @@ import org.springframework.ldap.core.support.AbstractContextMapper;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+import javax.naming.AuthenticationException;
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.NamingException;
+import javax.naming.directory.*;
+import javax.naming.ldap.LdapContext;
+import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 /**
  * User LDAP repository
  */
 @Slf4j
-public class UserLdapRepository implements IUserRepository {
+public class UserLdapRepository extends AbstractManagedLdapRepository implements IUserRepository {
 
 	private static final String OPEN_LDAP_DATE_FORMAT = "yyyyMMddHHmmss'Z'";
 
@@ -121,6 +96,7 @@ public class UserLdapRepository implements IUserRepository {
 	 * LDAP mapping attributes allowed for search.
 	 */
 	private static final Map<String, String> SEARCH_MAPPER = new HashMap<>();
+
 	static {
 		SEARCH_MAPPER.put("mails", "mail");
 	}
@@ -131,11 +107,6 @@ public class UserLdapRepository implements IUserRepository {
 	@Setter
 	@Getter
 	private boolean clearPassword = false;
-
-	/**
-	 * LDAP class filter.
-	 */
-	public static final String OBJECT_CLASS = "objectClass";
 
 	private static final Map<String, Comparator<UserOrg>> COMPARATORS = new HashMap<>();
 
@@ -165,32 +136,20 @@ public class UserLdapRepository implements IUserRepository {
 	 * Employee number attribute
 	 */
 	@Setter
-	private String departmentAttribute = "employeeNumber";
+	private String departmentAttribute;
 
 	/**
 	 * Local UID attribute name.
 	 */
 	@Setter
-	private String localIdAttribute = "employeeID";
+	private String localIdAttribute;
 
 	/**
-	 * Base DN for internal people. Should be a subset of people, so including {@link #peopleBaseDn}
+	 * Base DN for internal people. Should be a subset of people, so including {@link #baseDn}
 	 */
 	@Setter
 	@Getter
 	private String peopleInternalBaseDn;
-
-	/**
-	 * Object class of people
-	 */
-	@Setter
-	private String peopleClass = "inetOrgPerson";
-
-	/**
-	 * Base DN for people.
-	 */
-	@Setter
-	private String peopleBaseDn;
 
 	/**
 	 * Compiled pattern capturing the company from the DN of the user. Can be a row string for constant.
@@ -251,6 +210,13 @@ public class UserLdapRepository implements IUserRepository {
 		COMPARATORS.put(MAIL_ATTRIBUTE, new MailComparator());
 	}
 
+	/**
+	 * Default constructor
+	 */
+	public UserLdapRepository() {
+		super("user");
+	}
+
 	@Override
 	public UserOrg create(final UserOrg user) {
 		// Build the DN
@@ -259,7 +225,7 @@ public class UserLdapRepository implements IUserRepository {
 		// Create the LDAP entry
 		user.setDn(dn.toString());
 		final var context = new DirContextAdapter(dn);
-		context.setAttributeValues(OBJECT_CLASS, new String[] { peopleClass });
+		context.setAttributeValues(OBJECT_CLASS, new String[]{className});
 		mapToContext(user, context);
 		template.bind(context);
 
@@ -298,9 +264,9 @@ public class UserLdapRepository implements IUserRepository {
 
 	@Override
 	public List<UserOrg> findAllBy(final String attribute, final String value) {
-		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, peopleClass))
+		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className))
 				.and(new EqualsFilter(SEARCH_MAPPER.getOrDefault(attribute, attribute), value));
-		return template.search(peopleBaseDn, filter.encode(), mapper).stream()
+		return template.search(baseDn, filter.encode(), mapper).stream()
 				.map(u -> Optional.ofNullable(findById(u.getId())).orElse(u)).toList();
 	}
 
@@ -351,11 +317,11 @@ public class UserLdapRepository implements IUserRepository {
 	public Map<String, UserOrg> findAllNoCache(final Map<String, GroupOrg> groups) {
 
 		// List of attributes to retrieve from LDAP.
-		final var returnAttrs = new String[] { SN_ATTRIBUTE, GIVEN_NAME_ATTRIBUTE, PASSWORD_ATTRIBUTE, MAIL_ATTRIBUTE,
-				uidAttribute, departmentAttribute, localIdAttribute, lockedAttribute, PWD_ACCOUNT_LOCKED_ATTRIBUTE };
+		final var returnAttrs = new String[]{SN_ATTRIBUTE, GIVEN_NAME_ATTRIBUTE, PASSWORD_ATTRIBUTE, MAIL_ATTRIBUTE,
+				uidAttribute, departmentAttribute, localIdAttribute, lockedAttribute, PWD_ACCOUNT_LOCKED_ATTRIBUTE};
 
 		// Fetch users and their direct attributes
-		final var users = template.search(peopleBaseDn, new EqualsFilter(OBJECT_CLASS, peopleClass).encode(),
+		final var users = template.search(baseDn, new EqualsFilter(OBJECT_CLASS, className).encode(),
 				SearchControls.SUBTREE_SCOPE, returnAttrs, mapper);
 
 		// Index the users by the identifier
@@ -563,7 +529,7 @@ public class UserLdapRepository implements IUserRepository {
 		return StringUtils.containsIgnoreCase(userLdap.getFirstName(), criteria)
 				|| StringUtils.containsIgnoreCase(userLdap.getLastName(), criteria)
 				|| StringUtils.containsIgnoreCase(userLdap.getId(), criteria) || !userLdap.getMails().isEmpty()
-						&& StringUtils.containsIgnoreCase(userLdap.getMails().get(0), criteria);
+				&& StringUtils.containsIgnoreCase(userLdap.getMails().get(0), criteria);
 	}
 
 	/**
@@ -701,9 +667,9 @@ public class UserLdapRepository implements IUserRepository {
 	public boolean authenticate(final String name, final String password) {
 		log.info("Authenticating {} ...", name);
 		final var property = getAuthenticateProperty(name);
-		final var filter = new AndFilter().and(new EqualsFilter("objectclass", peopleClass))
+		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className))
 				.and(new EqualsFilter(property, name));
-		final var result = template.authenticate(peopleBaseDn, filter.encode(), password);
+		final var result = template.authenticate(baseDn, filter.encode(), password);
 		log.info("Authenticate {} : {}", name, result);
 		return result;
 	}
@@ -720,9 +686,9 @@ public class UserLdapRepository implements IUserRepository {
 
 	@Override
 	public String getToken(final String login) {
-		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, peopleClass))
+		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className))
 				.and(new EqualsFilter(uidAttribute, login));
-		return template.search(peopleBaseDn, filter.encode(), new AbstractContextMapper<String>() {
+		return template.search(baseDn, filter.encode(), new AbstractContextMapper<String>() {
 			@Override
 			public String doMapFromContext(final DirContextOperations context) {
 				// Get the password
@@ -762,8 +728,8 @@ public class UserLdapRepository implements IUserRepository {
 	@Override
 	public void setPassword(final UserOrg userLdap, final String password, final String newPassword) {
 		log.info("Changing password for {} ...", userLdap.getId());
-		final var passwordChange = new ModificationItem[] { new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
-				new BasicAttribute(PASSWORD_ATTRIBUTE, digest(newPassword))) };
+		final var passwordChange = new ModificationItem[]{new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
+				new BasicAttribute(PASSWORD_ATTRIBUTE, digest(newPassword)))};
 
 		// Unlock account when the user is locked by ppolicy
 		set(userLdap, PWD_ACCOUNT_LOCKED_ATTRIBUTE, null);
@@ -827,11 +793,11 @@ public class UserLdapRepository implements IUserRepository {
 	@Override
 	public void checkLockStatus(final UserOrg user) {
 		// List of attributes to retrieve from LDAP.
-		final var returnAttrs = new String[] { PWD_ACCOUNT_LOCKED_ATTRIBUTE };
+		final var returnAttrs = new String[]{PWD_ACCOUNT_LOCKED_ATTRIBUTE};
 
-		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, peopleClass))
+		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className))
 				.and(new EqualsFilter(uidAttribute, user.getId()));
-		template.search(peopleBaseDn, filter.encode(), SearchControls.SUBTREE_SCOPE, returnAttrs,
+		template.search(baseDn, filter.encode(), SearchControls.SUBTREE_SCOPE, returnAttrs,
 				new AbstractContextMapper<UserOrg>() {
 					@Override
 					public UserOrg doMapFromContext(final DirContextOperations context) {

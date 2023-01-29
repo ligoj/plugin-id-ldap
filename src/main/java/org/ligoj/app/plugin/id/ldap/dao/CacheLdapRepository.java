@@ -8,6 +8,9 @@ import java.util.Optional;
 
 import javax.cache.annotation.CacheResult;
 
+import lombok.extern.slf4j.Slf4j;
+import lombok.extern.slf4j.XSlf4j;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.ResourceOrg;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Component;
  * LDAP in memory cache with JPA back-end cache.
  */
 @Component
+@Slf4j
 public class CacheLdapRepository extends AbstractMemCacheRepository {
 
 	@Autowired
@@ -48,13 +52,27 @@ public class CacheLdapRepository extends AbstractMemCacheRepository {
 		return true;
 	}
 
+	private final Object cacheLock = new Object();
+
 	@SuppressWarnings("unchecked")
 	@Override
 	protected Map<CacheDataType, Map<String, ? extends ResourceOrg>> refreshData() {
 		final Map<CacheDataType, Map<String, ? extends ResourceOrg>> result = super.refreshData();
-		cache.reset((Map<String, CompanyOrg>) result.get(CacheDataType.COMPANY),
-				(Map<String, GroupOrg>) result.get(CacheDataType.GROUP),
-				(Map<String, UserOrg>) result.get(CacheDataType.USER));
+
+		final var refreshTime = cache.getCacheRefreshTime();
+		log.info("Refresh cache requested, age is {}",
+				DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - refreshTime));
+		synchronized (cacheLock) {
+			if (refreshTime < cache.getCacheRefreshTime()) {
+				// Ignore subsequent refresh
+				log.info("Another refresh just finished, new age is {}",
+						DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - cache.getCacheRefreshTime()));
+			} else {
+				cache.reset((Map<String, CompanyOrg>) result.get(CacheDataType.COMPANY),
+						(Map<String, GroupOrg>) result.get(CacheDataType.GROUP),
+						(Map<String, UserOrg>) result.get(CacheDataType.USER));
+			}
+		}
 		return result;
 	}
 }

@@ -4,9 +4,12 @@
 define({
 	'service:id:ldap:base-dn': 'Base DN',
 	'service:id:ldap:companies-dn': 'DN des sociétés',
+	'service:id:ldap:companies-class': 'Classe des sociétés',
 	'service:id:ldap:company-pattern': 'Pattern de capture de l\'identifiant de société dans un DN',
 	'service:id:ldap:department-attribute': 'Attribut de département',
 	'service:id:ldap:groups-dn': 'DN des groupes',
+	'service:id:ldap:groups-class': 'Classe des groupes',
+	'service:id:ldap:groups-member-attribute': 'Attribut des membres',
 	'service:id:ldap:local-id-attribute': 'Attribut d\'identifiant local',
 	'service:id:ldap:locked-attribute': 'Attribut de verrouillage',
 	'service:id:ldap:locked-value': 'Valeur de verrouillage',

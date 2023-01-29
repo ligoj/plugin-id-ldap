@@ -5,9 +5,12 @@ define({
 	root: {
 		'service:id:ldap:base-dn': 'Base DN',
 		'service:id:ldap:companies-dn': 'Companies DN',
+	    'service:id:ldap:companies-class': 'Companies class',
 		'service:id:ldap:company-pattern': 'Company pattern capture id from DN',
 		'service:id:ldap:department-attribute': 'Department attribute',
 		'service:id:ldap:groups-dn': 'Groups DN',
+		'service:id:ldap:groups-class': 'Groups class',
+		'service:id:ldap:groups-member-attribute': 'Group member attribute',
 		'service:id:ldap:local-id-attribute': 'Local ID attribute',
 		'service:id:ldap:locked-attribute': 'Locked attribute',
 		'service:id:ldap:locked-value': 'Locked match value',

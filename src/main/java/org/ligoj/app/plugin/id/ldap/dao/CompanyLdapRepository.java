@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.naming.ldap.LdapName;
 
@@ -23,6 +24,7 @@ import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
 
 import lombok.Setter;
+import org.springframework.ldap.filter.EqualsFilter;
 
 /**
  * Company LDAP repository
@@ -30,14 +32,6 @@ import lombok.Setter;
 @Slf4j
 public class CompanyLdapRepository extends AbstractContainerLdapRepository<CompanyOrg, CacheCompany>
 		implements ICompanyRepository {
-
-	private static final String ORGANIZATIONAL_UNIT = "organizationalUnit";
-
-	/**
-	 * Companies location. May be equals to the people DN or more often a subtree of people OU.
-	 */
-	@Setter
-	private String companyBaseDn;
 
 	/**
 	 * Special company that will contain the isolated accounts.
@@ -52,7 +46,7 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 	 * Default constructor for a container of type {@link ContainerType#COMPANY}
 	 */
 	public CompanyLdapRepository() {
-		super(ContainerType.COMPANY, ORGANIZATIONAL_UNIT);
+		super(ContainerType.COMPANY);
 	}
 
 	@Override
@@ -88,7 +82,8 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 		nameToDn.put(quarantine.getId(), quarantine);
 
 		// Complete with LDAP query result
-		template.search(companyBaseDn, "objectClass=" + ORGANIZATIONAL_UNIT,
+		template.search(baseDn,
+						new EqualsFilter(OBJECT_CLASS, className).encode(),
 						(Object ctx) -> (DirContextAdapter) ctx).stream()
 				.map(ldap -> new CompanyOrg(ldap.getDn().toString(), ldap.getStringAttributes("ou")[0]))
 				.forEach(c -> {
@@ -101,9 +96,9 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 				});
 
 		// Complete the hierarchy of companies
-		log.warn("Companies {}, keys: {}, ids: {}, names: {}", nameToDn.size(), nameToDn.keySet(),
-				nameToDn.values().stream().map(v -> v.getId()),
-				nameToDn.values().stream().map(v -> v.getName()));
+		log.info("Nb LDAP companies {}, keys: {}, ids: {}, names: {}", nameToDn.size(), nameToDn.keySet(),
+				nameToDn.values().stream().map(v -> v.getId()).collect(Collectors.toSet()),
+				nameToDn.values().stream().map(v -> v.getName()).collect(Collectors.toSet()));
 		nameToDn.values().forEach(this::buildLdapName);
 		nameToDn.values().forEach(c -> this.buildHierarchy(nameToDn, c));
 		return nameToDn;

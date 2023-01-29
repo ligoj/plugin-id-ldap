@@ -3,15 +3,8 @@
  */
 package org.ligoj.app.plugin.id.ldap.dao;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,11 +22,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
-import org.springframework.ldap.core.LdapTemplate;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+import java.util.*;
 
 /**
  * A LDAP container repository.
@@ -42,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
  * @param <C> The container cache type.
  */
 @Slf4j
-public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C extends CacheContainer>
+public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C extends CacheContainer> extends AbstractManagedLdapRepository
 		implements IContainerRepository<T> {
 
 	protected static final Sort.Order DEFAULT_ORDER = new Sort.Order(Direction.ASC, "name");
@@ -50,33 +40,18 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 	@Autowired
 	protected InMemoryPagination inMemoryPagination;
 
-	@Setter
-	protected LdapTemplate template;
-
 	@Autowired
 	@Setter
 	protected CacheLdapRepository cacheRepository;
-
-	/**
-	 * LDAP class name of this container.
-	 */
-	private final String className;
-
-	/**
-	 * Human-readable type name.
-	 */
-	@Getter
-	protected final String typeName;
 
 	/**
 	 * Container type.
 	 */
 	private final ContainerType type;
 
-	protected AbstractContainerLdapRepository(final ContainerType type, final String className) {
+	protected AbstractContainerLdapRepository(final ContainerType type) {
+		super(type.name().toLowerCase(Locale.ENGLISH));
 		this.type = type;
-		this.className = className;
-		this.typeName = this.type.name().toLowerCase(Locale.ENGLISH);
 	}
 
 	/**
@@ -110,7 +85,7 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 		// First create the LDAP entry
 		log.info("{} {} will be created as {}", type.name(), container.getName(), dn);
 		final var context = new DirContextAdapter(dn);
-		context.setAttributeValues("objectClass", new String[] { className });
+		context.setAttributeValues(OBJECT_CLASS, new String[]{className});
 		mapToContext(container, context);
 		template.bind(context);
 
@@ -172,7 +147,7 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 	 * @param user The user requesting this container.
 	 * @param id   The container's identifier. Will be normalized.
 	 * @return The container from its identifier. <code>null</code> if the container is not found or cannot be seen by
-	 *         the given user.
+	 * the given user.
 	 */
 	@Override
 	public T findById(final String user, final String id) {

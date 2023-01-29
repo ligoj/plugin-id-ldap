@@ -3,28 +3,8 @@
  */
 package org.ligoj.app.plugin.id.ldap.resource;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.api.ServicePlugin;
@@ -44,7 +24,6 @@ import org.ligoj.app.plugin.id.ldap.dao.ProjectCustomerLdapRepository;
 import org.ligoj.app.plugin.id.ldap.dao.UserLdapRepository;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.app.plugin.id.resource.AbstractPluginIdResource;
-import org.ligoj.app.plugin.id.resource.CompanyResource;
 import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
 import org.ligoj.app.plugin.id.resource.GroupResource;
 import org.ligoj.app.plugin.id.resource.IdentityResource;
@@ -62,8 +41,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * LDAP resource.
@@ -164,9 +149,24 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String PARAMETER_GROUPS_DN = KEY + ":groups-dn";
 
 	/**
+	 * LDAP object class of groups. Is also a filter for search.
+	 */
+	public static final String PARAMETER_GROUPS_CLASS = KEY + ":groups-class";
+
+	/**
+	 * LDAP object class of groups. Is also a filter for search.
+	 */
+	public static final String PARAMETER_GROUPS_MEMBER_ATTRIBUTE = KEY + ":groups-member-attribute";
+
+	/**
 	 * DN of location of companies. Should be inside or the same as the people OU.
 	 */
 	public static final String PARAMETER_COMPANIES_DN = KEY + ":companies-dn";
+
+	/**
+	 * LDAP object class of companies. Is also a filter for search.
+	 */
+	public static final String PARAMETER_COMPANIES_CLASS = KEY + ":companies-class";
 
 	/**
 	 * DN of location of people considered as internal. Can be the same as people DN.
@@ -180,9 +180,6 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 
 	@Autowired
 	protected ProjectCustomerLdapRepository projectCustomerLdapRepository;
-
-	@Autowired
-	protected CompanyResource companyResource;
 
 	@Autowired
 	protected GroupResource groupLdapResource;
@@ -221,16 +218,16 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		// A new repository instance
 		final var repository = new UserLdapRepository();
 		repository.setTemplate(template);
-		repository.setPeopleBaseDn(StringUtils.trimToEmpty(parameters.get(PARAMETER_PEOPLE_DN)));
-		repository.setPeopleInternalBaseDn(parameters.get(PARAMETER_PEOPLE_INTERNAL_DN));
-		repository.setQuarantineBaseDn(StringUtils.trimToEmpty(parameters.get(PARAMETER_QUARANTINE_DN)));
-		repository.setDepartmentAttribute(parameters.get(PARAMETER_DEPARTMENT_ATTRIBUTE));
-		repository.setLocalIdAttribute(parameters.get(PARAMETER_LOCAL_ID_ATTRIBUTE));
-		repository.setUidAttribute(parameters.get(PARAMETER_UID_ATTRIBUTE));
-		repository.setLockedAttribute(parameters.get(PARAMETER_LOCKED_ATTRIBUTE));
-		repository.setLockedValue(parameters.get(PARAMETER_LOCKED_VALUE));
-		repository.setPeopleClass(parameters.get(PARAMETER_PEOPLE_CLASS));
-		repository.setCompanyPattern(StringUtils.trimToEmpty(parameters.get(PARAMETER_COMPANY_PATTERN)));
+		repository.setClassName(getParameter(parameters, PARAMETER_PEOPLE_CLASS, "inetOrgPerson"));
+		repository.setBaseDn(getParameter(parameters, PARAMETER_PEOPLE_DN, ""));
+		repository.setPeopleInternalBaseDn(getParameter(parameters, PARAMETER_PEOPLE_INTERNAL_DN, ""));
+		repository.setQuarantineBaseDn(getParameter(parameters, PARAMETER_QUARANTINE_DN, ""));
+		repository.setDepartmentAttribute(getParameter(parameters, PARAMETER_DEPARTMENT_ATTRIBUTE, "employeeNumber"));
+		repository.setLocalIdAttribute(getParameter(parameters, PARAMETER_LOCAL_ID_ATTRIBUTE, "employeeID"));
+		repository.setUidAttribute(getParameter(parameters, PARAMETER_UID_ATTRIBUTE, "uid"));
+		repository.setLockedAttribute(getParameter(parameters, PARAMETER_LOCKED_ATTRIBUTE, "employeeType"));
+		repository.setLockedValue(getParameter(parameters, PARAMETER_LOCKED_VALUE, "LOCKED"));
+		repository.setCompanyPattern(getParameter(parameters, PARAMETER_COMPANY_PATTERN, "[^,]+,ou=([^,]+),.*"));
 		repository.setClearPassword(Boolean.parseBoolean(parameters.get(PARAMETER_CLEAR_PASSWORD)));
 
 		// Complete the bean
@@ -252,11 +249,18 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		// A new repository instance
 		final var repository = new GroupLdapRepository();
 		repository.setTemplate(template);
-		repository.setGroupsBaseDn(StringUtils.trimToEmpty(parameters.get(PARAMETER_GROUPS_DN)));
+		repository.setBaseDn(getParameter(parameters, PARAMETER_GROUPS_DN, ""));
+		repository.setMemberAttribute(getParameter(parameters, PARAMETER_GROUPS_MEMBER_ATTRIBUTE, "uniqueMember"));
+		repository.setClassName(getParameter(parameters, PARAMETER_GROUPS_CLASS, "groupOfUniqueNames"));
 
 		// Complete the bean
 		SpringUtils.getApplicationContext().getAutowireCapableBeanFactory().autowireBean(repository);
 		return repository;
+	}
+
+	private String getParameter(final Map<String, String> parameters, final String name, final String def) {
+		final var value = StringUtils.trimToNull(parameters.get(name));
+		return value == null ? def : value;
 	}
 
 	/**
@@ -272,7 +276,8 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		// A new repository instance
 		final var repository = new CompanyLdapRepository();
 		repository.setTemplate(template);
-		repository.setCompanyBaseDn(parameters.get(PARAMETER_COMPANIES_DN));
+		repository.setBaseDn(getParameter(parameters, PARAMETER_COMPANIES_DN, ""));
+		repository.setClassName(getParameter(parameters, PARAMETER_COMPANIES_CLASS, "organizationalUnit"));
 		repository.setQuarantineBaseDn(parameters.get(PARAMETER_QUARANTINE_DN));
 
 		// Complete the bean
@@ -284,7 +289,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public boolean accept(final Authentication authentication, final String node) {
 		final var parameters = pvResource.getNodeParameters(node);
 		return !parameters.isEmpty() && authentication.getName()
-				.matches(StringUtils.defaultString(parameters.get(IdentityResource.PARAMETER_UID_PATTERN), ".*"));
+				.matches(getParameter(parameters, IdentityResource.PARAMETER_UID_PATTERN, ".*"));
 	}
 
 	@Override
@@ -321,8 +326,8 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		cacheProjectGroupRepository.saveAndFlush(projectGroup);
 	}
 
-	private boolean startsWithAndDifferent(final String provided, final String expected) {
-		return provided.startsWith(expected) && !provided.equals(expected);
+	private boolean isParent(final String parent, final String child) {
+		return child.startsWith(parent) && !child.equals(parent);
 	}
 
 	/**
@@ -368,7 +373,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	private String validateParentGroup(final String group, final String parentGroup) {
 		final var parentGroupLdap = groupLdapResource.findById(parentGroup);
 		if (parentGroupLdap == null) {
-			// The parent group does not exists
+			// The parent group does not exist
 			throw new ValidationJsonException(IdentityResource.PARAMETER_PARENT_GROUP, BusinessException.KEY_UNKNOWN_ID,
 					parentGroup);
 		}
@@ -570,13 +575,13 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		// Compare the project's key with the OU, and the name of the group
 
 		// The group must start with the target OU
-		if (!startsWithAndDifferent(group, ou + "-")) {
+		if (!isParent(ou + "-", group)) {
 			// This group has not a correct form
 			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, PATTERN_PROPERTY, ou + "-.+");
 		}
 
 		// The name of the group must start with the PKEY of project
-		if (!group.equals(pkey) && !startsWithAndDifferent(group, pkey + "-")) {
+		if (!group.equals(pkey) && !isParent(pkey + "-", group)) {
 			// This group has not a correct form
 			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, PATTERN_PROPERTY, pkey + "(-.+)?");
 		}

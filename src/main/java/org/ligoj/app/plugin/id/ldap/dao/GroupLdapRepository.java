@@ -3,20 +3,8 @@
  */
 package org.ligoj.app.plugin.id.ldap.dao;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.ModificationItem;
-
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.iam.GroupOrg;
@@ -35,8 +23,10 @@ import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.ModificationItem;
+import java.util.*;
 
 /**
  * Group LDAP repository
@@ -54,21 +44,19 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	 */
 	public static final String DEFAULT_MEMBER_DN = "uid=none";
 
-	@Setter
-	private String groupsBaseDn;
-
 	private static final String DEPARTMENT_ATTRIBUTE = "businessCategory";
-	private static final String GROUP_OF_UNIQUE_NAMES = "groupOfUniqueNames";
-	private static final String UNIQUE_MEMBER = "uniqueMember";
 
 	@Autowired
 	private CacheGroupRepository cacheGroupRepository;
+
+	@Setter
+	private String memberAttribute;
 
 	/**
 	 * Default constructor for a container of type {@link ContainerType#GROUP}
 	 */
 	public GroupLdapRepository() {
-		super(ContainerType.GROUP, GROUP_OF_UNIQUE_NAMES);
+		super(ContainerType.GROUP);
 	}
 
 	@Override
@@ -81,7 +69,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	 * LDAP. Cache manager is involved.
 	 *
 	 * @return the groups. Key is the normalized name, Value is the corresponding LDAP group containing real CN, DN and
-	 *         normalized UID members.
+	 * normalized UID members.
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
@@ -94,7 +82,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	 * LDAP.
 	 *
 	 * @return the groups. Key is the normalized name, Value is the corresponding LDAP group containing real CN, DN and
-	 *         normalized UID members.
+	 * normalized UID members.
 	 */
 	@Override
 	public Map<String, GroupOrg> findAllNoCache() {
@@ -103,14 +91,14 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 		final var dnToGroups = new HashMap<String, GroupOrg>();
 
 		// First pass, collect the groups and dirty relationships
-		for (final var ldap : template.search(groupsBaseDn,
-				new EqualsFilter("objectClass", GROUP_OF_UNIQUE_NAMES).encode(),
+		for (final var ldap : template.search(baseDn,
+				new EqualsFilter(OBJECT_CLASS, className).encode(),
 				(Object ctx) -> (DirContextAdapter) ctx)) {
 			final var members = new HashSet<String>();
 			final var dn = ldap.getDn().toString().toLowerCase(Locale.ENGLISH);
 			final var name = ldap.getStringAttribute("cn");
 			final var subGroups = new HashSet<String>();
-			for (final var memberDN : ArrayUtils.nullToEmpty(ldap.getStringAttributes(UNIQUE_MEMBER))) {
+			for (final var memberDN : ArrayUtils.nullToEmpty(ldap.getStringAttributes(memberAttribute))) {
 				if (memberDN.startsWith("uid")) {
 					// User membership
 					members.add(memberDN);
@@ -207,7 +195,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 		final var groupLdap = findById(group);
 		if (!groupLdap.getMembers().contains(element.getId())) {
 			// Not useless operation
-			addAttributes(groupLdap.getDn(), UNIQUE_MEMBER, Collections.singletonList(element.getDn()));
+			addAttributes(groupLdap.getDn(), memberAttribute, Collections.singletonList(element.getDn()));
 		}
 		return groupLdap;
 	}
@@ -223,8 +211,8 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 		final var groupLdap = findById(group);
 		final var mods = new ModificationItem[2];
 		mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
-				new BasicAttribute(UNIQUE_MEMBER, oldUniqueMemberDn));
-		mods[1] = new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute(UNIQUE_MEMBER, newUniqueMemberDn));
+				new BasicAttribute(memberAttribute, oldUniqueMemberDn));
+		mods[1] = new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute(memberAttribute, newUniqueMemberDn));
 		template.modifyAttributes(org.springframework.ldap.support.LdapUtils.newLdapName(groupLdap.getDn()), mods);
 	}
 
@@ -271,7 +259,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 			// Not useless LDAP operation, avoid LDAP duplicate deletion
 			final var mods = new ModificationItem[1];
 			mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
-					new BasicAttribute(UNIQUE_MEMBER, uniqueMember.getDn()));
+					new BasicAttribute(memberAttribute, uniqueMember.getDn()));
 			try {
 				template.modifyAttributes(org.springframework.ldap.support.LdapUtils.newLdapName(groupLdap.getDn()),
 						mods);
@@ -296,7 +284,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	protected void mapToContext(final GroupOrg entry, final DirContextOperations context) {
 		context.setAttributeValue("cn", entry.getName());
 		// Dummy member for initial group, due to LDAP compliance of class "groupOfUniqueNames"
-		context.setAttributeValue(UNIQUE_MEMBER, DEFAULT_MEMBER_DN);
+		context.setAttributeValue(memberAttribute, DEFAULT_MEMBER_DN);
 	}
 
 	@Override
@@ -328,9 +316,9 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 
 	@Override
 	public GroupOrg findByDepartment(final String department) {
-		final var filter = new AndFilter().and(new EqualsFilter("objectclass", GROUP_OF_UNIQUE_NAMES))
+		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className))
 				.and(new EqualsFilter(DEPARTMENT_ATTRIBUTE, department));
-		return template.search(groupsBaseDn, filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).stream()
+		return template.search(baseDn, filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).stream()
 				.findFirst().map(c -> c.getStringAttribute("cn")).map(Normalizer::normalize).map(this::findById)
 				.orElse(null);
 	}
