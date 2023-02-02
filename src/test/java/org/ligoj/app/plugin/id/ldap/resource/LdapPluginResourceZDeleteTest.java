@@ -5,7 +5,7 @@ package org.ligoj.app.plugin.id.ldap.resource;
 
 import java.util.Map;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

@@ -5,8 +5,8 @@ package org.ligoj.app.plugin.id.resource;
 
 import java.util.Collections;
 
-import javax.transaction.Transactional;
-import javax.ws.rs.core.UriInfo;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

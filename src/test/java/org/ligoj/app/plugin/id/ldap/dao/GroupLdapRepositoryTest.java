@@ -10,7 +10,7 @@ import java.util.Set;
 import javax.naming.directory.AttributeInUseException;
 import javax.naming.directory.SchemaViolationException;
 import javax.naming.ldap.LdapName;
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

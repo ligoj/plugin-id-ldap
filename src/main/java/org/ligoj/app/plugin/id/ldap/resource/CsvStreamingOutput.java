@@ -11,7 +11,7 @@ import java.io.Writer;
 import java.text.Format;
 import java.util.Map;
 
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.ligoj.app.iam.Activity;

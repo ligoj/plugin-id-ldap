@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import javax.transaction.Transactional;
-import javax.ws.rs.ForbiddenException;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
