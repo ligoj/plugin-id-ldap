@@ -45,6 +45,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	public static final String DEFAULT_MEMBER_DN = "uid=none";
 
 	private static final String DEPARTMENT_ATTRIBUTE = "businessCategory";
+	private static final int DEFAULT_GID_NUMBER = 200;
 
 	@Autowired
 	private CacheGroupRepository cacheGroupRepository;
@@ -285,6 +286,11 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 		context.setAttributeValue("cn", entry.getName());
 		// Dummy member for initial group, due to LDAP compliance of class "groupOfUniqueNames"
 		context.setAttributeValue(memberAttribute, DEFAULT_MEMBER_DN);
+
+		if ("posixGroup".equalsIgnoreCase(className)) {
+			// Set a default gidNumber
+			context.setAttributeValue("gidNumber", DEFAULT_GID_NUMBER);
+		}
 	}
 
 	@Override

@@ -23,6 +23,7 @@ import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.mockito.internal.verification.VerificationModeFactory;
+import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
@@ -197,6 +198,15 @@ class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 		final LdapTemplate ldapTemplate = Mockito.mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
 		groupRepository.addGroup(new GroupOrg("dc=any", "any", null), "DIG RHA");
+	}
+
+	@Test
+	void mapToContext() {
+		final GroupLdapRepository groupRepository = newGroupLdapRepository();
+		groupRepository.className = "posixGroup";
+		final var context = Mockito.mock(DirContextOperations.class);
+		groupRepository.mapToContext(new GroupOrg("dc=any", "any", null), context);
+		Mockito.verify(context, Mockito.atLeastOnce()).setAttributeValue("gidNumber", 200);
 	}
 
 	/**
