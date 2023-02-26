@@ -19,6 +19,7 @@ import org.ligoj.app.iam.model.CacheCompany;
 import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.plugin.id.DnUtils;
 import org.ligoj.app.plugin.id.dao.AbstractMemCacheRepository.CacheDataType;
+import org.ligoj.bootstrap.core.NamedBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
@@ -97,8 +98,8 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 
 		// Complete the hierarchy of companies
 		log.info("Nb LDAP companies {}, keys: {}, ids: {}, names: {}", nameToDn.size(), nameToDn.keySet(),
-				nameToDn.values().stream().map(v -> v.getId()).collect(Collectors.toSet()),
-				nameToDn.values().stream().map(v -> v.getName()).collect(Collectors.toSet()));
+				nameToDn.values().stream().map(NamedBean::getId).collect(Collectors.toSet()),
+				nameToDn.values().stream().map(NamedBean::getName).collect(Collectors.toSet()));
 		nameToDn.values().forEach(this::buildLdapName);
 		nameToDn.values().forEach(c -> this.buildHierarchy(nameToDn, c));
 		return nameToDn;

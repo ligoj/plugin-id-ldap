@@ -3,40 +3,26 @@
  */
 package org.ligoj.app.plugin.id.ldap.dao;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.ligoj.app.iam.CompanyOrg;
-import org.ligoj.app.iam.GroupOrg;
-import org.ligoj.app.iam.IamConfiguration;
-import org.ligoj.app.iam.IamProvider;
-import org.ligoj.app.iam.ResourceOrg;
-import org.ligoj.app.iam.UserOrg;
+import org.ligoj.app.iam.*;
 import org.ligoj.app.plugin.id.dao.AbstractMemCacheRepository.CacheDataType;
 import org.ligoj.app.plugin.id.dao.IdCacheDao;
 import org.ligoj.bootstrap.AbstractDataGeneratorTest;
+import org.ligoj.bootstrap.core.INamableBean;
 import org.ligoj.bootstrap.core.SpringUtils;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Test class of {@link CacheLdapRepository}
  */
 class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
-	private CompanyLdapRepository companyRepository;
-	private GroupLdapRepository groupRepository;
-	private UserLdapRepository userRepository;
-	private IamProvider iamProvider;
 	private UserOrg user;
-	private UserOrg user2;
 	private GroupOrg groupLdap;
 	private GroupOrg groupLdap2;
 	private Map<String, GroupOrg> groups;
@@ -47,10 +33,10 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 
 	@BeforeEach
 	void init() {
-		companyRepository = Mockito.mock(CompanyLdapRepository.class);
-		groupRepository = Mockito.mock(GroupLdapRepository.class);
-		userRepository = Mockito.mock(UserLdapRepository.class);
-		iamProvider = Mockito.mock(IamProvider.class);
+		final var companyRepository = Mockito.mock(CompanyLdapRepository.class);
+		final var groupRepository = Mockito.mock(GroupLdapRepository.class);
+		final var userRepository = Mockito.mock(UserLdapRepository.class);
+		final var iamProvider = Mockito.mock(IamProvider.class);
 		final ApplicationContext applicationContext = Mockito.mock(ApplicationContext.class);
 		SpringUtils.setSharedApplicationContext(applicationContext);
 		final IamConfiguration iamConfiguration = new IamConfiguration();
@@ -77,7 +63,7 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 		userGroups.add("group");
 		user.setGroups(userGroups);
 		user.setMails(Collections.singletonList("mail"));
-		user2 = new UserOrg();
+		final var user2 = new UserOrg();
 		user2.setId("u2");
 		user2.setFirstName("f");
 		user2.setLastName("l");
@@ -107,7 +93,7 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 
 		final Map<CacheDataType, Map<String, ? extends ResourceOrg>> ldapData = repository.getData();
 
-		Assertions.assertEquals("Company", ((CompanyOrg) ldapData.get(CacheDataType.COMPANY).get("company")).getName());
+		Assertions.assertEquals("Company", ((INamableBean<?>) ldapData.get(CacheDataType.COMPANY).get("company")).getName());
 		Assertions.assertEquals("dnc", ldapData.get(CacheDataType.COMPANY).get("company").getDn());
 		final GroupOrg groupLdap = (GroupOrg) ldapData.get(CacheDataType.GROUP).get("group");
 		Assertions.assertEquals("dn", groupLdap.getDn());
@@ -255,5 +241,12 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 
 		Mockito.verify(cache).delete(user);
 		Assertions.assertFalse(users.containsKey("u"));
+	}
+
+	@Test
+	void refreshData() {
+		final var conflictDate = new AtomicLong(0);
+		Mockito.when(cache.getCacheRefreshTime()).thenAnswer(a -> conflictDate.incrementAndGet());
+		repository.refreshData();
 	}
 }

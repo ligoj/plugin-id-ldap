@@ -5,7 +5,6 @@ package org.ligoj.app.plugin.id.resource;
 
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.UriInfo;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -135,17 +134,15 @@ class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	@Test
 	void findByIdExpectedNotExist() {
 		initSpringSecurityContext("fdaugan");
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.findByIdExpected("any");
-		}), "company", "unknown-id");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
+				() -> resource.findByIdExpected("any")), "company", "unknown-id");
 	}
 
 	@Test
 	void findByIdExpectedNotDelegate() {
 		initSpringSecurityContext("fdaugan");
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.findByIdExpected("socygan");
-		}), "company", "unknown-id");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
+				() -> resource.findByIdExpected("socygan")), "company", "unknown-id");
 	}
 
 	@Test
@@ -190,17 +187,15 @@ class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		group.setName("New-Ax-1-z:Z 0");
 		group.setScope(typeLdap.getId());
 		initSpringSecurityContext("mmartin");
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.create(group);
-		}), "name", "read-only");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.create(group)),
+				"name", "read-only");
 	}
 
 	@Test
 	void deleteNotVisible() {
 		initSpringSecurityContext("mmartin");
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.delete("ligoj");
-		}), "company", "unknown-id");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.delete("ligoj")),
+				"company", "unknown-id");
 	}
 
 	/**
@@ -208,30 +203,26 @@ class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 	 */
 	@Test
 	void deleteLocked() {
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.delete("quarantine");
-		}), "company", "locked");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.delete("quarantine")),
+				"company", "locked");
 	}
 
 	@Test
 	void deleteNotExists() {
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.delete("any-any");
-		}), "company", "unknown-id");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.delete("any-any")),
+			"company", "unknown-id");
 	}
 
 	@Test
 	void deleteNotEmptyLeaf() {
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.delete("ligoj");
-		}), "company", "not-empty-company");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.delete("ligoj")),
+			"company", "not-empty-company");
 	}
 
 	@Test
 	void deleteNotEmptyParent() {
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.delete("france");
-		}), "company", "not-empty-company");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.delete("france")),
+		"company", "not-empty-company");
 	}
 
 	@Test
@@ -240,9 +231,8 @@ class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		final ContainerEditionVo group = new ContainerEditionVo();
 		group.setName("orange");
 		group.setScope(typeLdap.getId());
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.create(group);
-		}), "name", "already-exist");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.create(group)),
+			"name", "already-exist");
 	}
 
 	@Test
@@ -251,9 +241,8 @@ class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		final ContainerEditionVo company = new ContainerEditionVo();
 		company.setName("New-Ax-1-z:Z 0");
 		company.setScope(typeLdap.getId());
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.create(company);
-		}), "type", "container-scope-match");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.create(company)),
+				"type", "container-scope-match");
 	}
 
 	/**
@@ -298,6 +287,7 @@ class CompanyLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assertions.assertEquals(companyLdap, companyLdap);
 		Assertions.assertEquals(companyLdap, new CompanyOrg("any", "New-AX-1-Z:Z 0"));
 		Assertions.assertNotEquals(companyLdap, new CompanyOrg("any", "some"));
+		//noinspection AssertBetweenInconvertibleTypes
 		Assertions.assertNotEquals(companyLdap, new GroupOrg("any", "some", null));
 	}
 

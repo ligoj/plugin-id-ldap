@@ -26,7 +26,7 @@ import org.springframework.ldap.core.DirContextOperations;
 import java.util.*;
 
 /**
- * A LDAP container repository.
+ * LDAP container repository.
  *
  * @param <T> The container type.
  * @param <C> The container cache type.
