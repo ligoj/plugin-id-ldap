@@ -97,6 +97,9 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	 */
 	private static final Map<String, String> SEARCH_MAPPER = new HashMap<>();
 
+	private static final int DEFAULT_GID_NUMBER = 200;
+	private static final int DEFAULT_UID_NUMBER = 200;
+
 	static {
 		SEARCH_MAPPER.put("mails", "mail");
 	}
@@ -192,7 +195,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	private CompanyLdapRepository companyRepository;
 
 	@Autowired
-	private CacheLdapRepository cacheRepository;
+	protected CacheLdapRepository cacheRepository;
 
 	@Autowired
 	protected ApplicationContext applicationContext;
@@ -225,8 +228,15 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		// Create the LDAP entry
 		user.setDn(dn.toString());
 		final var context = new DirContextAdapter(dn);
-		context.setAttributeValues(OBJECT_CLASS, new String[]{className});
+		context.setAttributeValues(OBJECT_CLASS, List.of("top", "person", "inetOrgPerson", "organizationalPerson", className).stream().distinct().toArray(String[]::new));
 		mapToContext(user, context);
+
+		if ("posixAccount".equalsIgnoreCase(className)) {
+			// Set a default gidNumber
+			context.setAttributeValue("gidNumber", DEFAULT_GID_NUMBER);
+			context.setAttributeValue("uidNumber", DEFAULT_UID_NUMBER);
+		}
+
 		template.bind(context);
 
 		// Also, update the cache and return the original entry with updated DN
