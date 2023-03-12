@@ -199,9 +199,8 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		setOu(subscription2, "sea");
 
 		// Invoke link for an already linked entity, since for now
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			basicCreate(subscription2);
-		}), IdentityResource.PARAMETER_GROUP, "pattern");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
+				() -> basicCreate(subscription2)), IdentityResource.PARAMETER_GROUP, "pattern");
 	}
 
 	/**

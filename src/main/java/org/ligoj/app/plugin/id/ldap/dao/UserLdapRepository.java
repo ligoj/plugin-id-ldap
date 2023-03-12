@@ -683,7 +683,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 			result = template.authenticate(baseDn, filter.encode(), password);
 		} else {
 			// Build the DN to user from the stored one in cache database without performing a lookup
-			final var user = toUser(name);
+			final var user = findById(name);
 			if (user != null) {
 				final var dn = toDn(user);
 				try {
