@@ -23,12 +23,10 @@ import org.ligoj.bootstrap.core.json.InMemoryPagination;
 import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.ldap.core.ContextExecutor;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.LdapTemplate;
@@ -48,6 +46,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * User LDAP repository
@@ -160,12 +159,6 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	private Pattern companyPattern = Pattern.compile("");
 
 	/**
-	 * Special company that will contain the isolated accounts.
-	 */
-	@Setter
-	private String quarantineBaseDn;
-
-	/**
 	 * LDAP Attribute used to tag a locked user. This attribute will contain several serialized values such as
 	 * #lockedValue, author, date and previous company when this user is in the isolate state.<br>
 	 * The structure of this attribute is composed by several fragments with pipe "|" as separator. The whole structure
@@ -175,6 +168,15 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	 */
 	@Setter
 	private String lockedAttribute;
+
+	/**
+	 * Value used as flag for user bind technique for single LDAP operation at bind time to retrieve user attributes.
+	 * When <code>false</code> (default), admin credentials are used to find user details.
+	 * When <code>true</code>, a single LDAP operation is executed at login time both to validate the credentials and to
+	 * retrieve the fresh actual user attributes.
+	 */
+	@Setter
+	protected boolean selfSearch = false;
 
 	/**
 	 * LDAP Attribute value to tag a disabled user.
@@ -196,9 +198,6 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 
 	@Autowired
 	protected CacheLdapRepository cacheRepository;
-
-	@Autowired
-	protected ApplicationContext applicationContext;
 
 	/**
 	 * LDAP Mapper
@@ -228,7 +227,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		// Create the LDAP entry
 		user.setDn(dn.toString());
 		final var context = new DirContextAdapter(dn);
-		context.setAttributeValues(OBJECT_CLASS, List.of("top", "person", "inetOrgPerson", "organizationalPerson", className).stream().distinct().toArray(String[]::new));
+		context.setAttributeValues(OBJECT_CLASS, Stream.of("top", "person", "inetOrgPerson", "organizationalPerson", className).distinct().toArray(String[]::new));
 		mapToContext(user, context);
 
 		if ("posixAccount".equalsIgnoreCase(className)) {
@@ -320,7 +319,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	/**
 	 * Return all user entries.
 	 *
-	 * @param groups The existing groups. They will be be used to complete the membership of each returned user.
+	 * @param groups The existing groups. They will be used to complete the membership of each returned user.
 	 * @return all user entries. Key is the user login.
 	 */
 	@Override
@@ -507,7 +506,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	 */
 	private void addFilteredByCompaniesAndPattern(final Set<String> members, final Set<String> companies,
 			final String criteria, final Set<UserOrg> result, final Map<String, UserOrg> users) {
-		// Filter by company for each members
+		// Filter by company for each member
 		for (final var member : members) {
 			final var userLdap = users.get(member);
 
@@ -597,7 +596,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	}
 
 	/**
-	 * Lock an user :
+	 * Lock a user:
 	 * <ul>
 	 * <li>Clear the password to prevent new authentication</li>
 	 * <li>Set the disabled flag.</li>
@@ -677,9 +676,25 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	public boolean authenticate(final String name, final String password) {
 		log.info("Authenticating {} ...", name);
 		final var property = getAuthenticateProperty(name);
-		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className))
-				.and(new EqualsFilter(property, name));
-		final var result = template.authenticate(baseDn, filter.encode(), password);
+		boolean result = false;
+		if (selfSearch) {
+			// Use a search to use the actual DN of user ignoring the one stored in cache database
+			final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className))
+					.and(new EqualsFilter(property, name));
+			result = template.authenticate(baseDn, filter.encode(), password);
+		} else {
+			// Build the DN to user from the stored one in cache database without performing a lookup
+			final var user = toUser(name);
+			if (user == null) {
+				final var dn = toDn(user);
+				try {
+					template.getContextSource().getContext(dn, password).close();
+					result = true;
+				} catch (final Exception ne) {
+					log.info("Authenticate {} : {}, {}", name, result, ne.getMessage());
+				}
+			}
+		}
 		log.info("Authenticate {} : {}", name, result);
 		return result;
 	}
@@ -719,10 +734,10 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	}
 
 	/**
-	 * Digest with SSHA the given clear password.
+	 * Digest with S-SHA the given clear password.
 	 *
 	 * @param password the clear password to digest.
-	 * @return a SSHA digest.
+	 * @return a S-SHA digest.
 	 */
 	@SuppressWarnings("deprecation")
 	private String digest(final String password) {
@@ -745,27 +760,24 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		set(userLdap, PWD_ACCOUNT_LOCKED_ATTRIBUTE, null);
 
 		// Authenticate the user is needed before changing the password.
-		template.executeReadWrite(new ContextExecutor<>() {
-			@Override
-			public Object executeWithContext(final DirContext dirCtx) throws NamingException {
-				final var ctx = (LdapContext) dirCtx;
-				ctx.removeFromEnvironment(LDAP_CONNECT_POOL);
-				ctx.addToEnvironment(Context.SECURITY_PRINCIPAL, userLdap.getDn());
-				ctx.addToEnvironment(Context.SECURITY_CREDENTIALS,
-						password == null ? getTmpPassword(userLdap) : password);
+		template.executeReadWrite(dirCtx -> {
+			final var ctx = (LdapContext) dirCtx;
+			ctx.removeFromEnvironment(LDAP_CONNECT_POOL);
+			ctx.addToEnvironment(Context.SECURITY_PRINCIPAL, userLdap.getDn());
+			ctx.addToEnvironment(Context.SECURITY_CREDENTIALS,
+					password == null ? getTmpPassword(userLdap) : password);
 
-				try {
-					ctx.reconnect(null);
-					ctx.modifyAttributes(userLdap.getDn(), passwordChange);
-				} catch (final AuthenticationException e) {
-					log.info("Authentication failed for {}: {}", userLdap.getId(), e.getMessage());
-					throw new ValidationJsonException("password", "login");
-				} catch (final InvalidAttributeValueException e) {
-					log.info("Password change failed due to: {}", e.getMessage());
-					throw new ValidationJsonException("password", "password-policy");
-				}
-				return null;
+			try {
+				ctx.reconnect(null);
+				ctx.modifyAttributes(userLdap.getDn(), passwordChange);
+			} catch (final AuthenticationException e) {
+				log.info("Authentication failed for {}: {}", userLdap.getId(), e.getMessage());
+				throw new ValidationJsonException("password", "login");
+			} catch (final InvalidAttributeValueException e) {
+				log.info("Password change failed due to: {}", e.getMessage());
+				throw new ValidationJsonException("password", "password-policy");
 			}
+			return null;
 		});
 	}
 

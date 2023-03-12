@@ -3,6 +3,11 @@
  */
 package org.ligoj.app.plugin.id.ldap.resource;
 
+import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -41,11 +46,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -178,6 +178,13 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 */
 	public static final String PARAMETER_CLEAR_PASSWORD = KEY + ":clear-password";
 
+	/**
+	 * Value used as flag for user bind technique for single LDAP operation at bind time to retrieve user attributes.
+	 * When <code>false</code>, admin credentials are used to find user details.
+	 */
+	public static final String PARAMETER_SELF_SEARCH = KEY + ":self-search";
+
+
 	@Autowired
 	protected ProjectCustomerLdapRepository projectCustomerLdapRepository;
 
@@ -218,10 +225,10 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		// A new repository instance
 		final var repository = new UserLdapRepository();
 		repository.setTemplate(template);
+		repository.setSelfSearch(Boolean.parseBoolean(getParameter(parameters, PARAMETER_SELF_SEARCH, "false")));
 		repository.setClassName(getParameter(parameters, PARAMETER_PEOPLE_CLASS, "inetOrgPerson"));
 		repository.setBaseDn(getParameter(parameters, PARAMETER_PEOPLE_DN, ""));
 		repository.setPeopleInternalBaseDn(getParameter(parameters, PARAMETER_PEOPLE_INTERNAL_DN, ""));
-		repository.setQuarantineBaseDn(getParameter(parameters, PARAMETER_QUARANTINE_DN, ""));
 		repository.setDepartmentAttribute(getParameter(parameters, PARAMETER_DEPARTMENT_ATTRIBUTE, "employeeNumber"));
 		repository.setLocalIdAttribute(getParameter(parameters, PARAMETER_LOCAL_ID_ATTRIBUTE, "employeeID"));
 		repository.setUidAttribute(getParameter(parameters, PARAMETER_UID_ATTRIBUTE, "uid"));
@@ -259,7 +266,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	}
 
 	private String getParameter(final Map<String, String> parameters, final String name, final String def) {
-		final var value = StringUtils.trimToNull(parameters.get(name));
+		final var value = parameters.get(name);
 		return value == null ? def : value;
 	}
 

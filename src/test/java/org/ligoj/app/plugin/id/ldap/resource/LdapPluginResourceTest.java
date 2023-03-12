@@ -33,6 +33,7 @@ import org.ligoj.app.model.Node;
 import org.ligoj.app.model.ParameterValue;
 import org.ligoj.app.model.Project;
 import org.ligoj.app.model.Subscription;
+import org.ligoj.app.plugin.id.ldap.dao.UserLdapRepository;
 import org.ligoj.app.plugin.id.resource.IdentityResource;
 import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
 import org.ligoj.app.plugin.id.resource.UserOrgResource;
@@ -74,7 +75,6 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		em.flush();
 		em.clear();
 		Assertions.assertFalse(resource.checkSubscriptionStatus(parameters).getStatus().isUp());
-		subscriptionResource.getParametersNoCheck(subscription.getId()).isEmpty();
 	}
 
 	/**
@@ -107,18 +107,14 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	void validateGroupNotExists() {
 		final Map<String, String> parameters = pvResource.getNodeParameters("service:id:ldap:dig");
 		parameters.put(IdentityResource.PARAMETER_GROUP, "broken");
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.validateGroup(parameters);
-		}), IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOWN_ID);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.validateGroup(parameters)), IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOWN_ID);
 	}
 
 	@Test
 	void validateGroupNotProject() {
 		final Map<String, String> parameters = pvResource.getNodeParameters("service:id:ldap:dig");
 		parameters.put(IdentityResource.PARAMETER_GROUP, "vigireport");
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.validateGroup(parameters);
-		}), IdentityResource.PARAMETER_GROUP, "group-type");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.validateGroup(parameters)), IdentityResource.PARAMETER_GROUP, "group-type");
 	}
 
 	@Test
@@ -156,9 +152,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		setGroup(subscription2, "sea-octopus");
 		setOu(subscription2, "sea");
 
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			basicCreate(subscription2);
-		}), IdentityResource.PARAMETER_GROUP, "already-exist");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> basicCreate(subscription2)), IdentityResource.PARAMETER_GROUP, "already-exist");
 	}
 
 	/**
@@ -180,9 +174,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		final Project newProject = create("sea-parent2").getProject();
 		createSubGroup(newProject, "sea-parent2", "sea-parent2-client");
 
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			createSubGroup(newProject, "sea-parent2-client", "sea-parent2-dev");
-		}), IdentityResource.PARAMETER_GROUP, "pattern");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> createSubGroup(newProject, "sea-parent2-client", "sea-parent2-dev")), IdentityResource.PARAMETER_GROUP, "pattern");
 	}
 
 	/**
@@ -235,9 +227,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		setOu(subscription2, "sea");
 
 		// Invoke link for an already linked entity, since for now
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			basicCreate(subscription2);
-		}), IdentityResource.PARAMETER_GROUP, "pattern");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> basicCreate(subscription2)), IdentityResource.PARAMETER_GROUP, "pattern");
 	}
 
 	/**
@@ -261,9 +251,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		setOu(subscription2, "ligoj");
 
 		// Invoke link for an already linked entity, since for now
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			basicCreate(subscription2);
-		}), IdentityResource.PARAMETER_GROUP, "pattern");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> basicCreate(subscription2)), IdentityResource.PARAMETER_GROUP, "pattern");
 	}
 
 	/**
@@ -289,9 +277,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		setOu(subscription2, "sea");
 
 		// Invoke link for an already linked entity, since for now
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			basicCreate(subscription2);
-		}), IdentityResource.PARAMETER_PARENT_GROUP, "unknown-id");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> basicCreate(subscription2)), IdentityResource.PARAMETER_PARENT_GROUP, "unknown-id");
 	}
 
 	/**
@@ -378,9 +364,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 
 		// Invoke link for an already created entity, since for now
 		initSpringSecurityContext("any");
-		Assertions.assertThrows(EntityNotFoundException.class, () -> {
-			resource.link(this.subscription);
-		});
+		Assertions.assertThrows(EntityNotFoundException.class, () -> resource.link(this.subscription));
 	}
 
 	/**
@@ -394,9 +378,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 
 		// Invoke link for an already created entity, since for now
 		initSpringSecurityContext("fdaugan");
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.link(this.subscription);
-		}), IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOWN_ID);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.link(this.subscription)), IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOWN_ID);
 	}
 
 	/**
@@ -409,9 +391,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		setGroup(subscription, "any-g");
 
 		initSpringSecurityContext("fdaugan");
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.link(this.subscription);
-		}), IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOWN_ID);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.link(this.subscription)), IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOWN_ID);
 	}
 
 	@Test
@@ -671,7 +651,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 
 	@Test
 	void accept() {
-		final Node ldap = new Node();
+		final var ldap = new Node();
 		ldap.setId("service:id:ldap:test");
 		ldap.setRefined(nodeRepository.findOneExpected("service:id:ldap"));
 		ldap.setName("LDAP Test");
@@ -682,17 +662,57 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	@Test
-	void authenticatePrimary() {
-		final Authentication authentication = new UsernamePasswordAuthenticationToken("fdaugan", "Azerty01");
+	void authenticateSelfSearch() {
+		authenticatePrimary();
+	}
+
+	@Test
+	void authenticateNoSelfSearch() {
+		final var repository = (UserLdapRepository) resource.getConfiguration("service:id:ldap:dig").getUserRepository();
+		try {
+			repository.setSelfSearch(false);
+			authenticatePrimary();
+		} finally {
+			repository.setSelfSearch(true);
+		}
+	}
+
+	private void authenticatePrimary() {
+		final var authentication = new UsernamePasswordAuthenticationToken("fdaugan", "Azerty01");
 		Assertions.assertSame(authentication, resource.authenticate(authentication, "service:id:ldap:dig", true));
 	}
 
 	@Test
-	void authenticateFail() {
-		final Authentication authentication = new UsernamePasswordAuthenticationToken("fdaugan", "any");
-		Assertions.assertThrows(BadCredentialsException.class, () -> {
-			resource.authenticate(authentication, "service:id:ldap:dig", true);
-		});
+	void authenticateSelfSearchFail() {
+		authenticateFail();
+	}
+
+	@Test
+	void authenticateNoSelfSearchFail() {
+		final var repository = (UserLdapRepository) resource.getConfiguration("service:id:ldap:dig").getUserRepository();
+		try {
+			repository.setSelfSearch(false);
+			authenticateFail();
+		} finally {
+			repository.setSelfSearch(true);
+		}
+	}
+
+	@Test
+	void authenticateNoSelfSearchUnknownUser() {
+		final var repository = (UserLdapRepository) resource.getConfiguration("service:id:ldap:dig").getUserRepository();
+		try {
+			repository.setSelfSearch(false);
+			final var authentication = new UsernamePasswordAuthenticationToken("any", "any");
+			Assertions.assertThrows(BadCredentialsException.class, () -> resource.authenticate(authentication, "service:id:ldap:dig", true));
+		} finally {
+			repository.setSelfSearch(true);
+		}
+	}
+
+	private void authenticateFail() {
+		final var authentication = new UsernamePasswordAuthenticationToken("fdaugan", "any");
+		Assertions.assertThrows(BadCredentialsException.class, () -> resource.authenticate(authentication, "service:id:ldap:dig", true));
 	}
 
 	@Test
@@ -774,9 +794,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		user.setFirstName("First");
 		user.setLastName("Last123");
 		user.setName("secondarylogin");
-		Assertions.assertThrows(NotAuthorizedException.class, () -> {
-			toApplicationUser(resource, user);
-		});
+		Assertions.assertThrows(NotAuthorizedException.class, () -> toApplicationUser(resource, user));
 	}
 
 	@Test
@@ -786,9 +804,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		newLdap();
 
 		final Authentication authentication = new UsernamePasswordAuthenticationToken("jdupont", "Azerty01");
-		Assertions.assertThrows(NotAuthorizedException.class, () -> {
-			resource.authenticate(authentication, "service:id:ldap:secondary", false);
-		});
+		Assertions.assertThrows(NotAuthorizedException.class, () -> resource.authenticate(authentication, "service:id:ldap:secondary", false));
 	}
 
 	@Test
@@ -797,9 +813,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		newLdap();
 
 		final Authentication authentication = new UsernamePasswordAuthenticationToken("fdaugan", "any");
-		Assertions.assertThrows(BadCredentialsException.class, () -> {
-			resource.authenticate(authentication, "service:id:ldap:secondary", false);
-		});
+		Assertions.assertThrows(BadCredentialsException.class, () -> resource.authenticate(authentication, "service:id:ldap:secondary", false));
 	}
 
 	@Test
@@ -817,9 +831,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		user.setLastName("Last123");
 		user.setName("secondarylogin");
 		user.setCompany("ligoj");
-		Assertions.assertThrows(UncategorizedLdapException.class, () -> {
-			resource.newApplicationUser(user);
-		});
+		Assertions.assertThrows(UncategorizedLdapException.class, () -> resource.newApplicationUser(user));
 	}
 
 	@Test
@@ -835,8 +847,6 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		user.setLastName("Last123");
 		user.setName("secondarylogin");
 		user.setCompany("ligoj");
-		Assertions.assertThrows(RuntimeException.class, () -> {
-			resource.newApplicationUser(user);
-		});
+		Assertions.assertThrows(RuntimeException.class, () -> resource.newApplicationUser(user));
 	}
 }

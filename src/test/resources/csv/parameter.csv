@@ -17,6 +17,7 @@ service:id:ldap:people-dn;false;;false;TEXT;service:id:ldap
 service:id:ldap:people-internal-dn;false;;false;TEXT;service:id:ldap
 service:id:ldap:quarantine-dn;false;;false;TEXT;service:id:ldap
 service:id:ldap:referral;false;;false;TEXT;service:id:ldap
+service:id:ldap:self-search;false;;false;BOOL;service:id:ldap
 service:id:ldap:uid-attribute;true;;false;TEXT;service:id:ldap
 service:id:ldap:url;true;;true;TEXT;service:id:ldap
 service:id:ldap:user-dn;false;;true;TEXT;service:id:ldap

@@ -264,6 +264,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 		persistParameter(ldap, LdapPluginResource.PARAMETER_PASSWORD, "secret");
 		persistParameter(ldap, LdapPluginResource.PARAMETER_BASE_BN, "");
 		persistParameter(ldap, LdapPluginResource.PARAMETER_UID_ATTRIBUTE, "uid");
+		persistParameter(ldap, LdapPluginResource.PARAMETER_SELF_SEARCH, "true");
 		persistParameter(ldap, LdapPluginResource.PARAMETER_PEOPLE_DN, "dc=sample,dc=com");
 		persistParameter(ldap, LdapPluginResource.PARAMETER_DEPARTMENT_ATTRIBUTE, "departmentNumber");
 		persistParameter(ldap, LdapPluginResource.PARAMETER_LOCAL_ID_ATTRIBUTE, "employeeNumber");

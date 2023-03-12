@@ -18,4 +18,5 @@ service:id:ldap:locked-value;LOCKED;service:id:ldap:dig
 service:id:ldap:referral;;service:id:ldap:dig
 service:id:ldap:people-class;inetOrgPerson;service:id:ldap:dig
 service:id:ldap:people-internal-dn;ou=france,ou=people,dc=sample,dc=com;service:id:ldap:dig
+service:id:ldap:self-search;true;service:id:ldap:dig
 service:id:ldap:company-pattern;[^,]+,ou=([^,]+),.*;service:id:ldap:dig
