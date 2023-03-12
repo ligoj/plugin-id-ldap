@@ -37,7 +37,6 @@ import org.springframework.ldap.filter.EqualsFilter;
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
 import javax.naming.Name;
-import javax.naming.NamingException;
 import javax.naming.directory.*;
 import javax.naming.ldap.LdapContext;
 import java.nio.charset.StandardCharsets;
@@ -685,7 +684,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		} else {
 			// Build the DN to user from the stored one in cache database without performing a lookup
 			final var user = toUser(name);
-			if (user == null) {
+			if (user != null) {
 				final var dn = toDn(user);
 				try {
 					template.getContextSource().getContext(dn, password).close();
