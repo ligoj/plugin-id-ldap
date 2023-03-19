@@ -27,8 +27,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.ldap.control.PagedResultsCookie;
+import org.springframework.ldap.control.PagedResultsDirContextProcessor;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
+import org.springframework.ldap.core.DirContextProcessor;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.AbstractContextMapper;
 import org.springframework.ldap.filter.AndFilter;
@@ -98,6 +101,8 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	private static final int DEFAULT_GID_NUMBER = 200;
 	private static final int DEFAULT_UID_NUMBER = 200;
 
+	private static final DirContextProcessor LDAP_NULL_PROCESSOR = new LdapTemplate.NullDirContextProcessor();
+
 	static {
 		SEARCH_MAPPER.put("mails", "mail");
 	}
@@ -116,6 +121,8 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	 */
 	public static final Comparator<UserOrg> DEFAULT_COMPARATOR = new LoginComparator();
 	private static final Sort.Order DEFAULT_ORDER = new Sort.Order(Direction.ASC, "id");
+
+	private static final int LDAP_SEARCH_PAGE_SIZE = 500;
 
 	/**
 	 * Shared random string generator used for temporary passwords.
@@ -329,20 +336,41 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 				uidAttribute, departmentAttribute, localIdAttribute, lockedAttribute, PWD_ACCOUNT_LOCKED_ATTRIBUTE};
 
 		// Fetch users and their direct attributes
-		final var users = template.search(baseDn, new EqualsFilter(OBJECT_CLASS, className).encode(),
-				SearchControls.SUBTREE_SCOPE, returnAttrs, mapper);
-
-		// Index the users by the identifier
 		final var result = new HashMap<String, UserOrg>();
-		for (final var user : users) {
-			user.setGroups(new ArrayList<>());
-			result.put(user.getId(), user);
-		}
+		PagedResultsCookie cookie = null;
+		var page = 1;
+		final var userFilter = new EqualsFilter(OBJECT_CLASS, className).encode();
+		final var searchControls = new SearchControls();
+		searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+		searchControls.setReturningAttributes(returnAttrs);
+		searchControls.setReturningObjFlag(true);
+
+		do {
+			log.info("Processing LDAP user page {} ...", page);
+			List<UserOrg> users;
+			try {
+				final var processor = new PagedResultsDirContextProcessor(LDAP_SEARCH_PAGE_SIZE, cookie);
+				users = template.search(baseDn, userFilter, searchControls, mapper, processor);
+				cookie = processor.getCookie();
+			} catch(final Exception ne) {
+				log.info("Pagination is not supported, regular search ...", ne);
+				users = template.search(baseDn, userFilter, searchControls, mapper, LDAP_NULL_PROCESSOR);
+			}
+
+			// Index the users by the identifier
+			for (final var user : users) {
+				user.setGroups(new ArrayList<>());
+				result.put(user.getId(), user);
+			}
+
+			if (cookie == null) {
+				break;
+			}
+			page = page + 1;
+		} while (true);
 
 		// Update the memberships of this user
-		for (final var groupEntry : groups.entrySet()) {
-			updateMembership(result, groupEntry);
-		}
+		groups.entrySet().forEach(g -> updateMembership(result, g));
 		return result;
 	}
 
