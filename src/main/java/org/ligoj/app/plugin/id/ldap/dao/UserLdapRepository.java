@@ -27,7 +27,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.ldap.control.PagedResultsCookie;
+import org.springframework.ldap.OperationNotSupportedException;
 import org.springframework.ldap.control.PagedResultsDirContextProcessor;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
@@ -122,7 +122,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	public static final Comparator<UserOrg> DEFAULT_COMPARATOR = new LoginComparator();
 	private static final Sort.Order DEFAULT_ORDER = new Sort.Order(Direction.ASC, "id");
 
-	private static final int LDAP_SEARCH_PAGE_SIZE = 500;
+	private static final int LDAP_SEARCH_PAGE_SIZE = 300_000;
 
 	/**
 	 * Shared random string generator used for temporary passwords.
@@ -337,37 +337,26 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 
 		// Fetch users and their direct attributes
 		final var result = new HashMap<String, UserOrg>();
-		PagedResultsCookie cookie = null;
-		var page = 1;
 		final var userFilter = new EqualsFilter(OBJECT_CLASS, className).encode();
 		final var searchControls = new SearchControls();
 		searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 		searchControls.setReturningAttributes(returnAttrs);
 		searchControls.setReturningObjFlag(true);
+		List<UserOrg> users;
+		try {
+			final var processor = new PagedResultsDirContextProcessor(LDAP_SEARCH_PAGE_SIZE, null);
+			users = template.search(baseDn, userFilter, searchControls, mapper, processor);
+		} catch (final OperationNotSupportedException onse) {
+			log.info("Pagination is not supported, regular search ({}) ...", onse.getMessage());
+			users = template.search(baseDn, userFilter, searchControls, mapper, LDAP_NULL_PROCESSOR);
+		}
 
-		do {
-			log.info("Processing LDAP user page {} ...", page);
-			List<UserOrg> users;
-			try {
-				final var processor = new PagedResultsDirContextProcessor(LDAP_SEARCH_PAGE_SIZE, cookie);
-				users = template.search(baseDn, userFilter, searchControls, mapper, processor);
-				cookie = processor.getCookie();
-			} catch(final Exception ne) {
-				log.info("Pagination is not supported, regular search ...", ne);
-				users = template.search(baseDn, userFilter, searchControls, mapper, LDAP_NULL_PROCESSOR);
-			}
-
-			// Index the users by the identifier
-			for (final var user : users) {
-				user.setGroups(new ArrayList<>());
-				result.put(user.getId(), user);
-			}
-
-			if (cookie == null) {
-				break;
-			}
-			page = page + 1;
-		} while (true);
+		// Index the users by the identifier
+		log.info("Prepare users {} for indexing ...", users.size());
+		for (final var user : users) {
+			user.setGroups(new ArrayList<>());
+			result.put(user.getId(), user);
+		}
 
 		// Update the memberships of this user
 		groups.entrySet().forEach(g -> updateMembership(result, g));
