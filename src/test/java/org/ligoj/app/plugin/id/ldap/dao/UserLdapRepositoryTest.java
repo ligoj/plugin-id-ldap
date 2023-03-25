@@ -64,7 +64,7 @@ class UserLdapRepositoryTest {
 	}
 
 	@Test
-	void toCompanyContant() {
+	void toCompanyConstant() {
 		repository.setCompanyPattern("const");
 		Assertions.assertEquals("const", repository.toCompany("uid=some,ou=company,dc=ex,dc=fr"));
 	}
