@@ -75,7 +75,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String KEY = URL.replace('/', ':').substring(1);
 
 	/**
-	 * Full URL like "ldap/myhost:389/"
+	 * Full URL like "ldap/localhost:389/"
 	 */
 	public static final String PARAMETER_URL = KEY + ":url";
 
@@ -105,7 +105,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String PARAMETER_UID_ATTRIBUTE = KEY + ":uid-attribute";
 
 	/**
-	 * DN of location of users can login
+	 * DN of location of users can log in
 	 */
 	public static final String PARAMETER_PEOPLE_DN = KEY + ":people-dn";
 
@@ -299,8 +299,47 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 				.matches(getParameter(parameters, IdentityResource.PARAMETER_UID_PATTERN, ".*"));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <h1>Situation #1</h1>
+	 * <h2>Context</h2>
+	 * <ul>
+	 * <li>{@code ou} is <code>project1</code></li>
+	 * <li>{@code group} is <code>project1-dev</code></li>
+	 * <li>{@code subscription} is related to project's pKey is <code>project1</code></li>
+	 * <li><code>ou=projects, ou=groups, dc=sample</code> is configured as {@link ContainerScope#TYPE_PROJECT}</li>
+	 * </ul>
+	 * <h2>Result</h2>
+	 * <ul>
+	 * <li>{@code group} is checked to starts with its ou <code>project1-</code></li>
+	 * <li>{@code group} is checked to starts with the project's pKey <code>project1-</code></li>
+	 * <li>{@code project1} must be visible by the current user</li>
+	 * <li>DN <code>ou=project1, ou=projects, ou=groups, dc=sample</code> is created as needed directly inside the configure DN of {@link ContainerScope#TYPE_PROJECT}</li>
+	 * <li>DN <code>cn=project1-dev, ou=project1, ou=projects, ou=groups, dc=sample</code> must not exist and is created</li>
+	 * </ul>
+	 *
+	 * <h1>Situation #2</h1>
+	 * <h2>Context</h2>
+	 * <ul>
+	 * <li>{@code ou} is <code>project1</code></li>
+	 * <li>{@code group} is <code>project1-dev-team1</code></li>
+	 * <li>{@code parentGroup} is <code>project1-dev</code></li>
+	 * <li>{@code subscription} is related to project's pKey is <code>project1</code></li>
+	 * <li><code>ou=projects, ou=groups, dc=sample</code> is configured as {@link ContainerScope#TYPE_PROJECT}</li>
+	 * </ul>
+	 * <h2>Result</h2>
+	 * <ul>
+	 * <li>{@code group} is checked to starts with its ou <code>project1-</code></li>
+	 * <li>{@code group} is checked to starts with its parent group <code>project1-dev-</code></li>
+	 * <li>{@code group} is checked to starts with the project's pKey <code>project1-</code></li>
+	 * <li>{@code parentGroup} must be an existing visible by the current user</li>
+	 * <li>{@code project1} must be visible by the current user</li>
+	 * <li>DN <code>cn=project1-dev-team1, cn=project1-dev, ou=project1, ou=projects, ou=groups, dc=sample</code> must not exist and is created</li>
+	 * </ul>
+	 */
 	@Override
 	public void create(final int subscription) {
+
 		final var parameters = subscriptionResource.getParameters(subscription);
 		final var group = parameters.get(IdentityResource.PARAMETER_GROUP);
 		final var parentGroup = parameters.get(IdentityResource.PARAMETER_PARENT_GROUP);
@@ -311,7 +350,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		// Check the relationship between group, OU and project
 		validateGroup(group, ou, pkey);
 
-		// Check the relationship between group, and parent
+		// Check the relationship between group and parent
 		final var parentDn = validateAndCreateParent(group, parentGroup, ou, pkey, subscription);
 
 		// Create the group inside the parent (OU or parent CN)
@@ -387,7 +426,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 
 		// Compare the group and its parent
 		if (!group.startsWith(parentGroup + "-")) {
-			// This sub-group has not a correct form
+			// This subgroup has not a correct form
 			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, PATTERN_PROPERTY, parentGroup + "-.*");
 		}
 
@@ -511,7 +550,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 *
 	 * @param activities   The collected activities.
 	 * @param users        The implied users.
-	 * @param subscription The related subscription of theses activities.
+	 * @param subscription The related subscription of these activities.
 	 * @param plugin       The plug-in associated to this subscription.
 	 * @param nodes        The nodes that have already been processed. This set will be updated by this function.
 	 * @throws Exception When any technical error occurs. Caught at upper level for the right mapping.
@@ -572,7 +611,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * Validate the group against the OU and the linked project.
 	 */
 	private void validateGroup(final String group, final String ou, final String pkey) {
-		// Check the group does not exists
+		// Check the group does not exist
 		if (groupLdapResource.findById(group) != null) {
 			// This group already exists
 			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, "already-exist", "0",
@@ -698,7 +737,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 			return new SubscriptionStatusWithData(false);
 		}
 
-		// Non empty group, return amount of members
+		// Non-empty group, return amount of members
 		final var result = new SubscriptionStatusWithData(true);
 		result.put("members", groupLdap.getMembers().size());
 		return result;
