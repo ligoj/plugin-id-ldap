@@ -3,15 +3,9 @@
  */
 package org.ligoj.app.plugin.id.resource;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
-
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +16,6 @@ import org.ligoj.app.dao.SubscriptionRepository;
 import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.model.DelegateOrg;
 import org.ligoj.app.model.DelegateNode;
-import org.ligoj.app.model.Subscription;
 import org.ligoj.app.plugin.id.ldap.dao.CacheLdapRepository;
 import org.ligoj.app.plugin.id.ldap.resource.AbstractLdapTest;
 import org.ligoj.app.plugin.id.model.ContainerScope;
@@ -36,7 +29,10 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * Test class of {@link SubscriptionResource}
@@ -69,8 +65,8 @@ class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 
 	@Test
 	void deleteNotManagedProject() {
-		final Subscription one = repository.findOne(getSubscription("gStack", IdentityResource.SERVICE_KEY));
-		final int project = one.getProject().getId();
+		final var one = repository.findOne(getSubscription("gStack", IdentityResource.SERVICE_KEY));
+		final var project = one.getProject().getId();
 		Assertions.assertEquals(3, repository.findAllByProject(project).size());
 
 		// Ensure LDAP cache is loaded
@@ -79,29 +75,27 @@ class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		em.flush();
 		em.clear();
 		initSpringSecurityContext("alongchu");
-		Assertions.assertThrows(ForbiddenException.class, () -> {
-			resource.delete(one.getId());
-		});
+		Assertions.assertThrows(ForbiddenException.class, () -> resource.delete(one.getId()));
 	}
 
 	@Test
 	void createCreateMode() throws Exception {
 		// Prepare data
 		em.createQuery("DELETE Parameter WHERE id LIKE ?1").setParameter(1, "c_%").executeUpdate();
-		final String dn = "cn=ligoj-gstack-client,cn=ligoj-gstack,ou=ligoj,ou=project,dc=sample,dc=com";
+		final var dn = "cn=ligoj-gstack-client,cn=ligoj-gstack,ou=ligoj,ou=project,dc=sample,dc=com";
 		cleanSubGroup(dn);
 
-		final SubscriptionEditionVo vo = new SubscriptionEditionVo();
-		final List<ParameterValueCreateVo> parameters = new ArrayList<>();
-		final ParameterValueCreateVo parameterValueEditionVo = new ParameterValueCreateVo();
+		final var vo = new SubscriptionEditionVo();
+		final var parameters = new ArrayList<ParameterValueCreateVo>();
+		final var parameterValueEditionVo = new ParameterValueCreateVo();
 		parameterValueEditionVo.setParameter(IdentityResource.PARAMETER_OU);
 		parameterValueEditionVo.setText("ligoj");
 		parameters.add(parameterValueEditionVo);
-		final ParameterValueCreateVo parameterValueEditionVo2 = new ParameterValueCreateVo();
+		final var parameterValueEditionVo2 = new ParameterValueCreateVo();
 		parameterValueEditionVo2.setParameter(IdentityResource.PARAMETER_PARENT_GROUP);
 		parameterValueEditionVo2.setText("ligoj-gstack");
 		parameters.add(parameterValueEditionVo2);
-		final ParameterValueCreateVo parameterValueEditionVo3 = new ParameterValueCreateVo();
+		final var parameterValueEditionVo3 = new ParameterValueCreateVo();
 		parameterValueEditionVo3.setParameter(IdentityResource.PARAMETER_GROUP);
 		parameterValueEditionVo3.setText("ligoj-gstack-client");
 		parameters.add(parameterValueEditionVo3);
@@ -130,7 +124,7 @@ class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 				IdentityResource.PARAMETER_PARENT_GROUP));
 
 		// Check the creation in LDAP
-		final GroupOrg group = getGroup().findById("ligoj-gstack-client");
+		final var group = getGroup().findById("ligoj-gstack-client");
 		Assertions.assertNotNull(group);
 		Assertions.assertEquals("ligoj-gstack-client", group.getName());
 		Assertions.assertEquals("ligoj-gstack-client", group.getId());
@@ -151,7 +145,7 @@ class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	}
 
 	private String[] getMembers() {
-		final DirContextAdapter groupContext = getTemplate().search("cn=ligoj-gstack,ou=ligoj,ou=project,dc=sample,dc=com",
+		final var groupContext = getTemplate().search("cn=ligoj-gstack,ou=ligoj,ou=project,dc=sample,dc=com",
 				new EqualsFilter("cn", "ligoj-gStack").encode(), (Object ctx) -> (DirContextAdapter) ctx).get(0);
 		return groupContext.getStringAttributes("uniqueMember");
 	}
@@ -163,20 +157,20 @@ class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 	void createCreateModeBlank() throws Exception {
 		// Prepare data
 		em.createQuery("DELETE Parameter WHERE id LIKE ?1").setParameter(1, "c_%").executeUpdate();
-		final String dn = "cn=ligoj-gstack-client2,ou=ligoj,ou=project,dc=sample,dc=com";
+		final var dn = "cn=ligoj-gstack-client2,ou=ligoj,ou=project,dc=sample,dc=com";
 		cleanSubGroup(dn);
 
-		final SubscriptionEditionVo vo = new SubscriptionEditionVo();
-		final List<ParameterValueCreateVo> parameters = new ArrayList<>();
-		final ParameterValueCreateVo parameterValueEditionVo = new ParameterValueCreateVo();
+		final var vo = new SubscriptionEditionVo();
+		final var parameters = new ArrayList<ParameterValueCreateVo>();
+		final var parameterValueEditionVo = new ParameterValueCreateVo();
 		parameterValueEditionVo.setParameter(IdentityResource.PARAMETER_OU);
 		parameterValueEditionVo.setText("ligoj");
 		parameters.add(parameterValueEditionVo);
-		final ParameterValueCreateVo parameterValueEditionVo2 = new ParameterValueCreateVo();
+		final var parameterValueEditionVo2 = new ParameterValueCreateVo();
 		parameterValueEditionVo2.setParameter(IdentityResource.PARAMETER_PARENT_GROUP);
 		parameterValueEditionVo2.setText("");
 		parameters.add(parameterValueEditionVo2);
-		final ParameterValueCreateVo parameterValueEditionVo3 = new ParameterValueCreateVo();
+		final var parameterValueEditionVo3 = new ParameterValueCreateVo();
 		parameterValueEditionVo3.setParameter(IdentityResource.PARAMETER_GROUP);
 		parameterValueEditionVo3.setText("ligoj-gstack-client2");
 		parameters.add(parameterValueEditionVo3);
@@ -193,7 +187,7 @@ class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 		em.clear();
 
 		initSpringSecurityContext(DEFAULT_USER);
-		final int subscription = resource.create(vo);
+		final var subscription = resource.create(vo);
 		em.flush();
 		em.clear();
 
@@ -205,7 +199,7 @@ class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 				IdentityResource.PARAMETER_PARENT_GROUP));
 
 		// Check the creation in LDAP
-		final GroupOrg group = getGroup().findById("ligoj-gstack-client2");
+		final var group = getGroup().findById("ligoj-gstack-client2");
 		Assertions.assertNotNull(group);
 		Assertions.assertEquals("ligoj-gstack-client2", group.getId());
 		Assertions.assertEquals("ligoj-gstack-client2", group.getName());
