@@ -20,4 +20,4 @@ service:id:ldap:self-search;;false;false;BOOL;service:id:ldap
 service:id:ldap:uid-attribute;;true;false;TEXT;service:id:ldap;uid
 service:id:ldap:url;;true;true;TEXT;service:id:ldap;ldap://localhost:389/
 service:id:ldap:user-dn;;false;true;TEXT;service:id:ldap;uid=admin,ou=system
-service:id:ldap:clear-password;;true;false;BOOL;service:id:ldap
+service:id:ldap:clear-password;;false;false;BOOL;service:id:ldap
