@@ -355,7 +355,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 
 		// Create the group inside the parent (OU or parent CN)
 		final var groupDn = "cn=" + group + "," + parentDn;
-		log.info("New Group CN would be created {} project {} and subscription {}", group, pkey, subscription);
+		log.info("New Group CN={} will be created in project {} and subscription {}", group, pkey, subscription);
 		final var repository = getGroup();
 		final var groupLdap = repository.create(groupDn, group);
 
