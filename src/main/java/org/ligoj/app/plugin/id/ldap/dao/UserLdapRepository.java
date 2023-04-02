@@ -693,25 +693,30 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		log.info("Authenticating {} ...", name);
 		final var property = getAuthenticateProperty(name);
 		boolean result = false;
-		if (selfSearch) {
-			// Use a search to use the actual DN of user ignoring the one stored in cache database
-			final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className))
-					.and(new EqualsFilter(property, name));
-			result = template.authenticate(baseDn, filter.encode(), password);
-		} else {
-			// Build the DN to user from the stored one in cache database without performing a lookup
-			final var user = findById(name);
-			if (user != null) {
-				final var dn = toDn(user);
-				try {
+		String reason = "";
+		try {
+			if (selfSearch) {
+				// Use a search to use the actual DN of user ignoring the one stored in cache database
+				reason = "self-search";
+				final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className))
+						.and(new EqualsFilter(property, name));
+				result = template.authenticate(baseDn, filter.encode(), password);
+			} else {
+				// Build the DN to user from the stored one in cache database without performing a lookup
+				final var user = findById(name);
+				if (user == null) {
+					reason = "unknown user";
+				} else {
+					reason = "bind";
+					final var dn = toDn(user);
 					template.getContextSource().getContext(dn, password).close();
 					result = true;
-				} catch (final Exception ne) {
-					log.info("Authenticate {} : {}, {}", name, result, ne.getMessage());
 				}
 			}
+		} catch (final Exception ne) {
+			reason = ne.getMessage();
 		}
-		log.info("Authenticate {} : {}", name, result);
+		log.info("Authenticate {} : {}, {}", name, result, reason);
 		return result;
 	}
 
