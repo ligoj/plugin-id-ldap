@@ -822,7 +822,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		setUserResource(resource, userResource);
 		Mockito.when(userResource.findByIdNoCache("flast123")).thenReturn(null);
 		Mockito.doThrow(new UncategorizedLdapException("")).when(userResource)
-				.saveOrUpdate(ArgumentMatchers.any(UserOrgEditionVo.class), true);
+				.saveOrUpdate(ArgumentMatchers.any(UserOrgEditionVo.class), ArgumentMatchers.eq(true));
 
 		final UserOrg user = new UserOrg();
 		user.setMails(Collections.singletonList("fabrice.daugan@sample.com"));

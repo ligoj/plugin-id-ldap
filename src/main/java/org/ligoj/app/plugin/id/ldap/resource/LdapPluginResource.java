@@ -396,7 +396,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * Validate the group against its direct parent (a normalized OU) and return its DN.
 	 */
 	private String validateAndCreateParentOu(final String group, final String ou, final String pkey, final int subscription) {
-		final var groupTypeLdap = containerScopeResource.findByName(ContainerScope.TYPE_PROJECT);
+		final var groupTypeLdap = containerScopeResource.findByName(ContainerType.GROUP, ContainerScope.TYPE_PROJECT);
 		final var parentDn = groupTypeLdap.getDn();
 
 		// Build the complete normalized DN from the OU and new Group
@@ -678,7 +678,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public Collection<INamableBean<String>> findCustomersByName(@PathParam("criteria") final String criteria) {
 		final var result = new TreeSet<INamableBean<String>>();
 		final var criteriaClean = Normalizer.normalize(criteria);
-		final var findByName = containerScopeResource.findByName(ContainerScope.TYPE_PROJECT);
+		final var findByName = containerScopeResource.findByName(ContainerType.GROUP, ContainerScope.TYPE_PROJECT);
 		final var allCustomers = projectCustomerLdapRepository.findAll(findByName.getDn());
 
 		// Check type and criteria
