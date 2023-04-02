@@ -344,13 +344,14 @@ class UserLdapRepositoryTest {
 		final var user = new UserOrg();
 		final var mock = Mockito.mock(LdapTemplate.class);
 		final var dirCtx = Mockito.mock(DirContextOperations.class);
-		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.eq(2),
-				ArgumentMatchers.any(), (ContextMapper<UserOrg>) ArgumentMatchers.any())).thenAnswer(i -> {
-			((AbstractContextMapper<DirContextOperations>) i.getArgument(4)).mapFromContext(dirCtx);
+		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
+				 (ContextMapper<UserOrg>) ArgumentMatchers.any(), ArgumentMatchers.any())).thenAnswer(i -> {
+			((AbstractContextMapper<DirContextOperations>) i.getArgument(3)).mapFromContext(dirCtx);
 			user.setLocked(new Date(LOCKED_DATE));
 			user.setLockedBy("_ppolicy");
 			return Collections.singletonList(user);
 		});
+
 		Mockito.when(dirCtx.getDn()).thenReturn(org.springframework.ldap.support.LdapUtils.newLdapName("cn=Any"));
 		Mockito.when(dirCtx.attributeExists(ArgumentMatchers.any())).thenReturn(true);
 		Mockito.when(dirCtx.getStringAttribute(ArgumentMatchers.any())).thenReturn("20180206102244Z");
