@@ -87,7 +87,7 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 		final var context = new DirContextAdapter(dn);
 		context.setAttributeValues(OBJECT_CLASS, new String[]{className});
 		mapToContext(container, context);
-		template.bind(context);
+		bind(context);
 
 		// Return the new container
 		return container;

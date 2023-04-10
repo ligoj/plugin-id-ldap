@@ -15,10 +15,9 @@ import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
-import org.springframework.ldap.core.ContextExecutor;
-import org.springframework.ldap.core.ContextMapper;
-import org.springframework.ldap.core.DirContextOperations;
-import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.NameAlreadyBoundException;
+import org.springframework.ldap.NameNotFoundException;
+import org.springframework.ldap.core.*;
 import org.springframework.ldap.core.support.AbstractContextMapper;
 
 import javax.naming.AuthenticationException;
@@ -345,7 +344,7 @@ class UserLdapRepositoryTest {
 		final var mock = Mockito.mock(LdapTemplate.class);
 		final var dirCtx = Mockito.mock(DirContextOperations.class);
 		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-				 (ContextMapper<UserOrg>) ArgumentMatchers.any(), ArgumentMatchers.any())).thenAnswer(i -> {
+				(ContextMapper<UserOrg>) ArgumentMatchers.any(), ArgumentMatchers.any())).thenAnswer(i -> {
 			((AbstractContextMapper<DirContextOperations>) i.getArgument(3)).mapFromContext(dirCtx);
 			user.setLocked(new Date(LOCKED_DATE));
 			user.setLockedBy("_ppolicy");
@@ -360,6 +359,24 @@ class UserLdapRepositoryTest {
 		repository.findAllNoCache(groups);
 
 		Assertions.assertEquals(LOCKED_DATE, user.getLocked().getTime());
+	}
+
+	@Test
+	void bindExistingUser() {
+		final var mock = Mockito.mock(LdapTemplate.class);
+		final var dirCtx = Mockito.mock(DirContextAdapter.class);
+		Mockito.doThrow(NameAlreadyBoundException.class).when(mock).bind(dirCtx);
+		Mockito.when(dirCtx.getDn()).thenReturn(org.springframework.ldap.support.LdapUtils.newLdapName("cn=Any"));
+		repository.setTemplate(mock);
+		Assertions.assertThrows(ValidationJsonException.class, () -> repository.bind(dirCtx));
+	}
+
+	@Test
+	void unbindDeletedUser() {
+		final var mock = Mockito.mock(LdapTemplate.class);
+		Mockito.doThrow(NameNotFoundException.class).when(mock).unbind("cn=Any", true);
+		repository.setTemplate(mock);
+		repository.unbind("cn=Any");
 	}
 
 }

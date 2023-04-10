@@ -130,10 +130,6 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	public static final RandomStringGenerator GENERATOR = new RandomStringGenerator.Builder()
 			.filteredBy(c -> CharUtils.isAsciiAlphanumeric(Character.toChars(c)[0])).build();
 
-	@Setter
-	@Getter
-	private LdapTemplate template;
-
 	/**
 	 * UID attribute name.
 	 */
@@ -241,8 +237,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 			context.setAttributeValue("gidNumber", DEFAULT_GID_NUMBER);
 			context.setAttributeValue("uidNumber", DEFAULT_UID_NUMBER);
 		}
-
-		template.bind(context);
+		bind(context);
 
 		// Also, update the cache and return the original entry with updated DN
 		return cacheRepository.create(user);
@@ -346,8 +341,8 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		try {
 			final var processor = new PagedResultsDirContextProcessor(LDAP_SEARCH_PAGE_SIZE, null);
 			users = template.search(baseDn, userFilter, searchControls, mapper, processor);
-		} catch (final OperationNotSupportedException onse) {
-			log.info("Pagination is not supported, regular search ({}) ...", onse.getMessage());
+		} catch (final OperationNotSupportedException e) {
+			log.info("Pagination is not supported, regular search ({}) ...", e.getMessage());
 			users = template.search(baseDn, userFilter, searchControls, mapper, LDAP_NULL_PROCESSOR);
 		}
 
@@ -594,10 +589,8 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 
 	@Override
 	public void delete(final UserOrg user) {
-		final var userDn = org.springframework.ldap.support.LdapUtils.newLdapName(user.getDn());
-
 		// Delete the user from LDAP
-		template.unbind(userDn);
+		unbind(user.getDn());
 
 		// Remove user from all groups
 		removeUserFromGroups(user, user.getGroups());
@@ -693,7 +686,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		log.info("Authenticating {} ...", name);
 		final var property = getAuthenticateProperty(name);
 		boolean result = false;
-		String reason = "";
+		String reason;
 		try {
 			if (selfSearch) {
 				// Use a search to use the actual DN of user ignoring the one stored in cache database

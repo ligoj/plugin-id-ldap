@@ -3,6 +3,7 @@
  */
 package org.ligoj.app.plugin.id.ldap.dao;
 
+import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -48,6 +49,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	private static final int DEFAULT_GID_NUMBER = 200;
 
 	@Autowired
+	@Getter
 	private CacheGroupRepository cacheGroupRepository;
 
 	@Setter
@@ -169,7 +171,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 				.forEach(this::removeFromJavaCache);
 
 		// Remove recursively from LDAP the group. Anything that was not nicely cleaned will be deleted there.
-		template.unbind(org.springframework.ldap.support.LdapUtils.newLdapName(group.getDn()), true);
+		super.unbind(group.getDn());
 
 		// Also, update the cache
 		cacheRepository.delete(group);

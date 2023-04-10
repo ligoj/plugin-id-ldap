@@ -3,14 +3,7 @@
  */
 package org.ligoj.app.plugin.id.ldap.dao;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.naming.ldap.LdapName;
-
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.ICompanyRepository;
@@ -23,9 +16,14 @@ import org.ligoj.bootstrap.core.NamedBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
-
-import lombok.Setter;
 import org.springframework.ldap.filter.EqualsFilter;
+
+import javax.naming.ldap.LdapName;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Company LDAP repository
@@ -170,7 +168,7 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 				.forEach(this::removeFromJavaCache);
 
 		// Remove recursively from LDAP the company. Anything that was not nicely cleaned will be deleted there.
-		template.unbind(container.getDn(), true);
+		super.unbind(container.getDn());
 
 		// Also, update the SQL cache
 		cacheRepository.delete(container);
