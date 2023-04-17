@@ -288,8 +288,9 @@ class UserLdapRepositoryTest {
 		repository.setTemplate(Mockito.mock(LdapTemplate.class));
 		repository.cacheRepository = Mockito.mock(CacheLdapRepository.class);
 		repository.create(user);
-		Assertions.assertEquals(200, lastContext.get().getObjectAttribute("gidNumber"));
-		Assertions.assertEquals(200, lastContext.get().getObjectAttribute("uidNumber"));
+		Assertions.assertEquals("200", lastContext.get().getObjectAttribute("gidNumber"));
+		Assertions.assertEquals("200", lastContext.get().getObjectAttribute("uidNumber"));
+		Assertions.assertEquals("/dev/null", lastContext.get().getObjectAttribute("homeDirectory"));
 	}
 
 	@SuppressWarnings("unchecked")

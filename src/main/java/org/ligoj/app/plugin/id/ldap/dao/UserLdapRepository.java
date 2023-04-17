@@ -98,8 +98,10 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	 */
 	private static final Map<String, String> SEARCH_MAPPER = new HashMap<>();
 
-	private static final int DEFAULT_GID_NUMBER = 200;
-	private static final int DEFAULT_UID_NUMBER = 200;
+	private static final String DEFAULT_GID_NUMBER = "200";
+	private static final String DEFAULT_UID_NUMBER = "200";
+	private static final String DEFAULT_HOME_DIRECTORY = "/dev/null";
+
 
 	private static final DirContextProcessor LDAP_NULL_PROCESSOR = new LdapTemplate.NullDirContextProcessor();
 
@@ -236,6 +238,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 			// Set a default gidNumber
 			context.setAttributeValue("gidNumber", DEFAULT_GID_NUMBER);
 			context.setAttributeValue("uidNumber", DEFAULT_UID_NUMBER);
+			context.setAttributeValue("homeDirectory", DEFAULT_HOME_DIRECTORY);
 		}
 		bind(context);
 
