@@ -71,7 +71,7 @@ public class AbstractManagedLdapRepository {
 		try {
 			template.bind(context);
 		} catch (final NameAlreadyBoundException e) {
-			log.info("{} LDAP entry {} seem to have been created in the LDAP from outside", typeName, dn);
+			log.info("{} LDAP entry {} seems to have been created in the LDAP from outside", typeName, dn);
 			throw new ValidationJsonException(dn, "integrity-unicity");
 		}
 	}
