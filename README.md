@@ -15,6 +15,17 @@ Provides the following features :
 
 Requires [IAM Node plugin](https://github.com/ligoj/plugin-iam-node) to select the LDAP node used for authentication.
 
+# Cache resources
+
+Cache resources TTL can be overridden from Configuration API with `cache.$name.ttl` property:
+
+| Cache           | Default TTL (S) | Note                                                  |
+|-----------------|-----------------|-------------------------------------------------------|
+| user-details    | Eternal (0)     | Assumes there is no LDAP update for other place       |
+| customers       | Eternal (0)     | Assumes there is no LDAP group update for other place |
+| customers-by-id | Eternal (0)     | Assumes there is no LDAP group update for other place |
+
+
 # Plugin parameters
 
 | Parameter                               | Value                                  | Note                                                                                                                                  |                     
