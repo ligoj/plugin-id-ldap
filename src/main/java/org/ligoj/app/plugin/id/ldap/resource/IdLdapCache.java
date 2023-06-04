@@ -3,13 +3,12 @@
  */
 package org.ligoj.app.plugin.id.ldap.resource;
 
-import java.util.function.Function;
-
+import com.hazelcast.cache.HazelcastCacheManager;
+import com.hazelcast.config.CacheConfig;
 import org.ligoj.bootstrap.resource.system.cache.CacheManagerAware;
 import org.springframework.stereotype.Component;
 
-import com.hazelcast.cache.HazelcastCacheManager;
-import com.hazelcast.config.CacheConfig;
+import java.util.function.Function;
 
 /**
  * Cache configuration for LDAP.

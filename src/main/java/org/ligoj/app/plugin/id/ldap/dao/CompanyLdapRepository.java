@@ -87,7 +87,7 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 				.map(ldap -> new CompanyOrg(ldap.getDn().toString(), ldap.getStringAttributes("ou")[0]))
 				.forEach(c -> {
 					if (nameToDn.containsKey(c.getId())) {
-						log.warn("Duplicate company name {} with too different DNs: {} and {}. Keep only the first one.",
+						log.warn("Duplicate company name {} with two different DNs: {} and {}. Keep only the first one.",
 								nameToDn.get(c.getId()), c.getId(), c.getDn());
 					} else {
 						nameToDn.put(c.getId(), c);
