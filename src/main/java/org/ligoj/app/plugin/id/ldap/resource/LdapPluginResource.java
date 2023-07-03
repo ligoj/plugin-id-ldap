@@ -695,13 +695,13 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 
 	@Override
 	public void delete(final int subscription, final boolean deleteRemoteData) {
-		if (deleteRemoteData) {
-			// Data are removed from the LDAP
-			final var parameters = subscriptionResource.getParameters(subscription);
-			final var group = parameters.get(IdentityResource.PARAMETER_GROUP);
+		final var projectId = subscriptionRepository.findOne(subscription).getProject().getId();
+		final var parameters = subscriptionResource.getParameters(subscription);
+		final var group = parameters.get(IdentityResource.PARAMETER_GROUP);
+		cacheProjectGroupRepository.deleteAllBy("group.id",group, new String[]{"project.id"}, projectId);
 
-			// Check the group exists, but is not required to continue the
-			// process
+		if (deleteRemoteData) {
+			// Check the group exists, but is not required to continue the process
 			final var repository = getGroup();
 			final var groupLdap = repository.findById(group);
 			if (groupLdap != null) {

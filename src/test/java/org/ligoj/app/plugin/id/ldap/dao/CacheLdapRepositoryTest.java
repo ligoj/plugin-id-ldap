@@ -182,7 +182,7 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 
 		repository.create(newGroupLdap);
 
-		Mockito.verify(cache).create(newGroupLdap);
+		Mockito.verify(cache).create(newGroupLdap, Collections.emptyMap());
 		Assertions.assertEquals(newGroupLdap, groups.get("g3"));
 	}
 
