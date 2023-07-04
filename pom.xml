@@ -18,7 +18,7 @@
 
 	<properties>
 		<shared-ldap.version>0.9.15</shared-ldap.version>
-		<spring-ldap.version>3.0.1</spring-ldap.version>
+		<spring-ldap.version>3.0.4</spring-ldap.version>
 		<spring-ldap-tiger.version>2.4.1</spring-ldap-tiger.version>
 	</properties>
 
@@ -33,7 +33,7 @@
 			<dependency>
 				<groupId>org.ligoj.plugin</groupId>
 				<artifactId>plugin-id</artifactId>
-				<version>[2.0.3,2.1.0)</version>
+				<version>[2.0.5,2.1.0)</version>
 				<scope>provided</scope>
 			</dependency>
 
