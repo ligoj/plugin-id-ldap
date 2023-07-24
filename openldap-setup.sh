@@ -1,25 +1,18 @@
 #! /bin/bash
 
-# See: http://blog.facilelogin.com/2012/05/setting-up-openldap-under-mac-os-x.html
-# See: https://github.com/IntersectAustralia/acdata/wiki/Setting-up-OpenLDAP
-brew install berkeley-db@4 openldap  
-brew upgrade
-slappasswd
-cp /private/etc/openldap/slapd.conf.default /private/etc/openldap/slapd.conf
-vi /private/etc/openldap/slapd.conf
+slappasswd ligoj-admin
 
-include     /private/etc/openldap/schema/core.schema
-include     /private/etc/openldap/schema/cosine.schema
-include     /private/etc/openldap/schema/nis.schema
-include     /private/etc/openldap/schema/inetorgperson.schema
-modulepath  /usr/libexec/openldap
-moduleload  back_bdb.la
-...
-suffix          "dc=example,dc=com"
-rootdn          "cn=Manager,dc=example,dc=com"
-rootpw      {SSHA}....
+export  LDAP_ADMIN_PASSWORD="..."
+podman rm openldap
+podman run --name openldap \
+  --detach \
+  --env LDAP_ADMIN_USERNAME="Manager" \
+  --env LDAP_ADMIN_PASSWORD="$LDAP_ADMIN_PASSWORD" \
+  --env LDAP_ROOT="dc=sample,dc=com" \
+  --env LDAP_USERS=customuser \
+  --env LDAP_PASSWORDS=custompassword \
+  -p 1389:1389 \
+  bitnami/openldap:latest
 
-sudo /usr/libexec/slapd -d3
-
-
-ldapadd -x -D "cn=Manager,dc=sample,dc=com" -W -H ldap:// -f /Users/fabdouglas/git/ligoj-plugins/plugin-id-ldap-embedded/src/main/resources/export/base.ldif
+ldapadd -c -x -D "cn=Manager,dc=sample,dc=com" -w "$LDAP_ADMIN_PASSWORD" -H ldap://localhost:1389 -f  ../plugin-id-ldap-embedded/src/main/resources/export/base.ldif
+ldapsearch -c -x -D "cn=Manager,dc=sample,dc=com" -w "$LDAP_ADMIN_PASSWORD" -H ldap://localhost:1389 -b "dc=sample,dc=com"
