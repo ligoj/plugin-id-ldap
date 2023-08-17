@@ -60,7 +60,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	@Test
 	void deleteNoMoreGroup() {
 		final Subscription subscription = new Subscription();
-		subscription.setProject(projectRepository.findByName("gStack"));
+		subscription.setProject(projectRepository.findByName("Jupiter"));
 		subscription.setNode(nodeRepository.findOneExpected("service:id:ldap:dig"));
 		em.persist(subscription);
 
@@ -120,12 +120,12 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	@Test
 	void validateGroup() {
 		final Map<String, String> parameters = pvResource.getNodeParameters("service:id:ldap:dig");
-		parameters.put(IdentityResource.PARAMETER_GROUP, "ligoj-gstack");
+		parameters.put(IdentityResource.PARAMETER_GROUP, "ligoj-jupiter");
 
 		final INamableBean<String> group = resource.validateGroup(parameters);
 		Assertions.assertNotNull(group);
-		Assertions.assertEquals("ligoj-gstack", group.getId());
-		Assertions.assertEquals("ligoj-gStack", group.getName());
+		Assertions.assertEquals("ligoj-jupiter", group.getId());
+		Assertions.assertEquals("ligoj-Jupiter", group.getName());
 	}
 
 	/**
@@ -343,8 +343,8 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 
 		final CacheGroup group = new CacheGroup();
 		group.setDescription("cn=g,dc=sample,dc=com");
-		group.setId("ligoj-gstack");
-		group.setName("ligoj-gstack");
+		group.setId("ligoj-jupiter");
+		group.setName("ligoj-jupiter");
 		// em.persist(group);
 
 		final CacheMembership membership = new CacheMembership();
@@ -408,16 +408,16 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	@Test
 	void findGroupsByNameNoRight() {
 		initSpringSecurityContext("any");
-		final List<INamableBean<String>> jobs = resource.findGroupsByName("StAck");
+		final List<INamableBean<String>> jobs = resource.findGroupsByName("piTer");
 		Assertions.assertEquals(0, jobs.size());
 	}
 
 	@Test
 	void findGroupsByName() {
-		final List<INamableBean<String>> jobs = resource.findGroupsByName("StAck");
-		Assertions.assertTrue(jobs.size() >= 1);
-		Assertions.assertEquals("ligoj-gStack", jobs.get(0).getName());
-		Assertions.assertEquals("ligoj-gstack", jobs.get(0).getId());
+		final List<INamableBean<String>> jobs = resource.findGroupsByName("piTer");
+		Assertions.assertFalse(jobs.isEmpty());
+		Assertions.assertEquals("ligoj-Jupiter", jobs.get(0).getName());
+		Assertions.assertEquals("ligoj-jupiter", jobs.get(0).getId());
 	}
 
 	@Test
@@ -430,7 +430,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		final Map<String, Activity> activities = new HashMap<>();
 		final Activity activity = new Activity();
 		activity.setLastConnection(getDate(2015, 1, 1));
-		activities.put("alongchu", activity);
+		activities.put("admin-test", activity);
 		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any()))
 				.thenReturn(activities);
 
@@ -457,7 +457,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 				StandardCharsets.UTF_8);
 		Assertions.assertEquals(2, csvLines.size());
 		Assertions.assertEquals("user;firstName;lastName;mail;JIRA 6", csvLines.get(0));
-		Assertions.assertEquals("alongchu;Arnaud;Longchu;arnaud.longchu@sample.com;2015/01/01 00:00:00",
+		Assertions.assertEquals("admin-test;Arnaud;Test;arnaud.test@sample.com;2015/01/01 00:00:00",
 				csvLines.get(1));
 	}
 
@@ -471,7 +471,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		final Map<String, Activity> activities = new HashMap<>();
 		final Activity activity = new Activity();
 		activity.setLastConnection(getDate(2015, 1, 1));
-		activities.put("alongchu", activity);
+		activities.put("admin-test", activity);
 		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any()))
 				.thenReturn(activities);
 
@@ -498,7 +498,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 				StandardCharsets.UTF_8);
 		Assertions.assertEquals(2, csvLines.size());
 		Assertions.assertEquals("user;firstName;lastName;mail;JIRA 6", csvLines.get(0));
-		Assertions.assertEquals("alongchu;Arnaud;Longchu;arnaud.longchu@sample.com;2015/01/01 00:00:00",
+		Assertions.assertEquals("admin-test;Arnaud;Test;arnaud.test@sample.com;2015/01/01 00:00:00",
 				csvLines.get(1));
 	}
 
@@ -512,7 +512,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		final Map<String, Activity> activities = new HashMap<>();
 		final Activity activity = new Activity();
 		activity.setLastConnection(getDate(2015, 1, 1));
-		activities.put("alongchu", activity);
+		activities.put("admin-test", activity);
 		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any()))
 				.thenReturn(activities);
 
@@ -537,7 +537,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 				.createQuery(
 						"SELECT s.id FROM Subscription s WHERE s.project.name = ?1 AND s.node.id LIKE CONCAT(?2,'%')",
 						Integer.class)
-				.setParameter(1, "gStack").setParameter(2, IdentityResource.SERVICE_KEY).setMaxResults(2)
+				.setParameter(1, "Jupiter").setParameter(2, IdentityResource.SERVICE_KEY).setMaxResults(2)
 				.getResultList().get(1);
 		((StreamingOutput) resource.getGroupActivitiesCsv(otherSubscription, "file1").getEntity()).write(output);
 

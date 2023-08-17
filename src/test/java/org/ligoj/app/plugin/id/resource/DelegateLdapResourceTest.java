@@ -154,14 +154,14 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	/**
-	 * A delegate visible by user "alongchu". This delegate add visibility of
-	 * company "ing" for all mambers of "ligoj-gstack". And user "alongchu" is
-	 * member of group "ligoj-gstack".
+	 * A delegate visible by user "admin-test". This delegate add visibility of
+	 * company "ing" for all members of "ligoj-jupiter". And user "admin-test" is
+	 * member of group "ligoj-jupiter".
 	 */
 	@Test
 	void findAllReceiverGroup() {
 		final UriInfo uriInfo = newFindAllParameters();
-		initSpringSecurityContext("alongchu");
+		initSpringSecurityContext("admin-test");
 		final TableItem<DelegateOrgLightVo> result = resource.findAll(uriInfo, null);
 		Assertions.assertEquals(1, result.getData().size());
 		Assertions.assertEquals(1, result.getRecordsTotal());
@@ -169,7 +169,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		final DelegateOrgLightVo vo = result.getData().get(0);
 		Assertions.assertEquals("ing", vo.getName());
 		Assertions.assertEquals(DelegateType.COMPANY, vo.getType());
-		Assertions.assertEquals("ligoj-gstack", vo.getReceiver().getId());
+		Assertions.assertEquals("ligoj-jupiter", vo.getReceiver().getId());
 		Assertions.assertEquals(ReceiverType.GROUP, vo.getReceiverType());
 	}
 

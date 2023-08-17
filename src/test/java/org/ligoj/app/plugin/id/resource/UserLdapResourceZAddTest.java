@@ -42,7 +42,7 @@ import org.springframework.test.annotation.Rollback;
  * <li>mtuyer;company;ing;false;true;ou=ing,ou=external,ou=people</li>
  * <li>mlavoine;tree;cn=Biz Agency,ou=tools;false;false;cn=Biz
  * Agency,ou=tools</li>
- * <li>ligoj-gstack
+ * <li>ligoj-jupiter
  * (group);company;ing;false;false;ou=ing,ou=external,ou=people,dc=sample,dc=com</li>
  * <li>ing (company);group;business solution;false;false;cn=business
  * solution,ou=groups,dc=sample,dc=com</li>

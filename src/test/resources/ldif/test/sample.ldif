@@ -138,10 +138,10 @@ dn: ou=ligoj,ou=project,dc=sample,dc=com
 ou: ligoj
 objectClass: organizationalUnit
 
-dn: cn=ligoj-gStack,ou=ligoj,ou=project,dc=sample,dc=com
-cn: ligoj-gStack
+dn: cn=ligoj-Jupiter,ou=ligoj,ou=project,dc=sample,dc=com
+cn: ligoj-Jupiter
 objectclass: groupOfUniqueNames
-uniqueMember: uid=alongchu,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
+uniqueMember: uid=admin-test,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 
 dn: uid=fdaugan,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 cn: Fabrice Daugan
@@ -172,12 +172,12 @@ mail: fabrice.daugan@sample.com
 objectClass: inetOrgPerson
 userPassword: Azerty01
 
-dn: uid=alongchu,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
-cn: Arnaud Longchu
-sn: Longchu
+dn: uid=admin-test,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
+cn: Arnaud Test
+sn: Test
 givenName: Arnaud
-uid: alongchu
-mail: arnaud.longchu@sample.com
+uid: admin-test
+mail: arnaud.test@sample.com
 objectClass: inetOrgPerson
 userPassword: Azerty01
 

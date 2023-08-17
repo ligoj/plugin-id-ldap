@@ -17,15 +17,30 @@ podman run --name openldap \
 ldapadd -c -x -D "cn=Manager,dc=sample,dc=com" -w "$LDAP_ADMIN_PASSWORD" -H ldap://localhost:1389 -f  ../plugin-id-ldap-embedded/src/main/resources/export/base.ldif
 ldapsearch -c -x -D "cn=Manager,dc=sample,dc=com" -w "$LDAP_ADMIN_PASSWORD" -H ldap://localhost:1389 -b "dc=sample,dc=com"
 
-podman rm sonarqube
 podman rm jenkins
 
+# SonarQube
+podman rm sonarqube
 git clone https://github.com/SonarSource/docker-sonarqube
 podman build --rm=true --platform linux/arm64 --tag=sonarqube .
 podman run -d --name sonarqube -p 9000:9000 localhost/sonarqube:latest
 podman start sonarqube
 
 
+# SonarQube+Branch plugin
+podman rm sonarqube-branch
+git clone https://github.com/mc1arke/sonarqube-community-branch-plugin
+cd ./sonarqube-community-branch-plugin
+PLUGIN_VERSION="1.14.0"
+git checkout $PLUGIN_VERSION
+sed -i.back -E 's|FROM sonarqube:\$\{SONARQUBE_VERSION\}|FROM localhost/sonarqube:latest|' Dockerfile
+sed -i.back -E 's|FROM gradle:7.3.3-jdk11-alpine as builder|FROM openjdk:11-jdk-slim as builder|' Dockerfile
+sed -i.back -E 's|RUN gradle build -x test|RUN ./gradlew build -x test|' Dockerfile
+podman build --rm=true --platform linux/arm64 --tag=sonarqube-branch --build-arg PLUGIN_VERSION=$PLUGIN_VERSION .
+podman run -d --name sonarqube-branch -p 9800:9000 localhost/sonarqube-branch:latest
+podman start sonarqube-branch
+
+#Nexus3
 git clone https://github.com/sonatype/docker-nexus3
 podman build --rm=true --platform linux/arm64 --tag=sonatype/nexus3 .
 podman run -d -p 8081:8081 --name nexus sonatype/nexus3
@@ -63,4 +78,6 @@ https://github.com/omniauth/omniauth-ldap -> pas de filtre de class, pas de grou
 
 Intégration SAML plus élaborée, compatible avec Keycloak
 https://forum.chatons.org/t/synchroniser-les-groupes-entre-keycloak-et-discourse/4487
+
+
 

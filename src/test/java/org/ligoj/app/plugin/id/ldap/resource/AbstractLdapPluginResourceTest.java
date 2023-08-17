@@ -101,7 +101,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 		cacheManager.getCache("container-scopes").clear();
 
 		// Only with Spring context
-		this.subscription = getSubscription("gStack", IdentityResource.SERVICE_KEY);
+		this.subscription = getSubscription("Jupiter", IdentityResource.SERVICE_KEY);
 
 		// Coverage only
 		resource.getKey();

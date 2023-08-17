@@ -54,7 +54,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
  * <li>mtuyer;company;ing;false;true;ou=ing,ou=external,ou=people</li>
  * <li>mlavoine;tree;cn=Biz Agency,ou=tools;false;false;cn=Biz
  * Agency,ou=tools</li>
- * <li>ligoj-gstack
+ * <li>ligoj-jupiter
  * (group);company;ing;false;false;ou=ing,ou=external,ou=people,dc=sample,dc=com</li>
  * <li>ing (company);group;business solution;false;false;cn=business
  * solution,ou=groups,dc=sample,dc=com</li>
@@ -187,7 +187,7 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 	protected void checkMember(final String dn) {
 		final AndFilter filter = new AndFilter();
 		filter.and(new EqualsFilter("objectclass", "groupOfUniqueNames"));
-		filter.and(new EqualsFilter("cn", "ligoj-gStack"));
+		filter.and(new EqualsFilter("cn", "ligoj-Jupiter"));
 		final DirContextAdapter groupContext = getTemplate()
 				.search("ou=ligoj,ou=project,dc=sample,dc=com", filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).get(0);
 		final String[] members = groupContext.getStringAttributes("uniqueMember");
@@ -199,8 +199,8 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 		initSpringSecurityContext(DEFAULT_USER);
 
 		// Restore lock status from LDAP
-		getUser().set(getUser().findById("alongchu"), "userPassword", "secret");
-		getUser().set(getUser().findById("alongchu"), "employeeType", null);
+		getUser().set(getUser().findById("admin-test"), "userPassword", "secret");
+		getUser().set(getUser().findById("admin-test"), "employeeType", null);
 
 		// Asserts
 		final DirContextAdapter contextAdapter = checkUnlocked();
@@ -215,12 +215,12 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 	}
 
 	protected DirContextAdapter checkUnlocked() {
-		assertUnlocked(resource.findAll("ligoj", null, "alongchu", newUriInfo()).getData().get(0));
-		assertUnlocked(getUser().findByIdNoCache("alongchu"));
-		assertUnlocked(getUser().findById("alongchu"));
-		Assertions.assertTrue(getGroup().findAll().get("ligoj-gstack").getMembers().contains("alongchu"));
+		assertUnlocked(resource.findAll("ligoj", null, "admin-test", newUriInfo()).getData().get(0));
+		assertUnlocked(getUser().findByIdNoCache("admin-test"));
+		assertUnlocked(getUser().findById("admin-test"));
+		Assertions.assertTrue(getGroup().findAll().get("ligoj-jupiter").getMembers().contains("admin-test"));
 
-		final DirContextAdapter result = getContext("alongchu");
+		final DirContextAdapter result = getContext("admin-test");
 		Assertions.assertNull(result.getStringAttribute("employeeType"));
 		return result;
 	}
@@ -228,15 +228,15 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 	protected DirContextAdapter check(final String company, final String base, final String patternLocked,
 			final Consumer<SimpleUserOrg> checker) {
 		// Check the status at business layer
-		checker.accept(resource.findAll(company, null, "alongchu", newUriInfo()).getData().get(0));
-		checker.accept(resource.findById("alongchu"));
+		checker.accept(resource.findAll(company, null, "admin-test", newUriInfo()).getData().get(0));
+		checker.accept(resource.findById("admin-test"));
 
 		// Check the status at cache layer
-		Assertions.assertTrue(getGroup().findAll().get("ligoj-gstack").getMembers().contains("alongchu"));
-		checker.accept(getUser().findByIdNoCache("alongchu"));
+		Assertions.assertTrue(getGroup().findAll().get("ligoj-jupiter").getMembers().contains("admin-test"));
+		checker.accept(getUser().findByIdNoCache("admin-test"));
 
 		// Check in the status in the LDAP
-		final DirContextAdapter result = getContext(base, "alongchu");
+		final DirContextAdapter result = getContext(base, "admin-test");
 		Assertions.assertNull(result.getObjectAttribute("userPassword"));
 		Assertions.assertTrue(result.getStringAttribute("employeeType").matches(patternLocked)); // LOCKED|1473983178923|junit||
 		return result;

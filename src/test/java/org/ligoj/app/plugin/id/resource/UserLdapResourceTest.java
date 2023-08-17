@@ -200,11 +200,11 @@ class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	}
 
 	/**
-	 * One delegation to members of group "ligoj-gstack" to see the company "ing"
+	 * One delegation to members of group "ligoj-jupiter" to see the company "ing"
 	 */
 	@Test
 	void findAllUsingDelegateReceiverGroup() {
-		initSpringSecurityContext("alongchu");
+		initSpringSecurityContext("admin-test");
 		final TableItem<UserOrgVo> tableItem = resource.findAll(null, null, null, newUriInfoAsc("id"));
 
 		// Counts : 8 from ing, + 7 from the same company
@@ -213,12 +213,12 @@ class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 		Assertions.assertEquals(15, tableItem.getData().size());
 
 		// Check the users
-		Assertions.assertEquals("alongchu", tableItem.getData().get(0).getId());
+		Assertions.assertEquals("admin-test", tableItem.getData().get(0).getId());
 		Assertions.assertFalse(tableItem.getData().get(0).isCanWrite());
 
 		// Check the groups
 		Assertions.assertEquals(1, tableItem.getData().get(0).getGroups().size());
-		Assertions.assertEquals("ligoj-gStack", tableItem.getData().get(0).getGroups().get(0).getName());
+		Assertions.assertEquals("ligoj-Jupiter", tableItem.getData().get(0).getGroups().get(0).getName());
 	}
 
 	/**
@@ -1066,7 +1066,7 @@ class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 		Assertions.assertEquals(7, tableItem.getRecordsFiltered());
 
 		// Check the users
-		Assertions.assertEquals("alongchu", tableItem.getData().get(0).getId());
+		Assertions.assertEquals("admin-test", tableItem.getData().get(0).getId());
 	}
 
 	/**

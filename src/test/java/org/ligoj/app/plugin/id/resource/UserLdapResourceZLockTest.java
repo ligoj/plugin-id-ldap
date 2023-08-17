@@ -36,7 +36,7 @@ import org.springframework.test.annotation.Rollback;
  * <li>mtuyer;company;ing;false;true;ou=ing,ou=external,ou=people</li>
  * <li>mlavoine;tree;cn=Biz Agency,ou=tools;false;false;cn=Biz
  * Agency,ou=tools</li>
- * <li>ligoj-gstack
+ * <li>ligoj-jupiter
  * (group);company;ing;false;false;ou=ing,ou=external,ou=people,dc=sample,dc=com</li>
  * <li>ing (company);group;business solution;false;false;cn=business
  * solution,ou=groups,dc=sample,dc=com</li>
@@ -57,56 +57,56 @@ class UserLdapResourceZLockTest extends AbstractUserLdapResourceTest {
 	@Test
 	void zlockUnlockUser() {
 		checkUnlockedBefore();
-		resource.lock("aLongchu");
+		resource.lock("admin-tesT");
 		check("ligoj", "ou=ligoj,ou=france,ou=people,dc=sample,dc=com", "LOCKED\\|[0-9]+\\|junit\\|\\|", this::assertLocked);
 
 		// Another lock
-		resource.lock("aLongchu");
+		resource.lock("admin-test");
 		check("ligoj", "ou=ligoj,ou=france,ou=people,dc=sample,dc=com", "LOCKED\\|[0-9]+\\|junit\\|\\|", this::assertLocked);
 
-		resource.unlock("aLongchu");
+		resource.unlock("admin-test");
 		checkUnlockedAfter();
 
 		// Another unlock
-		resource.unlock("aLongchu");
+		resource.unlock("admin-test");
 		checkUnlockedAfter();
 	}
 
 	@Test
 	void zisolateRestoreUser() {
-		checkDnAndMember(checkUnlockedBefore(), "uid=alongchu,ou=ligoj,ou=france,ou=people,dc=sample,dc=com");
+		checkDnAndMember(checkUnlockedBefore(), "uid=admin-test,ou=ligoj,ou=france,ou=people,dc=sample,dc=com");
 
 		// Isolate
-		resource.isolate("aLongchu");
+		resource.isolate("admin-Test");
 		check("quarantine", "ou=quarantine,dc=sample,dc=com", "LOCKED\\|[0-9]+\\|junit\\|ligoj\\|", this::assertLocked);
 
 		// Isolate again
-		resource.isolate("aLongchu");
+		resource.isolate("admin-test");
 		check("quarantine", "ou=quarantine,dc=sample,dc=com", "LOCKED\\|[0-9]+\\|junit\\|ligoj\\|", this::assertLocked);
 
 		// Lock the user (useless)
-		resource.lock("aLongchu");
+		resource.lock("admin-test");
 		check("quarantine", "ou=quarantine,dc=sample,dc=com", "LOCKED\\|[0-9]+\\|junit\\|ligoj\\|", this::assertLocked);
 
 		// Unlock the user (useless)
-		resource.unlock("aLongchu");
+		resource.unlock("admin-test");
 		check("quarantine", "ou=quarantine,dc=sample,dc=com", "LOCKED\\|[0-9]+\\|junit\\|ligoj\\|", this::assertLocked);
 
 		checkDnAndMember(check("quarantine", "ou=quarantine,dc=sample,dc=com", "LOCKED\\|[0-9]+\\|junit\\|ligoj\\|", userLdap -> {
 			assertLocked(userLdap);
 			Assertions.assertEquals("ligoj", userLdap.getIsolated());
-		}), "uid=alongchu,ou=quarantine,dc=sample,dc=com");
+		}), "uid=admin-test,ou=quarantine,dc=sample,dc=com");
 
 		// Restore
-		resource.restore("aLongchu");
+		resource.restore("admin-test");
 
 		// Check the uniqueMember is restored for the related groups
-		checkDnAndMember(checkUnlockedAfter(), "uid=alongchu,ou=ligoj,ou=france,ou=people,dc=sample,dc=com");
+		checkDnAndMember(checkUnlockedAfter(), "uid=admin-test,ou=ligoj,ou=france,ou=people,dc=sample,dc=com");
 
 		// Restore again
-		resource.restore("aLongchu");
+		resource.restore("admin-test");
 
 		// Check the uniqueMember is restored for the related groups
-		checkDnAndMember(checkUnlockedAfter(), "uid=alongchu,ou=ligoj,ou=france,ou=people,dc=sample,dc=com");
+		checkDnAndMember(checkUnlockedAfter(), "uid=admin-test,ou=ligoj,ou=france,ou=people,dc=sample,dc=com");
 	}
 }

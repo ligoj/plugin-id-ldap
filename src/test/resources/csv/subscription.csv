@@ -1,4 +1,4 @@
 node.id;project.name
-service:id:ldap:dig;gStack
-service:id:ldap:dig;gStack
-service:bt:jira:6;gStack
+service:id:ldap:dig;Jupiter
+service:id:ldap:dig;Jupiter
+service:bt:jira:6;Jupiter
