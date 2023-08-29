@@ -12,7 +12,9 @@ import org.springframework.ldap.NameNotFoundException;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.LdapTemplate;
 
-
+/**
+ * Base LDAP repository for groups, users and companies.
+ */
 @Slf4j
 public class AbstractManagedLdapRepository {
 

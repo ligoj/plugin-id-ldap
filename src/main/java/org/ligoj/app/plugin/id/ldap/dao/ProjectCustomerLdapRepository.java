@@ -23,6 +23,8 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
+import static org.ligoj.app.plugin.id.ldap.dao.AbstractManagedLdapRepository.OBJECT_CLASS;
+
 /**
  * Repository for Customers of Project management in LDAP. Are OU of GROUP of type Project.
  */
@@ -44,12 +46,12 @@ public class ProjectCustomerLdapRepository {
 	 *
 	 * @param baseDn Base DN.
 	 * @return all normalized customers for projects. Note the result use cache, so does not reflect the LDAP. current
-	 *         state of LDAP. Key is the normalized name, Value is the DN.
+	 * state of LDAP. Key is the normalized name, Value is the DN.
 	 */
 	@CacheResult(cacheName = "customers")
 	public Set<String> findAll(@CacheKey final String baseDn) {
 		return getUser().getTemplate()
-				.search(baseDn, new EqualsFilter(UserLdapRepository.OBJECT_CLASS, CUSTOMER_OF_PROJECT).encode(),
+				.search(baseDn, new EqualsFilter(OBJECT_CLASS, CUSTOMER_OF_PROJECT).encode(),
 						(Object ctx) -> (DirContextAdapter) ctx)
 				.stream().map(g -> DnUtils.toRdn(g.getDn().toString())).collect(Collectors.toSet());
 	}
@@ -63,7 +65,7 @@ public class ProjectCustomerLdapRepository {
 	 */
 	@CacheResult(cacheName = "customers-by-id")
 	public String findById(@CacheKey final String baseDn, @CacheKey final String id) {
-		final var filter = new AndFilter().and(new EqualsFilter(UserLdapRepository.OBJECT_CLASS, CUSTOMER_OF_PROJECT))
+		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, CUSTOMER_OF_PROJECT))
 				.and(new EqualsFilter("ou", id));
 		return getUser().getTemplate().search(baseDn, filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).stream()
 				.findAny().map(g -> g.getDn().toString()).orElse(null);
@@ -85,7 +87,7 @@ public class ProjectCustomerLdapRepository {
 		// First create the LDAP entry
 		log.info("Customer (OU) {} will be created as {}", ou, dn);
 		final var context = new DirContextAdapter(dn);
-		context.setAttributeValues(UserLdapRepository.OBJECT_CLASS, new String[] { CUSTOMER_OF_PROJECT });
+		context.setAttributeValues(OBJECT_CLASS, new String[]{CUSTOMER_OF_PROJECT});
 		mapToContext(ou, context);
 		getUser().getTemplate().bind(context);
 	}

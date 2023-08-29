@@ -526,8 +526,8 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	private Set<UserOrg> getMembersOfSubscription(final Subscription subscription) {
 		final var users = new HashSet<UserOrg>();
 		final var plugin = servicePluginLocator.getResource(subscription.getNode().getId());
-		if (plugin instanceof LdapPluginResource) {
-			users.addAll(((LdapPluginResource) plugin).getMembers(subscription.getId()));
+		if (plugin instanceof LdapPluginResource p) {
+			users.addAll(p.getMembers(subscription.getId()));
 		}
 		return users;
 	}
@@ -560,8 +560,8 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 			final Set<INamableBean<String>> nodes) throws Exception {
 
 		// Collect activities of each subscription of unique node
-		if (plugin instanceof ActivitiesProvider && nodes.add(subscription.getNode())) {
-			final var subscriptionActivities = ((ActivitiesProvider) plugin).getActivities(subscription.getId(), users);
+		if (plugin instanceof ActivitiesProvider p && nodes.add(subscription.getNode())) {
+			final var subscriptionActivities = p.getActivities(subscription.getId(), users);
 			for (final var userActivity : subscriptionActivities.entrySet()) {
 				addUserActivities(activities, subscription.getNode(), userActivity);
 			}

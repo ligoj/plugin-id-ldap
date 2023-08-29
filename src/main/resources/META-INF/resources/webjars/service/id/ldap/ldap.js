@@ -14,8 +14,8 @@ define(function () {
 		 * Render LDAP.
 		 */
 		renderFeatures: function (subscription) {
-			var result = '';
-			var now = moment();
+			let result = '';
+			const now = moment();
 
 			// Add activity export
 			result += '<div class="btn-group btn-link" data-container="body" data-toggle="tooltip" title="' + current.$messages['export'] + '">';
@@ -52,22 +52,22 @@ define(function () {
 		 * validation regarding existing group and syntax.
 		 */
 		registerIdGroupSelect2: function (configuration, $container, id) {
-			var cProviders = configuration.providers['form-group'];
-			var previousProvider = cProviders[id] || cProviders.standard;
+			const cProviders = configuration.providers['form-group'];
+			const previousProvider = cProviders[id] || cProviders.standard;
 			if (configuration.mode === 'create' && !current.$super('isNodeMode')($container)) {
 				cProviders[id] = function (parameter, container, $input) {
 					// Register a live validation of group
-					var simpleGroupId = 'service:id:group-simple-name';
+					const simpleGroupId = 'service:id:group-simple-name';
 					configuration.validators[simpleGroupId] = current.validateIdGroupCreateMode;
 
 					// Disable computed parameters and remove the description, since it is overridden
-					var parentParameter = $.extend({}, parameter);
+					const parentParameter = $.extend({}, parameter);
 					parentParameter.description = null;
-					var $fieldset = previousProvider(parentParameter, container, $input).parent();
+					const $fieldset = previousProvider(parentParameter, container, $input).parent();
 					$input.attr('readonly', 'readonly');
 
 					// Create the input corresponding to the last part of the final group name
-					var $simpleInput = $('<input class="form-control" type="text" id="' + simpleGroupId + '" required autocomplete="off">');
+					const $simpleInput = $('<input class="form-control" type="text" id="' + simpleGroupId + '" required autocomplete="off">');
 					cProviders.standard({
 						id: simpleGroupId,
 						mandatory: true
@@ -82,10 +82,10 @@ define(function () {
 		 * Live validation of LDAP OU.
 		 */
 		validateIdOuCreateMode: function () {
-			var $input = _('service:id:ou');
+			const $input = _('service:id:ou');
 			validationManager.reset($input);
-			var data = $input.select2('data');
-			if (data && data['new']) {
+			const data = $input.select2('data');
+			if (data?.['new']) {
 				// Organization will be created
 				validationManager.addWarn($input, {
 					rule: 'service:id:ou-not-exists'
@@ -104,10 +104,10 @@ define(function () {
 		 */
 		validateIdGroupCreateMode: function () {
 			validationManager.reset(_('service:id:group'));
-			var $input = _('service:id:group');
-			var simpleName = _('service:id:group-simple-name').val();
-			var prefix = _('service:id:parent-group').val() || _('service:id:ou').val();
-			var fullName = (prefix ? prefix + '-' : '') + (simpleName || '').toLowerCase();
+			const $input = _('service:id:group');
+			const simpleName = _('service:id:group-simple-name').val();
+			const prefix = _('service:id:parent-group').val() || _('service:id:ou').val();
+			const fullName = (prefix ? prefix + '-' : '') + (simpleName || '').toLowerCase();
 			$input.val(fullName).closest('.form-group').find('.form-control-feedback').remove().end().addClass('has-feedback');
 			if (fullName !== current.$super('model').pkey && !fullName.startsWith(current.$super('model').pkey + '-')) {
 				validationManager.addError($input, {
