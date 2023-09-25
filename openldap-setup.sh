@@ -14,16 +14,20 @@ podman run --name openldap \
   -p 1389:1389 \
   bitnami/openldap:latest
 
-ldapadd -c -x -D "cn=Manager,dc=sample,dc=com" -w "$LDAP_ADMIN_PASSWORD" -H ldap://localhost:1389 -f  ../plugin-id-ldap-embedded/src/main/resources/export/base.ldif
+bash -c '
+cd /Users/fabdouglas/git/ligoj-plugins/plugin-id-ldap && \
+ldapadd -c -x -D "cn=Manager,dc=sample,dc=com" -w "$LDAP_ADMIN_PASSWORD" -H ldap://localhost:1389 -f  ../plugin-id-ldap-embedded/src/main/resources/export/base.ldif && \
 ldapsearch -c -x -D "cn=Manager,dc=sample,dc=com" -w "$LDAP_ADMIN_PASSWORD" -H ldap://localhost:1389 -b "dc=sample,dc=com"
+'
 
 podman rm jenkins
 
 # SonarQube
 podman rm sonarqube
 git clone https://github.com/SonarSource/docker-sonarqube
-podman build --rm=true --platform linux/arm64 --tag=sonarqube .
-podman run -d --name sonarqube -p 9000:9000 localhost/sonarqube:latest
+cd 9/community
+podman build --rm=true --platform linux/arm64 --tag=sonarqube:9 .
+podman run -d --name sonarqube -p 9000:9000 localhost/sonarqube:9
 podman start sonarqube
 
 
@@ -33,7 +37,7 @@ git clone https://github.com/mc1arke/sonarqube-community-branch-plugin
 cd ./sonarqube-community-branch-plugin
 PLUGIN_VERSION="1.14.0"
 git checkout $PLUGIN_VERSION
-sed -i.back -E 's|FROM sonarqube:\$\{SONARQUBE_VERSION\}|FROM localhost/sonarqube:latest|' Dockerfile
+sed -i.back -E 's|FROM sonarqube:\$\{SONARQUBE_VERSION\}|FROM sonarqube:9|' Dockerfile
 sed -i.back -E 's|FROM gradle:7.3.3-jdk11-alpine as builder|FROM openjdk:11-jdk-slim as builder|' Dockerfile
 sed -i.back -E 's|RUN gradle build -x test|RUN ./gradlew build -x test|' Dockerfile
 podman build --rm=true --platform linux/arm64 --tag=sonarqube-branch --build-arg PLUGIN_VERSION=$PLUGIN_VERSION .
@@ -52,6 +56,7 @@ podman start nexus
 # brew services stop jenkins-lts
 /opt/homebrew/opt/openjdk@17/bin/java -Dmail.smtp.starttls.enable=true -jar /opt/homebrew/opt/jenkins-lts/libexec/jenkins.war --httpListenAddress=0.0.0.0 --httpPort=9190
 cat /Users/fabdouglas/.jenkins/secrets/initialAdminPassword
+vi /Users/fabdouglas/.jenkins/config.xml
 cd07bb686bf34746a4f885b7bd91f2e9
 fdaugan+jenkins-admin@kloudy.io
 API-token: 114e133e456fb65f18c3e0d64c26702112
