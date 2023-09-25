@@ -265,11 +265,6 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		return repository;
 	}
 
-	private String getParameter(final Map<String, String> parameters, final String name, final String def) {
-		final var value = parameters.get(name);
-		return value == null ? def : value;
-	}
-
 	/**
 	 * Build a group LDAP repository from the given node.
 	 *
