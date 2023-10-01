@@ -94,10 +94,10 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 	@BeforeEach
 	public void prepareData() throws IOException {
 		persistEntities("csv",
-				new Class[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class,
+				new Class<?>[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class,
 						CacheGroup.class, CacheMembership.class, Project.class, Node.class, Parameter.class,
 						Subscription.class, ParameterValue.class, CacheProjectGroup.class },
-				StandardCharsets.UTF_8.name());
+				StandardCharsets.UTF_8);
 		cacheManager.getCache("container-scopes").clear();
 
 		// Only with Spring context

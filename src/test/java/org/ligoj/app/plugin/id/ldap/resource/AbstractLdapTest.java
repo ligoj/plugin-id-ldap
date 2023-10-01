@@ -28,8 +28,8 @@ public abstract class AbstractLdapTest extends AbstractAppTest {
 	 */
 	@BeforeEach
 	public void setUp2() throws IOException {
-		persistEntities("csv", new Class[] { Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class },
-				StandardCharsets.UTF_8.name());
+		persistEntities("csv", new Class<?>[] { Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class },
+				StandardCharsets.UTF_8);
 	}
 
 	/**

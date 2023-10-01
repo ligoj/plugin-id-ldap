@@ -23,7 +23,7 @@ public abstract class AbstractContainerLdapResourceTest extends AbstractLdapTest
 
 	@BeforeEach
 	public void prepareData() throws IOException {
-		persistEntities("csv", new Class[] { DelegateOrg.class, ContainerScope.class }, StandardCharsets.UTF_8.name());
+		persistEntities("csv", new Class<?>[] { DelegateOrg.class, ContainerScope.class }, StandardCharsets.UTF_8);
 		cacheManager.getCache("container-scopes").clear();
 		cacheManager.getCache("id-ldap-data").clear();
 		cacheManager.getCache("id-configuration").clear();
