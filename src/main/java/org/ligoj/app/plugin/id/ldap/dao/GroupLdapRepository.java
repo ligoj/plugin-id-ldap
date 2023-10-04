@@ -266,12 +266,12 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 			try {
 				template.modifyAttributes(org.springframework.ldap.support.LdapUtils.newLdapName(groupLdap.getDn()),
 						mods);
-			} catch (final org.springframework.ldap.AttributeInUseException aiue) {
+			} catch (final org.springframework.ldap.AttributeInUseException inUseEx) {
 				// Even if the membership update failed, the user does not exist anymore. A broken reference can remain
 				// in LDAP, but this case is well managed.
-				log.info("Unable to remove user {} from the group {} : {}", uniqueMember.getDn(), group, aiue);
+				log.info("Unable to remove user {} from the group {} : {}", uniqueMember.getDn(), group, inUseEx);
 			} catch (final org.springframework.ldap.SchemaViolationException sve) { // NOSONAR - Exception is logged
-				// Occurs when there is a LDAP schema violation such as last member removed
+				// Occurs when there is an LDAP schema violation such as last member removed
 				log.warn("Unable to remove user {} from the group {}", uniqueMember.getDn(), group, sve);
 				throw new ValidationJsonException("groups", "last-member-of-group", "user", uniqueMember.getId(),
 						"group", group);
@@ -314,9 +314,9 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 		try {
 			// Perform the addition
 			template.modifyAttributes(org.springframework.ldap.support.LdapUtils.newLdapName(dn), mods);
-		} catch (final org.springframework.ldap.AttributeInUseException aiue) {
-			if (!aiue.getMessage().matches(".*(value #0 already exists|error code 20|ATTRIBUTE_OR_VALUE_EXISTS).*")) {
-				throw aiue;
+		} catch (final org.springframework.ldap.AttributeInUseException inUseEx) {
+			if (!inUseEx.getMessage().matches(".*(value #0 already exists|error code 20|ATTRIBUTE_OR_VALUE_EXISTS).*")) {
+				throw inUseEx;
 			}
 			log.info("{} is already member of {}", values, dn);
 		}
