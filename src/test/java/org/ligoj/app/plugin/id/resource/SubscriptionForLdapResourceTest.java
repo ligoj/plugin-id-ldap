@@ -58,7 +58,7 @@ class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 
 	@BeforeEach
 	void prepareSubscription() throws IOException {
-		persistEntities("csv", new Class[] { DelegateOrg.class, ContainerScope.class, DelegateNode.class },
+		persistEntities("csv", new Class<?>[] { DelegateOrg.class, ContainerScope.class, DelegateNode.class },
 				StandardCharsets.UTF_8);
 		initSpringSecurityContext("fdaugan");
 	}
