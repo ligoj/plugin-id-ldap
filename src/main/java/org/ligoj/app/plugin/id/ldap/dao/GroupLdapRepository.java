@@ -136,7 +136,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 				} else {
 					// This is a valid subgroup, create both sides of this relation. Raw CN are used
 					group.getSubGroups().add(subGroup.getId());
-					subGroup.getGroups().add(group.getId());
+					subGroup.setParent(group.getId());
 				}
 			}
 		}
@@ -148,7 +148,9 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 				.forEach(child -> removeGroup(child, group.getId()));
 
 		// Remove from the parent LDAP groups
-		new ArrayList<>(group.getGroups()).forEach(parent -> removeGroup(group, parent));
+		if (group.getParent() != null) {
+			removeGroup(group, group.getParent());
+		}
 
 		// Also, update the raw cache
 		findAll().remove(group.getId());

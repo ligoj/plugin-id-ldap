@@ -81,7 +81,7 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 
 		cache = Mockito.mock(IdCacheDao.class);
 		repository = new CacheLdapRepository();
-		repository.setIamProvider(new IamProvider[] { iamProvider });
+		repository.setIamProvider(new IamProvider[]{iamProvider});
 		repository.setCache(cache);
 		repository.self = repository;
 	}
@@ -139,19 +139,19 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 
 		// Check the initial status
 		Assertions.assertEquals(0, child.getSubGroups().size());
-		Assertions.assertEquals(0, child.getGroups().size());
-		Assertions.assertEquals(0, parent.getGroups().size());
+		Assertions.assertNull(child.getParent());
+		Assertions.assertNull(parent.getParent());
 		Assertions.assertEquals(0, parent.getSubGroups().size());
 
 		repository.addGroupToGroup(child, parent);
 
 		// Check the new status
-		Assertions.assertEquals(1, child.getGroups().size());
+		Assertions.assertEquals("group2", child.getParent());
 		Assertions.assertEquals(0, child.getSubGroups().size());
-		Assertions.assertEquals(0, parent.getGroups().size());
+		Assertions.assertNull(parent.getParent());
 		Assertions.assertEquals(1, parent.getSubGroups().size());
 		Assertions.assertTrue(parent.getSubGroups().contains("group"));
-		Assertions.assertTrue(child.getGroups().contains("group2"));
+
 	}
 
 	@Test
@@ -159,20 +159,20 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 		final GroupOrg parent = groupLdap2;
 		final GroupOrg child = groupLdap;
 		parent.getSubGroups().add(child.getId());
-		child.getGroups().add(parent.getId());
+		child.setParent(parent.getId());
 
 		// Check the initial status
-		Assertions.assertEquals(1, child.getGroups().size());
+		Assertions.assertNotNull(child.getParent());
 		Assertions.assertEquals(0, child.getSubGroups().size());
-		Assertions.assertEquals(0, parent.getGroups().size());
+		Assertions.assertNull(parent.getParent());
 		Assertions.assertEquals(1, parent.getSubGroups().size());
 
 		repository.removeGroupFromGroup(child, parent);
 
 		// Check the new status
-		Assertions.assertEquals(0, child.getGroups().size());
+		Assertions.assertNull(child.getParent());
 		Assertions.assertEquals(0, child.getSubGroups().size());
-		Assertions.assertEquals(0, parent.getGroups().size());
+		Assertions.assertNull(parent.getParent());
 		Assertions.assertEquals(0, parent.getSubGroups().size());
 	}
 

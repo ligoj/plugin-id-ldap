@@ -3,11 +3,7 @@
  */
 package org.ligoj.app.plugin.id.ldap.resource;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
 import jakarta.transaction.Transactional;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,17 +15,8 @@ import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.ICompanyRepository;
 import org.ligoj.app.iam.IGroupRepository;
 import org.ligoj.app.iam.IUserRepository;
-import org.ligoj.app.iam.model.CacheCompany;
-import org.ligoj.app.iam.model.CacheGroup;
-import org.ligoj.app.iam.model.CacheMembership;
-import org.ligoj.app.iam.model.CacheUser;
-import org.ligoj.app.iam.model.DelegateOrg;
-import org.ligoj.app.model.CacheProjectGroup;
-import org.ligoj.app.model.Node;
-import org.ligoj.app.model.Parameter;
-import org.ligoj.app.model.ParameterValue;
-import org.ligoj.app.model.Project;
-import org.ligoj.app.model.Subscription;
+import org.ligoj.app.iam.model.*;
+import org.ligoj.app.model.*;
 import org.ligoj.app.plugin.id.ldap.dao.CacheLdapRepository;
 import org.ligoj.app.plugin.id.ldap.dao.ProjectCustomerLdapRepository;
 import org.ligoj.app.plugin.id.model.ContainerScope;
@@ -43,6 +30,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Test class of {@link LdapPluginResource}
@@ -245,8 +235,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 		Assertions.assertEquals("cn=" + subGroup + ",cn=" + parentGroup + ",ou=sea,ou=project,dc=sample,dc=com",
 				groupLdap.getDn());
 		Assertions.assertEquals(subGroup, groupLdap.getId());
-		Assertions.assertEquals(1, groupLdap.getGroups().size());
-		Assertions.assertTrue(groupLdap.getGroups().contains(parentGroup));
+		Assertions.assertEquals(parentGroup, groupLdap.getParent());
 		final GroupOrg groupLdapParent = getGroup().findById(parentGroup);
 		Assertions.assertEquals(1, groupLdapParent.getSubGroups().size());
 		Assertions.assertTrue(groupLdapParent.getSubGroups().contains(subGroup));
