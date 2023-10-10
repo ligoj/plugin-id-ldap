@@ -23,8 +23,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	private UserOrg user;
-	private GroupOrg groupLdap;
-	private GroupOrg groupLdap2;
+	private GroupOrg groupImpl;
+	private GroupOrg groupImpl2;
 	private Map<String, GroupOrg> groups;
 	private Map<String, CompanyOrg> companies;
 	private Map<String, UserOrg> users;
@@ -50,10 +50,10 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 		groups = new HashMap<>();
 		final Set<String> members = new HashSet<>();
 		members.add("u");
-		groupLdap = new GroupOrg("dn", "Group", members);
-		groups.put("group", groupLdap);
-		groupLdap2 = new GroupOrg("dn2", "Group2", new HashSet<>());
-		groups.put("group2", groupLdap2);
+		groupImpl = new GroupOrg("dn", "Group", members);
+		groups.put("group", groupImpl);
+		groupImpl2 = new GroupOrg("dn2", "Group2", new HashSet<>());
+		groups.put("group2", groupImpl2);
 		user = new UserOrg();
 		user.setId("u");
 		user.setFirstName("f");
@@ -79,32 +79,32 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 		Mockito.when(groupRepository.findAll()).thenReturn(groups);
 		Mockito.when(userRepository.findAll()).thenReturn(users);
 
-		cache = Mockito.mock(IdCacheDao.class);
 		repository = new CacheLdapRepository();
 		repository.setIamProvider(new IamProvider[]{iamProvider});
+		cache = Mockito.mock(IdCacheDao.class);
 		repository.setCache(cache);
 		repository.self = repository;
 	}
 
 	@Test
-	void getLdapData() {
+	void getDataImpl() {
 
 		// Only there for coverage
 
-		final Map<CacheDataType, Map<String, ? extends ResourceOrg>> ldapData = repository.getData();
+		final var dataImpl = repository.getData();
 
-		Assertions.assertEquals("Company", ((INamableBean<?>) ldapData.get(CacheDataType.COMPANY).get("company")).getName());
-		Assertions.assertEquals("dnc", ldapData.get(CacheDataType.COMPANY).get("company").getDn());
-		final GroupOrg groupLdap = (GroupOrg) ldapData.get(CacheDataType.GROUP).get("group");
-		Assertions.assertEquals("dn", groupLdap.getDn());
-		Assertions.assertEquals("group", groupLdap.getId());
-		Assertions.assertEquals("Group", groupLdap.getName());
-		final UserOrg user = (UserOrg) ldapData.get(CacheDataType.USER).get("u");
+		Assertions.assertEquals("Company", ((INamableBean<?>) dataImpl.get(CacheDataType.COMPANY).get("company")).getName());
+		Assertions.assertEquals("dnc", dataImpl.get(CacheDataType.COMPANY).get("company").getDn());
+		final GroupOrg groupImpl = (GroupOrg) dataImpl.get(CacheDataType.GROUP).get("group");
+		Assertions.assertEquals("dn", groupImpl.getDn());
+		Assertions.assertEquals("group", groupImpl.getId());
+		Assertions.assertEquals("Group", groupImpl.getName());
+		final UserOrg user = (UserOrg) dataImpl.get(CacheDataType.USER).get("u");
 		Assertions.assertEquals("u", user.getId());
 		Assertions.assertEquals("f", user.getFirstName());
 		Assertions.assertEquals("l", user.getLastName());
 		Assertions.assertEquals("company", user.getCompany());
-		final UserOrg user2 = (UserOrg) ldapData.get(CacheDataType.USER).get("u2");
+		final UserOrg user2 = (UserOrg) dataImpl.get(CacheDataType.USER).get("u2");
 		Assertions.assertEquals("u2", user2.getId());
 		Assertions.assertEquals("f", user2.getFirstName());
 		Assertions.assertEquals("l", user2.getLastName());
@@ -115,7 +115,7 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	void addUserToGroup() {
 		Assertions.assertEquals(1, user.getGroups().size());
 
-		repository.addUserToGroup(user, groupLdap2);
+		repository.addUserToGroup(user, groupImpl2);
 
 		Assertions.assertEquals(2, user.getGroups().size());
 		Assertions.assertTrue(user.getGroups().contains("group2"));
@@ -126,7 +126,7 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	void removeUserFromGroup() {
 		Assertions.assertEquals(1, user.getGroups().size());
 
-		repository.removeUserFromGroup(user, groupLdap);
+		repository.removeUserFromGroup(user, groupImpl);
 
 		Assertions.assertEquals(0, user.getGroups().size());
 		Assertions.assertTrue(groups.get("group").getMembers().isEmpty());
@@ -134,8 +134,8 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 
 	@Test
 	void addGroupToGroup() {
-		final GroupOrg parent = groupLdap2;
-		final GroupOrg child = groupLdap;
+		final GroupOrg parent = groupImpl2;
+		final GroupOrg child = groupImpl;
 
 		// Check the initial status
 		Assertions.assertEquals(0, child.getSubGroups().size());
@@ -156,8 +156,8 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 
 	@Test
 	void removeGroupFromGroup() {
-		final GroupOrg parent = groupLdap2;
-		final GroupOrg child = groupLdap;
+		final GroupOrg parent = groupImpl2;
+		final GroupOrg child = groupImpl;
 		parent.getSubGroups().add(child.getId());
 		child.setParent(parent.getId());
 
@@ -178,22 +178,18 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 
 	@Test
 	void createGroup() {
-		final GroupOrg newGroupLdap = new GroupOrg("dn3", "G3", new HashSet<>());
-
-		repository.create(newGroupLdap);
-
-		Mockito.verify(cache).create(newGroupLdap, Collections.emptyMap());
-		Assertions.assertEquals(newGroupLdap, groups.get("g3"));
+		final var newGroup = new GroupOrg("dn3", "G3", new HashSet<>());
+		repository.create(newGroup);
+		Mockito.verify(cache).create(newGroup, Collections.emptyMap());
+		Assertions.assertEquals(newGroup, groups.get("g3"));
 	}
 
 	@Test
 	void createCompany() {
-		final CompanyOrg newCompanyLdap = new CompanyOrg("dn3", "C3");
-
-		repository.create(newCompanyLdap);
-
-		Mockito.verify(cache).create(newCompanyLdap);
-		Assertions.assertEquals(newCompanyLdap, companies.get("c3"));
+		final var newCompany = new CompanyOrg("dn3", "C3");
+		repository.create(newCompany);
+		Mockito.verify(cache).create(newCompany);
+		Assertions.assertEquals(newCompany, companies.get("c3"));
 	}
 
 	@Test
