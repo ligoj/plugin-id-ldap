@@ -58,11 +58,11 @@ class UserLdapResourceZLockTest extends AbstractUserLdapResourceTest {
 	void zlockUnlockUser() {
 		checkUnlockedBefore();
 		resource.lock("admin-tesT");
-		check("ligoj", "ou=ligoj,ou=france,ou=people,dc=sample,dc=com", "LOCKED\\|[0-9]+\\|junit\\|\\|", this::assertLocked);
+		check("ligoj", "ou=ligoj,ou=france,ou=people,dc=sample,dc=com", "LOCKED\\|\\d+\\|junit\\|\\|", this::assertLocked);
 
 		// Another lock
 		resource.lock("admin-test");
-		check("ligoj", "ou=ligoj,ou=france,ou=people,dc=sample,dc=com", "LOCKED\\|[0-9]+\\|junit\\|\\|", this::assertLocked);
+		check("ligoj", "ou=ligoj,ou=france,ou=people,dc=sample,dc=com", "LOCKED\\|\\d+\\|junit\\|\\|", this::assertLocked);
 
 		resource.unlock("admin-test");
 		checkUnlockedAfter();
@@ -78,21 +78,21 @@ class UserLdapResourceZLockTest extends AbstractUserLdapResourceTest {
 
 		// Isolate
 		resource.isolate("admin-Test");
-		check("quarantine", "ou=quarantine,dc=sample,dc=com", "LOCKED\\|[0-9]+\\|junit\\|ligoj\\|", this::assertLocked);
+		check("quarantine", "ou=quarantine,dc=sample,dc=com", "LOCKED\\|\\d+\\|junit\\|ligoj\\|", this::assertLocked);
 
 		// Isolate again
 		resource.isolate("admin-test");
-		check("quarantine", "ou=quarantine,dc=sample,dc=com", "LOCKED\\|[0-9]+\\|junit\\|ligoj\\|", this::assertLocked);
+		check("quarantine", "ou=quarantine,dc=sample,dc=com", "LOCKED\\|\\d+\\|junit\\|ligoj\\|", this::assertLocked);
 
 		// Lock the user (useless)
 		resource.lock("admin-test");
-		check("quarantine", "ou=quarantine,dc=sample,dc=com", "LOCKED\\|[0-9]+\\|junit\\|ligoj\\|", this::assertLocked);
+		check("quarantine", "ou=quarantine,dc=sample,dc=com", "LOCKED\\|\\d+\\|junit\\|ligoj\\|", this::assertLocked);
 
 		// Unlock the user (useless)
 		resource.unlock("admin-test");
-		check("quarantine", "ou=quarantine,dc=sample,dc=com", "LOCKED\\|[0-9]+\\|junit\\|ligoj\\|", this::assertLocked);
+		check("quarantine", "ou=quarantine,dc=sample,dc=com", "LOCKED\\|\\d+\\|junit\\|ligoj\\|", this::assertLocked);
 
-		checkDnAndMember(check("quarantine", "ou=quarantine,dc=sample,dc=com", "LOCKED\\|[0-9]+\\|junit\\|ligoj\\|", userLdap -> {
+		checkDnAndMember(check("quarantine", "ou=quarantine,dc=sample,dc=com", "LOCKED\\|\\d+\\|junit\\|ligoj\\|", userLdap -> {
 			assertLocked(userLdap);
 			Assertions.assertEquals("ligoj", userLdap.getIsolated());
 		}), "uid=admin-test,ou=quarantine,dc=sample,dc=com");
