@@ -290,9 +290,10 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	}
 
 	@Override
-	public Page<UserOrg> findAll(final Collection<GroupOrg> requiredGroups, final Set<String> companies,
+	public Page<UserOrg> findAll(final Collection<GroupOrg> requiredGroups, final Set<String> filteredCompanies,
 			final String criteria, final Pageable pageable) {
 		// Create the set with the right comparator
+		log.info("findAll");
 		final var orders = IteratorUtils
 				.toList(ObjectUtils.defaultIfNull(pageable.getSort(), new ArrayList<Sort.Order>()).iterator());
 		orders.add(DEFAULT_ORDER);
@@ -306,18 +307,29 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		// Filter the users traversing firstly the required groups and their members,
 		// the companies, then the criteria
 		final var users = findAll();
+		log.info("addFilteredByCompaniesAndPattern");
+		final var allCompanies = companyRepository.findAll();
 		if (requiredGroups == null) {
 			// No constraint on group
-			addFilteredByCompaniesAndPattern(users.keySet(), companies, criteria, result, users);
+			for (final var userLdap : users.values()) {
+				addFilteredByCompaniesAndPattern(allCompanies, filteredCompanies, criteria, result, userLdap);
+			}
 		} else {
 			// User must be within one the given groups
 			for (final var requiredGroup : requiredGroups) {
-				addFilteredByCompaniesAndPattern(requiredGroup.getMembers(), companies, criteria, result, users);
+				for (final var member : requiredGroup.getMembers()) {
+					final var userLdap = users.get(member);
+					addFilteredByCompaniesAndPattern(allCompanies, filteredCompanies, criteria, result, userLdap);
+				}
 			}
 		}
 
 		// Apply in-memory pagination
-		return inMemoryPagination.newPage(result, pageable);
+		log.info("Before inMemoryPagination");
+		var r = inMemoryPagination.newPage(result, pageable);
+		log.info("After inMemoryPagination");
+		return r;
+
 	}
 
 	/**
@@ -515,25 +527,10 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		return Normalizer.normalize(companyPattern.pattern());
 	}
 
-	/**
-	 * Add the members to the result if they match to the required company and the pattern.
-	 */
-	private void addFilteredByCompaniesAndPattern(final Set<String> members, final Set<String> companies,
-			final String criteria, final Set<UserOrg> result, final Map<String, UserOrg> users) {
-		// Filter by company for each member
-		for (final var member : members) {
-			final var userLdap = users.get(member);
-
-			// User is always found since #findAll() ensure the members of the groups exist
-			addFilteredByCompaniesAndPattern(companies, criteria, result, userLdap);
-		}
-
-	}
-
-	private void addFilteredByCompaniesAndPattern(final Set<String> companies, final String criteria,
+	private void addFilteredByCompaniesAndPattern(final Map<String, CompanyOrg> allCompanies, final Set<String> filteredCompanies, final String criteria,
 			final Set<UserOrg> result, final UserOrg userLdap) {
-		final var userCompanies = companyRepository.findAll().get(userLdap.getCompany()).getCompanyTree();
-		if (userCompanies.stream().map(CompanyOrg::getId).anyMatch(companies::contains)) {
+		final var userCompanies = allCompanies.get(userLdap.getCompany()).getCompanyTree();
+		if (userCompanies.stream().anyMatch(c -> filteredCompanies.contains(c.getId()))) {
 			addFilteredByPattern(criteria, result, userLdap);
 		}
 	}
