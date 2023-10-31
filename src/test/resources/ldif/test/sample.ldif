@@ -31,6 +31,10 @@ dn: ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 ou: ligoj
 objectclass: organizationalUnit
 
+dn: ou=france,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
+ou: ligoj
+objectclass: organizationalUnit
+
 dn: ou=fonction,ou=groups,dc=sample,dc=com
 ou : fonction
 objectclass: organizationalUnit

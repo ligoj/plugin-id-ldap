@@ -17,6 +17,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.ldap.NameAlreadyBoundException;
 import org.springframework.ldap.NameNotFoundException;
+import org.springframework.ldap.OperationNotSupportedException;
 import org.springframework.ldap.core.*;
 import org.springframework.ldap.core.support.AbstractContextMapper;
 
@@ -25,9 +26,11 @@ import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.naming.directory.InvalidAttributeValueException;
 import javax.naming.directory.ModificationItem;
+import javax.naming.directory.SearchControls;
 import javax.naming.ldap.LdapContext;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -185,7 +188,7 @@ class UserLdapRepositoryTest {
 		var repository = new UserLdapRepository() {
 			@Override
 			public UserOrg findById(final String login) {
-				UserOrg user = new UserOrg();
+				var user = new UserOrg();
 				user.setId(login);
 				return user;
 			}
@@ -242,7 +245,7 @@ class UserLdapRepositoryTest {
 	void setPasswordBadPassword() throws NamingException {
 		final var user = new UserOrg();
 		user.setDn("cn=Any");
-		final LdapContext mockCtx = newLdapContext();
+		final var mockCtx = newLdapContext();
 		Mockito.doThrow(new AuthenticationException()).when(mockCtx).modifyAttributes(ArgumentMatchers.eq("cn=Any"),
 				ArgumentMatchers.any(ModificationItem[].class));
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
@@ -374,10 +377,43 @@ class UserLdapRepositoryTest {
 
 	@Test
 	void unbindDeletedUser() {
-		final var mock = Mockito.mock(LdapTemplate.class);
-		Mockito.doThrow(NameNotFoundException.class).when(mock).unbind("cn=Any", true);
-		repository.setTemplate(mock);
+		final var template = Mockito.mock(LdapTemplate.class);
+		Mockito.doThrow(NameNotFoundException.class).when(template).unbind("cn=Any", true);
+		repository.setTemplate(template);
 		repository.unbind("cn=Any");
+	}
+
+	@Test
+	void findAllNoCacheOperationNotSupportedException() {
+		final var repository = new UserLdapRepository();
+		final var template = Mockito.mock(LdapTemplate.class);
+		repository.setTemplate(template);
+		//noinspection unchecked
+		Mockito.when(template.search(
+						ArgumentMatchers.nullable(String.class),
+						Mockito.anyString(),
+						Mockito.any(SearchControls.class),
+						Mockito.any(ContextMapper.class),
+						Mockito.any(DirContextProcessor.class)))
+				.thenThrow(new OperationNotSupportedException(null))
+				.thenReturn(List.of(new UserOrg()));
+		repository.findAllNoCache(Collections.emptyMap());
+	}
+
+	@Test
+	void findAllNoCache() {
+		final var repository = new UserLdapRepository();
+		final var template = Mockito.mock(LdapTemplate.class);
+		repository.setTemplate(template);
+		//noinspection unchecked
+		Mockito.when(template.search(
+						ArgumentMatchers.nullable(String.class),
+						Mockito.anyString(),
+						Mockito.any(SearchControls.class),
+						Mockito.any(ContextMapper.class),
+						Mockito.any(DirContextProcessor.class)))
+				.thenReturn(Collections.emptyList());
+		repository.findAllNoCache(Collections.emptyMap());
 	}
 
 }

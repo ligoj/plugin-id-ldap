@@ -3,7 +3,6 @@
  */
 package org.ligoj.app.plugin.id.ldap.dao;
 
-import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -49,7 +48,6 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 	private static final int DEFAULT_GID_NUMBER = 200;
 
 	@Autowired
-	@Getter
 	private CacheGroupRepository cacheGroupRepository;
 
 	@Setter
