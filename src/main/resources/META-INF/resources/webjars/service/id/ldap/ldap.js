@@ -2,7 +2,7 @@
  * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
  */
 define(function () {
-	var current = {
+	let current = {
 
 		configureSubscriptionParameters: function (configuration, $container) {
 			current.registerIdParentGroupSelect2(configuration, $container, 'service:id:parent-group');
