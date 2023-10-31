@@ -293,7 +293,6 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	public Page<UserOrg> findAll(final Collection<GroupOrg> requiredGroups, final Set<String> filteredCompanies,
 			final String criteria, final Pageable pageable) {
 		// Create the set with the right comparator
-		log.info("findAll");
 		final var orders = IteratorUtils
 				.toList(ObjectUtils.defaultIfNull(pageable.getSort(), new ArrayList<Sort.Order>()).iterator());
 		orders.add(DEFAULT_ORDER);
@@ -307,7 +306,6 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		// Filter the users traversing firstly the required groups and their members,
 		// the companies, then the criteria
 		final var users = findAll();
-		log.info("addFilteredByCompaniesAndPattern");
 		final var allCompanies = companyRepository.findAll();
 		if (requiredGroups == null) {
 			// No constraint on group
@@ -325,11 +323,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		}
 
 		// Apply in-memory pagination
-		log.info("Before inMemoryPagination");
-		var r = inMemoryPagination.newPage(result, pageable);
-		log.info("After inMemoryPagination");
-		return r;
-
+		return inMemoryPagination.newPage(result, pageable);
 	}
 
 	/**
