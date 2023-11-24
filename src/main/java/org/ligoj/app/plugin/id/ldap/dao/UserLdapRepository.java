@@ -676,10 +676,11 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	}
 
 	@Override
-	public boolean authenticate(final String name, final String password) {
+	public UserOrg authenticate(final String name, final String password) {
 		log.info("Authenticating {} ...", name);
 		final var property = getAuthenticateProperty(name);
-		boolean result = false;
+		UserOrg user = null;
+		boolean authResult = false;
 		String reason;
 		try {
 			if (selfSearch) {
@@ -687,24 +688,38 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 				reason = "self-search";
 				final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className))
 						.and(new EqualsFilter(property, name));
-				result = template.authenticate(baseDn, filter.encode(), password);
+				authResult = template.authenticate(baseDn, filter.encode(), password);
+				if (authResult) {
+					user = findBy(property, name);
+				}
 			} else {
 				// Build the DN to user from the stored one in cache database without performing a lookup
-				final var user = findById(name);
+				user = findBy(property, name);
 				if (user == null) {
 					reason = "unknown user";
 				} else {
 					reason = "bind";
 					final var dn = toDn(user);
 					template.getContextSource().getContext(dn, password).close();
-					result = true;
+					authResult = true;
 				}
 			}
 		} catch (final Exception ne) {
 			reason = ne.getMessage();
 		}
-		log.info("Authenticate {} : {}, {}", name, result, reason);
-		return result;
+		log.info("Authenticate {} : {}, {}", name, authResult, reason);
+		return user;
+	}
+
+	private UserOrg findBy(final String property, final String value) {
+		final UserOrg user;
+		if (MAIL_ATTRIBUTE.equals(property)) {
+			user = findAll().values().stream().filter(u -> CollectionUtils.emptyIfNull(u.getMails()).stream()
+					.anyMatch(value::equalsIgnoreCase)).findFirst().orElse(null);
+		} else {
+			user = findById(value);
+		}
+		return user;
 	}
 
 	/**
