@@ -296,7 +296,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		final var orders = IteratorUtils
 				.toList(ObjectUtils.defaultIfNull(pageable.getSort(), new ArrayList<Sort.Order>()).iterator());
 		orders.add(DEFAULT_ORDER);
-		final var order = orders.get(0);
+		final var order = orders.getFirst();
 		var comparator = ObjectUtils.defaultIfNull(COMPARATORS.get(order.getProperty()), DEFAULT_COMPARATOR);
 		if (order.getDirection() == Direction.DESC) {
 			comparator = Collections.reverseOrder(comparator);
@@ -543,7 +543,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		return StringUtils.containsIgnoreCase(userLdap.getFirstName(), criteria)
 				|| StringUtils.containsIgnoreCase(userLdap.getLastName(), criteria)
 				|| StringUtils.containsIgnoreCase(userLdap.getId(), criteria) || !userLdap.getMails().isEmpty()
-				&& StringUtils.containsIgnoreCase(userLdap.getMails().get(0), criteria);
+				&& StringUtils.containsIgnoreCase(userLdap.getMails().getFirst(), criteria);
 	}
 
 	/**
@@ -708,7 +708,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 			reason = ne.getMessage();
 		}
 		log.info("Authenticate {} : {}, {}", name, authResult, reason);
-		return user;
+		return authResult ? user : null;
 	}
 
 	private UserOrg findBy(final String property, final String value) {
