@@ -378,8 +378,8 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 			final String pkey, final int subscription) {
 		// Check the creation mode
 		if (StringUtils.isBlank(parentGroup)) {
-			// Parent as not been defined, so will be the specified OU. that
-			// would be created if it does not exist
+			// Parent has not been defined, so it will be the specified OU.
+			// This OU will be created if it does not exist yet
 			return validateAndCreateParentOu(group, ou, pkey, subscription);
 		}
 
