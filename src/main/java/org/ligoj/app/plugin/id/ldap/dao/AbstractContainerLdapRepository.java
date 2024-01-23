@@ -100,7 +100,7 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 		final var orders = IteratorUtils
 				.toList(ObjectUtils.defaultIfNull(pageable.getSort(), new ArrayList<Sort.Order>()).iterator());
 		orders.add(DEFAULT_ORDER);
-		final var order = orders.get(0);
+		final var order = orders.getFirst();
 		var comparator = customComparators.get(order.getProperty());
 		if (order.getDirection() == Direction.DESC) {
 			comparator = Collections.reverseOrder(comparator);
