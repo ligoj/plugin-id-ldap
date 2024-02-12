@@ -156,25 +156,25 @@ employeeNumber: 49852
 departmentNumber: 873868
 mail: fabrice.daugan@sample.com
 objectClass: inetOrgPerson
-userPassword: Azerty01
+userPassword: Secret01
 
 dn: uid=fdauganA,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
-cn: Fabrice Daugan
+cn: Fabrice DauganA
 sn: Daugan
 givenName: Fabrice
 uid: fdauganA
 mail: fabrice.daugan@sample.com
 objectClass: inetOrgPerson
-userPassword: Azerty01
+userPassword: Secret01
 
 dn: uid=fdauganB,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
-cn: Fabrice Daugan
+cn: Fabrice DauganB
 sn: Daugan
 givenName: Fabrice
 uid: fdauganB
 mail: fabrice.daugan@sample.com
 objectClass: inetOrgPerson
-userPassword: Azerty01
+userPassword: Secret01
 
 dn: uid=admin-test,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 cn: Arnaud Test
@@ -183,7 +183,7 @@ givenName: Arnaud
 uid: admin-test
 mail: arnaud.test@sample.com
 objectClass: inetOrgPerson
-userPassword: Azerty01
+userPassword: Secret01
 
 dn: uid=hdurant,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 cn: Hervé Durant
@@ -192,7 +192,7 @@ givenName: Hervé
 uid: hdurant
 mail: herve.durant@sample.com
 objectClass: inetOrgPerson
-userPassword: Azerty01
+userPassword: Secret01
 
 dn: uid=jdupont,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 cn: Jose Dupont
@@ -200,7 +200,7 @@ sn: Dupont
 givenName: Jose
 uid: jdupont
 objectClass: inetOrgPerson
-userPassword: Azerty01
+userPassword: Secret01
 
 dn: uid=mmartin,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 cn: Marc Martin

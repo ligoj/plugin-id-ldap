@@ -14,6 +14,8 @@ define({
 		'service:id:ldap:local-id-attribute': 'Local ID attribute',
 		'service:id:ldap:locked-attribute': 'Locked attribute',
 		'service:id:ldap:locked-value': 'Locked match value',
+	    'service:id:ldap:login-attributes': 'Login attributes',
+        'service:id:ldap:login-attributes-description': 'Accepted authentication LDAP attributes. Use commas and spaces as separator. Ignored when `service:id:ldap:self-search` is `false`',
 		'service:id:ldap:password': 'Connection password',
 		'service:id:ldap:people-class': 'People class',
 		'service:id:ldap:people-dn': 'People DN',

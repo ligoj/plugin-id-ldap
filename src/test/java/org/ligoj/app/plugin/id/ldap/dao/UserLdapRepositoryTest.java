@@ -126,6 +126,12 @@ class UserLdapRepositoryTest {
 	}
 
 	@Test
+	void capture() {
+		final var entry = Mockito.mock(LdapEntryIdentification.class);
+		Assertions.assertNull(new UserLdapRepository.CaptureAuthenticatedLdapEntryContextCallback().mapWithContext(null,entry));
+	}
+
+	@Test
 	void toUser() {
 		var repository = new UserLdapRepository() {
 			@Override
@@ -330,7 +336,7 @@ class UserLdapRepositoryTest {
 				ArgumentMatchers.any(), (ContextMapper<UserOrg>) ArgumentMatchers.any())).thenAnswer(i -> {
 			((AbstractContextMapper<DirContextOperations>) i.getArgument(4)).mapFromContext(dirCtx);
 			user.setLocked(new Date(LOCKED_DATE));
-			user.setLockedBy("_ppolicy");
+			user.setLockedBy("_password_policy");
 			return null;
 		});
 		Mockito.when(dirCtx.attributeExists(ArgumentMatchers.any())).thenReturn(true);
@@ -343,7 +349,7 @@ class UserLdapRepositoryTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	void blockedUserByPpolicy() {
+	void blockedUserByPPolicy() {
 		final var user = new UserOrg();
 		final var mock = Mockito.mock(LdapTemplate.class);
 		final var dirCtx = Mockito.mock(DirContextOperations.class);
@@ -351,7 +357,7 @@ class UserLdapRepositoryTest {
 				(ContextMapper<UserOrg>) ArgumentMatchers.any(), ArgumentMatchers.any())).thenAnswer(i -> {
 			((AbstractContextMapper<DirContextOperations>) i.getArgument(3)).mapFromContext(dirCtx);
 			user.setLocked(new Date(LOCKED_DATE));
-			user.setLockedBy("_ppolicy");
+			user.setLockedBy("_password_policy");
 			return Collections.singletonList(user);
 		});
 

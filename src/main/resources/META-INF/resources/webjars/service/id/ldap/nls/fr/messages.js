@@ -13,6 +13,8 @@ define({
 	'service:id:ldap:local-id-attribute': 'Attribut d\'identifiant local',
 	'service:id:ldap:locked-attribute': 'Attribut de verrouillage',
 	'service:id:ldap:locked-value': 'Valeur de verrouillage',
+	'service:id:ldap:login-attributes': 'Attributs de login',
+	'service:id:ldap:login-attributes-description': 'Attributs LDAP authorisés pour l\'authentification. Utiliser des virgules et des espaces commes séparateurs. Ignoré lorsque `service:id:ldap:self-search` est `false`',
 	'service:id:ldap:password': 'Mot de passe de connexion',
 	'service:id:ldap:people-class': 'Class des personnes',
 	'service:id:ldap:people-dn': 'DN des personnes',

@@ -11,6 +11,7 @@ service:id:ldap:groups-dn;dc=sample,dc=com;service:id:ldap:dig
 service:id:ldap:companies-dn;ou=people,dc=sample,dc=com;service:id:ldap:dig
 service:id:ldap:quarantine-dn;ou=quarantine,dc=sample,dc=com;service:id:ldap:dig
 service:id:ldap:uid-attribute;uid;service:id:ldap:dig
+service:id:ldap:login-attributes;uid,mail;service:id:ldap:dig
 service:id:ldap:department-attribute;departmentNumber;service:id:ldap:dig
 service:id:ldap:local-id-attribute;employeeNumber;service:id:ldap:dig
 service:id:ldap:locked-attribute;employeeType;service:id:ldap:dig

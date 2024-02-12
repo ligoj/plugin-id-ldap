@@ -12,9 +12,6 @@ import org.ligoj.app.dao.ParameterRepository;
 import org.ligoj.app.dao.ParameterValueRepository;
 import org.ligoj.app.dao.ProjectRepository;
 import org.ligoj.app.iam.GroupOrg;
-import org.ligoj.app.iam.ICompanyRepository;
-import org.ligoj.app.iam.IGroupRepository;
-import org.ligoj.app.iam.IUserRepository;
 import org.ligoj.app.iam.model.*;
 import org.ligoj.app.model.*;
 import org.ligoj.app.plugin.id.ldap.dao.CacheLdapRepository;
@@ -74,10 +71,6 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 
 	@Autowired
 	protected CacheLdapRepository cache;
-
-	protected IUserRepository userRepository;
-	protected IGroupRepository groupRepository;
-	protected ICompanyRepository companyRepository;
 
 	protected int subscription;
 
@@ -253,6 +246,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 		persistParameter(ldap, LdapPluginResource.PARAMETER_PASSWORD, "secret");
 		persistParameter(ldap, LdapPluginResource.PARAMETER_BASE_BN, "");
 		persistParameter(ldap, LdapPluginResource.PARAMETER_UID_ATTRIBUTE, "uid");
+		persistParameter(ldap, LdapPluginResource.PARAMETER_LOGIN_ATTRIBUTES, "uid, mail");
 		persistParameter(ldap, LdapPluginResource.PARAMETER_SELF_SEARCH, "true");
 		persistParameter(ldap, LdapPluginResource.PARAMETER_PEOPLE_DN, "dc=sample,dc=com");
 		persistParameter(ldap, LdapPluginResource.PARAMETER_DEPARTMENT_ATTRIBUTE, "departmentNumber");

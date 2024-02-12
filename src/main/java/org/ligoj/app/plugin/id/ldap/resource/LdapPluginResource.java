@@ -105,6 +105,11 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String PARAMETER_UID_ATTRIBUTE = KEY + ":uid-attribute";
 
 	/**
+	 * LDAP schema attribute names of accepted authentication attribute.
+	 */
+	public static final String PARAMETER_LOGIN_ATTRIBUTES = KEY + ":login-attributes";
+
+	/**
 	 * DN of location of users can log in
 	 */
 	public static final String PARAMETER_PEOPLE_DN = KEY + ":people-dn";
@@ -232,6 +237,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		repository.setDepartmentAttribute(getParameter(parameters, PARAMETER_DEPARTMENT_ATTRIBUTE, "employeeNumber"));
 		repository.setLocalIdAttribute(getParameter(parameters, PARAMETER_LOCAL_ID_ATTRIBUTE, "employeeID"));
 		repository.setUidAttribute(getParameter(parameters, PARAMETER_UID_ATTRIBUTE, "uid"));
+		repository.setLoginAttributes(Arrays.asList(StringUtils.split(getParameter(parameters, PARAMETER_LOGIN_ATTRIBUTES, "uid,mail"),"[, ]")));
 		repository.setLockedAttribute(getParameter(parameters, PARAMETER_LOCKED_ATTRIBUTE, "employeeType"));
 		repository.setLockedValue(getParameter(parameters, PARAMETER_LOCKED_VALUE, "LOCKED"));
 		repository.setCompanyPattern(getParameter(parameters, PARAMETER_COMPANY_PATTERN, "[^,]+,ou=([^,]+),.*"));

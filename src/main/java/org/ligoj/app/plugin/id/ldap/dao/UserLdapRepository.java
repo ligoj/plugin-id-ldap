@@ -29,13 +29,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.ldap.OperationNotSupportedException;
 import org.springframework.ldap.control.PagedResultsDirContextProcessor;
-import org.springframework.ldap.core.DirContextAdapter;
-import org.springframework.ldap.core.DirContextOperations;
-import org.springframework.ldap.core.DirContextProcessor;
-import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.core.*;
 import org.springframework.ldap.core.support.AbstractContextMapper;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
+import org.springframework.ldap.filter.OrFilter;
+import org.springframework.ldap.support.LdapUtils;
 
 import javax.naming.AuthenticationException;
 import javax.naming.Context;
@@ -89,14 +88,14 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	private static final String MAIL_ATTRIBUTE = "mail";
 
 	/**
-	 * PPolicy module identifier.
+	 * PPolicy (PASSWORD_POLICY_NAME) module identifier.
 	 */
-	private static final String PPOLICY_NAME = "_ppolicy";
+	private static final String PASSWORD_POLICY_NAME = "_password_policy";
 
 	/**
 	 * LDAP mapping attributes allowed for search.
 	 */
-	private static final Map<String, String> SEARCH_MAPPER = new HashMap<>();
+	private static final Map<String, String> SEARCH_MAPPER = Map.of("mails", "mail");
 
 	private static final String DEFAULT_GID_NUMBER = "200";
 	private static final String DEFAULT_UID_NUMBER = "200";
@@ -105,9 +104,16 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 
 	private static final DirContextProcessor LDAP_NULL_PROCESSOR = new LdapTemplate.NullDirContextProcessor();
 
-	static {
-		SEARCH_MAPPER.put("mails", "mail");
+
+	private static final class NullAuthenticationErrorCallback implements AuthenticationErrorCallback {
+		private NullAuthenticationErrorCallback() {
+		}
+
+		public void execute(Exception ex) {
+		}
 	}
+
+	private static final AuthenticationErrorCallback LDAP_NULL_ERROR_CALLBACK = new NullAuthenticationErrorCallback();
 
 	/**
 	 * Flag used to hash the password or not.
@@ -137,6 +143,12 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	 */
 	@Setter
 	private String uidAttribute = "sAMAccountName";
+
+	/**
+	 * LDAP schema attribute names of accepted authentication attribute.
+	 */
+	@Setter
+	private List<String> loginAttributes = List.of("uid", "mail");
 
 	/**
 	 * Employee number attribute
@@ -468,7 +480,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 			user.setCompany(toCompany(user.getDn()));
 
 			if (context.attributeExists(PWD_ACCOUNT_LOCKED_ATTRIBUTE)) {
-				user.setLockedBy(PPOLICY_NAME);
+				user.setLockedBy(PASSWORD_POLICY_NAME);
 				user.setLocked(parseLdapDate(context.getStringAttribute(PWD_ACCOUNT_LOCKED_ATTRIBUTE)));
 			}
 
@@ -666,12 +678,29 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 			// remove locked attribute when exists
 			set(user, lockedAttribute, null);
 
-			// remove ppolicy pwdAccountLockedTime attribute when exists
+			// remove PASSWORD_POLICY_NAME pwdAccountLockedTime attribute when exists
 			set(user, PWD_ACCOUNT_LOCKED_ATTRIBUTE, null);
 
 			// Also clear the disabled state from cache
 			user.setLocked(null);
 			user.setLockedBy(null);
+		}
+	}
+
+
+	@Getter
+	static final class CaptureAuthenticatedLdapEntryContextCallback implements AuthenticatedLdapEntryContextCallback, AuthenticatedLdapEntryContextMapper<Object> {
+
+		private LdapEntryIdentification entry;
+
+		@Override
+		public void executeWithContext(DirContext ctx, LdapEntryIdentification ldapEntryIdentification) {
+			this.entry = ldapEntryIdentification;
+		}
+
+		@Override
+		public Object mapWithContext(DirContext ctx, LdapEntryIdentification ldapEntryIdentification) {
+			return null;
 		}
 	}
 
@@ -686,11 +715,15 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 			if (selfSearch) {
 				// Use a search to use the actual DN of user ignoring the one stored in cache database
 				reason = "self-search";
-				final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className))
-						.and(new EqualsFilter(property, name));
-				authResult = template.authenticate(baseDn, filter.encode(), password);
+				final var loginFilter = loginAttributes.stream()
+						.filter(a -> !a.equalsIgnoreCase(property))
+						.reduce(new OrFilter().or(new EqualsFilter(property, name)), (f, a) -> f.or(new EqualsFilter(a, name)), (f, a) -> a);
+				final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className)).and(loginFilter);
+				final var userCaptureCallback = new CaptureAuthenticatedLdapEntryContextCallback();
+				authResult = template.authenticate(LdapUtils.newLdapName(baseDn), filter.encode(), password, userCaptureCallback, LDAP_NULL_ERROR_CALLBACK);
 				if (authResult) {
-					user = findBy(property, name);
+					final var uid = (String) userCaptureCallback.getEntry().getAbsoluteName().getRdns().getLast().getValue();
+					user = findBy(uidAttribute, uid);
 				}
 			} else {
 				// Build the DN to user from the stored one in cache database without performing a lookup
@@ -779,7 +812,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		final var passwordChange = new ModificationItem[]{new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
 				new BasicAttribute(PASSWORD_ATTRIBUTE, digest(newPassword)))};
 
-		// Unlock account when the user is locked by ppolicy
+		// Unlock account when the user is locked by PASSWORD_POLICY_NAME
 		set(userLdap, PWD_ACCOUNT_LOCKED_ATTRIBUTE, null);
 
 		// Authenticate the user is needed before changing the password.
@@ -846,9 +879,9 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 				new AbstractContextMapper<UserOrg>() {
 					@Override
 					public UserOrg doMapFromContext(final DirContextOperations context) {
-						// Get the pwdAccountLockedTime ppolicy attribute when exists
+						// Get the pwdAccountLockedTime p_policy attribute when exists
 						if (context.attributeExists(PWD_ACCOUNT_LOCKED_ATTRIBUTE)) {
-							user.setLockedBy(PPOLICY_NAME);
+							user.setLockedBy(PASSWORD_POLICY_NAME);
 							user.setLocked(parseLdapDate(context.getStringAttribute(PWD_ACCOUNT_LOCKED_ATTRIBUTE)));
 						}
 						return user;
