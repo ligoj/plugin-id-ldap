@@ -106,10 +106,8 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 
 
 	private static final class NullAuthenticationErrorCallback implements AuthenticationErrorCallback {
-		private NullAuthenticationErrorCallback() {
-		}
-
 		public void execute(Exception ex) {
+			// Ignore
 		}
 	}
 
