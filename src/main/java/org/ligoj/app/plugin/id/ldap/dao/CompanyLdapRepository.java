@@ -16,7 +16,6 @@ import org.ligoj.bootstrap.core.NamedBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
-import org.springframework.ldap.filter.EqualsFilter;
 
 import javax.naming.ldap.LdapName;
 import java.util.Comparator;
@@ -81,9 +80,7 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 		nameToDn.put(quarantine.getId(), quarantine);
 
 		// Complete with LDAP query result
-		template.search(baseDn,
-						new EqualsFilter(OBJECT_CLASS, className).encode(),
-						(Object ctx) -> (DirContextAdapter) ctx).stream()
+		template.search(baseDn, newClassesFilter().encode(), (Object ctx) -> (DirContextAdapter) ctx).stream()
 				.map(ldap -> new CompanyOrg(ldap.getDn().toString(), ldap.getStringAttributes("ou")[0]))
 				.forEach(c -> {
 					if (nameToDn.containsKey(c.getId())) {

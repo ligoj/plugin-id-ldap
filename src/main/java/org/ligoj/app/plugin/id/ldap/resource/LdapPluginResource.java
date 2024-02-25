@@ -23,10 +23,7 @@ import org.ligoj.app.model.ContainerType;
 import org.ligoj.app.model.Node;
 import org.ligoj.app.model.Subscription;
 import org.ligoj.app.plugin.id.dao.CacheProjectGroupRepository;
-import org.ligoj.app.plugin.id.ldap.dao.CompanyLdapRepository;
-import org.ligoj.app.plugin.id.ldap.dao.GroupLdapRepository;
-import org.ligoj.app.plugin.id.ldap.dao.ProjectCustomerLdapRepository;
-import org.ligoj.app.plugin.id.ldap.dao.UserLdapRepository;
+import org.ligoj.app.plugin.id.ldap.dao.*;
 import org.ligoj.app.plugin.id.model.ContainerScope;
 import org.ligoj.app.plugin.id.resource.AbstractPluginIdResource;
 import org.ligoj.app.plugin.id.resource.ContainerScopeResource;
@@ -139,9 +136,16 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String PARAMETER_LOCKED_VALUE = KEY + ":locked-value";
 
 	/**
-	 * Object Class of people : organizationalPerson, inetOrgPerson
+	 * LDAP object classes of users for search. Comma separated values : organizationalPerson, inetOrgPerson.
+	 * The first one is used for the creation unless {@link #PARAMETER_PEOPLE_CLASS_CREATE} is defined.
 	 */
 	public static final String PARAMETER_PEOPLE_CLASS = KEY + ":people-class";
+
+	/**
+	 * LDAP object classes of users for the creation. Comma separated values.
+	 * When empty, use the {@link #PARAMETER_PEOPLE_CLASS} classes.
+	 */
+	public static final String PARAMETER_PEOPLE_CLASS_CREATE = KEY + ":people-class-create";
 
 	/**
 	 * Pattern capturing the company from the DN of the user. Can be a raw string for constant.
@@ -154,9 +158,16 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String PARAMETER_GROUPS_DN = KEY + ":groups-dn";
 
 	/**
-	 * LDAP object class of groups. Is also a filter for search.
+	 * LDAP object classes of groups for search. Comma separated values.
+	 * The first one is used for the creation unless {@link #PARAMETER_GROUPS_CLASS_CREATE} is defined.
 	 */
 	public static final String PARAMETER_GROUPS_CLASS = KEY + ":groups-class";
+
+	/**
+	 * LDAP object classes of groups for the creation. Comma separated values.
+	 * When empty, use the {@link #PARAMETER_GROUPS_CLASS} classes.
+	 */
+	public static final String PARAMETER_GROUPS_CLASS_CREATE = KEY + ":groups-class-create";
 
 	/**
 	 * LDAP object class of groups. Is also a filter for search.
@@ -169,9 +180,16 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String PARAMETER_COMPANIES_DN = KEY + ":companies-dn";
 
 	/**
-	 * LDAP object class of companies. Is also a filter for search.
+	 * LDAP object classes of companies for search. Comma separated values.
+	 * The first one is used for the creation unless {@link #PARAMETER_COMPANIES_CLASS_CREATE} is defined.
 	 */
 	public static final String PARAMETER_COMPANIES_CLASS = KEY + ":companies-class";
+
+	/**
+	 * LDAP object classes of groups for the creation. Comma separated values.
+	 * When empty, use the {@link #PARAMETER_COMPANIES_CLASS} classes.
+	 */
+	public static final String PARAMETER_COMPANIES_CLASS_CREATE = KEY + ":companies-class-create";
 
 	/**
 	 * DN of location of people considered as internal. Can be the same as people DN.
@@ -212,6 +230,16 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	@Getter
 	protected LdapPluginResource self;
 
+	/**
+	 * Read main parameter from the provided list with {@link #getParameter(Map, String, String)}.
+	 * Then do the same for the given parameter name with "-create" suffix. The last step use the first value as default value.
+	 */
+	private void setParameterClassValues(final AbstractManagedLdapRepository repository, final Map<String, String> parameters, final String name, final String defaultValue) {
+		final var classValues = StringUtils.split(getParameter(parameters, name, defaultValue), ", ");
+		repository.setClassNames(classValues);
+		repository.setClassNamesCreate(StringUtils.split(getParameter(parameters, name + "-create", classValues[0]), ", "));
+	}
+
 	@Override
 	protected UserLdapRepository getUserRepository(final String node) {
 		log.info("Build ldap template for node {}", node);
@@ -231,13 +259,13 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		final var repository = new UserLdapRepository();
 		repository.setTemplate(template);
 		repository.setSelfSearch(Boolean.parseBoolean(getParameter(parameters, PARAMETER_SELF_SEARCH, "false")));
-		repository.setClassName(getParameter(parameters, PARAMETER_PEOPLE_CLASS, "inetOrgPerson"));
+		setParameterClassValues(repository, parameters, PARAMETER_PEOPLE_CLASS, "inetOrgPerson");
 		repository.setBaseDn(getParameter(parameters, PARAMETER_PEOPLE_DN, ""));
 		repository.setPeopleInternalBaseDn(getParameter(parameters, PARAMETER_PEOPLE_INTERNAL_DN, ""));
 		repository.setDepartmentAttribute(getParameter(parameters, PARAMETER_DEPARTMENT_ATTRIBUTE, "employeeNumber"));
 		repository.setLocalIdAttribute(getParameter(parameters, PARAMETER_LOCAL_ID_ATTRIBUTE, "employeeID"));
 		repository.setUidAttribute(getParameter(parameters, PARAMETER_UID_ATTRIBUTE, "uid"));
-		repository.setLoginAttributes(Arrays.asList(StringUtils.split(getParameter(parameters, PARAMETER_LOGIN_ATTRIBUTES, "uid,mail"),"[, ]")));
+		repository.setLoginAttributes(Arrays.asList(StringUtils.split(getParameter(parameters, PARAMETER_LOGIN_ATTRIBUTES, "uid,mail"), "[, ]")));
 		repository.setLockedAttribute(getParameter(parameters, PARAMETER_LOCKED_ATTRIBUTE, "employeeType"));
 		repository.setLockedValue(getParameter(parameters, PARAMETER_LOCKED_VALUE, "LOCKED"));
 		repository.setCompanyPattern(getParameter(parameters, PARAMETER_COMPANY_PATTERN, "[^,]+,ou=([^,]+),.*"));
@@ -264,7 +292,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		repository.setTemplate(template);
 		repository.setBaseDn(getParameter(parameters, PARAMETER_GROUPS_DN, ""));
 		repository.setMemberAttribute(getParameter(parameters, PARAMETER_GROUPS_MEMBER_ATTRIBUTE, "uniqueMember"));
-		repository.setClassName(getParameter(parameters, PARAMETER_GROUPS_CLASS, "groupOfUniqueNames"));
+		setParameterClassValues(repository, parameters, PARAMETER_GROUPS_CLASS, "groupOfUniqueNames");
 
 		// Complete the bean
 		SpringUtils.getApplicationContext().getAutowireCapableBeanFactory().autowireBean(repository);
@@ -285,7 +313,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		final var repository = new CompanyLdapRepository();
 		repository.setTemplate(template);
 		repository.setBaseDn(getParameter(parameters, PARAMETER_COMPANIES_DN, ""));
-		repository.setClassName(getParameter(parameters, PARAMETER_COMPANIES_CLASS, "organizationalUnit"));
+		setParameterClassValues(repository, parameters, PARAMETER_COMPANIES_CLASS, "organizationalUnit");
 		repository.setQuarantineBaseDn(parameters.get(PARAMETER_QUARANTINE_DN));
 
 		// Complete the bean
@@ -699,7 +727,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		final var projectId = subscriptionRepository.findOne(subscription).getProject().getId();
 		final var parameters = subscriptionResource.getParameters(subscription);
 		final var group = parameters.get(IdentityResource.PARAMETER_GROUP);
-		cacheProjectGroupRepository.deleteAllBy("group.id",group, new String[]{"project.id"}, projectId);
+		cacheProjectGroupRepository.deleteAllBy("group.id", group, new String[]{"project.id"}, projectId);
 
 		if (deleteRemoteData) {
 			// Check the group exists, but is not required to continue the process

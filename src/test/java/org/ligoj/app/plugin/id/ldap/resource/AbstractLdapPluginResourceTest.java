@@ -77,9 +77,9 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 	@BeforeEach
 	public void prepareData() throws IOException {
 		persistEntities("csv",
-				new Class<?>[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class,
+				new Class<?>[]{DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class,
 						CacheGroup.class, CacheMembership.class, Project.class, Node.class, Parameter.class,
-						Subscription.class, ParameterValue.class, CacheProjectGroup.class },
+						Subscription.class, ParameterValue.class, CacheProjectGroup.class},
 				StandardCharsets.UTF_8);
 		cacheManager.getCache("container-scopes").clear();
 
@@ -252,7 +252,12 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 		persistParameter(ldap, LdapPluginResource.PARAMETER_DEPARTMENT_ATTRIBUTE, "departmentNumber");
 		persistParameter(ldap, LdapPluginResource.PARAMETER_LOCAL_ID_ATTRIBUTE, "employeeNumber");
 		persistParameter(ldap, LdapPluginResource.PARAMETER_PEOPLE_CLASS, "inetOrgPerson");
+		persistParameter(ldap, LdapPluginResource.PARAMETER_PEOPLE_CLASS_CREATE, "inetOrgPerson");
 		persistParameter(ldap, LdapPluginResource.PARAMETER_COMPANY_PATTERN, "ligoj");
+		persistParameter(ldap, LdapPluginResource.PARAMETER_GROUPS_CLASS, "groupOfUniqueNames");
+		persistParameter(ldap, LdapPluginResource.PARAMETER_GROUPS_CLASS_CREATE, "groupOfUniqueNames,groupOfUniqueNames");
+		persistParameter(ldap, LdapPluginResource.PARAMETER_COMPANIES_CLASS, "organizationalUnit");
+		persistParameter(ldap, LdapPluginResource.PARAMETER_COMPANIES_CLASS_CREATE, "organizationalUnit");
 	}
 
 	protected void persistParameter(final Node node, final String id, final String value) {

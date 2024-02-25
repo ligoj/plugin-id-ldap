@@ -27,6 +27,7 @@ import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Group LDAP repository
@@ -92,9 +93,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 		final var dnToGroups = new HashMap<String, GroupOrg>();
 
 		// First pass, collect the groups and dirty relationships
-		for (final var ldap : template.search(baseDn,
-				new EqualsFilter(OBJECT_CLASS, className).encode(),
-				(Object ctx) -> (DirContextAdapter) ctx)) {
+		for (final var ldap : template.search(baseDn, newClassesFilter().encode(), (Object ctx) -> (DirContextAdapter) ctx)) {
 			final var members = new HashSet<String>();
 			final var dn = ldap.getDn().toString().toLowerCase(Locale.ENGLISH);
 			final var name = ldap.getStringAttribute("cn");
@@ -289,7 +288,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 		// Dummy member for initial group, due to LDAP compliance of class "groupOfUniqueNames"
 		context.setAttributeValue(memberAttribute, DEFAULT_MEMBER_DN);
 
-		if ("posixGroup".equalsIgnoreCase(className)) {
+		if (Stream.of(classNamesCreate).anyMatch(x -> x.equalsIgnoreCase("posixGroup"))) {
 			// Set a default gidNumber
 			context.setAttributeValue("gidNumber", DEFAULT_GID_NUMBER);
 		}
@@ -324,8 +323,7 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 
 	@Override
 	public GroupOrg findByDepartment(final String department) {
-		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className))
-				.and(new EqualsFilter(DEPARTMENT_ATTRIBUTE, department));
+		final var filter = new AndFilter().and(newClassesFilter()).and(new EqualsFilter(DEPARTMENT_ATTRIBUTE, department));
 		return template.search(baseDn, filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).stream()
 				.findFirst().map(c -> c.getStringAttribute("cn")).map(Normalizer::normalize).map(this::findById)
 				.orElse(null);

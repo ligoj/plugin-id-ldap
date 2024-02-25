@@ -85,7 +85,7 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 		// First create the LDAP entry
 		log.info("{} {} will be created as {}", type.name(), container.getName(), dn);
 		final var context = new DirContextAdapter(dn);
-		context.setAttributeValues(OBJECT_CLASS, new String[]{className});
+		context.setAttributeValues(OBJECT_CLASS, classNamesCreate);
 		mapToContext(container, context);
 		bind(context);
 

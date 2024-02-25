@@ -6,11 +6,16 @@ package org.ligoj.app.plugin.id.ldap.dao;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.ldap.NameAlreadyBoundException;
 import org.springframework.ldap.NameNotFoundException;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.filter.EqualsFilter;
+import org.springframework.ldap.filter.OrFilter;
+
+import java.util.stream.Stream;
 
 /**
  * Base LDAP repository for groups, users and companies.
@@ -31,7 +36,13 @@ public class AbstractManagedLdapRepository {
 	 * LDAP class name of this container.
 	 */
 	@Setter
-	protected String className;
+	protected String[] classNames = ArrayUtils.EMPTY_STRING_ARRAY;
+
+	/**
+	 * LDAP class name of this container for creation operations. When null or empty, the container class name is used.
+	 */
+	@Setter
+	protected String[] classNamesCreate = ArrayUtils.EMPTY_STRING_ARRAY;
 
 	/**
 	 * LDAP base DN where all objects of this class are located. May be different from the generic base DN of server.
@@ -78,5 +89,14 @@ public class AbstractManagedLdapRepository {
 		}
 	}
 
+
+	/**
+	 * Return an LDAP filter based on this container's classes.
+	 *
+	 * @return An LDAP filter based on this container's classes.
+	 */
+	protected OrFilter newClassesFilter() {
+		return Stream.of(classNames).reduce(new OrFilter(), (f, a) -> f.or(new EqualsFilter(OBJECT_CLASS, a)), (f, a) -> a);
+	}
 
 }

@@ -128,7 +128,7 @@ class UserLdapRepositoryTest {
 	@Test
 	void capture() {
 		final var entry = Mockito.mock(LdapEntryIdentification.class);
-		Assertions.assertNull(new UserLdapRepository.CaptureAuthenticatedLdapEntryContextCallback().mapWithContext(null,entry));
+		Assertions.assertNull(new UserLdapRepository.CaptureAuthenticatedLdapEntryContextCallback().mapWithContext(null, entry));
 	}
 
 	@Test
@@ -293,7 +293,8 @@ class UserLdapRepositoryTest {
 			}
 
 		};
-		repository.className = "posixAccount";
+		repository.classNames = new String[]{"posixAccount"};
+		repository.classNamesCreate = repository.classNames;
 		repository.setTemplate(Mockito.mock(LdapTemplate.class));
 		repository.cacheRepository = Mockito.mock(CacheLdapRepository.class);
 		repository.create(user);

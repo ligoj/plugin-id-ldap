@@ -241,10 +241,11 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		// Create the LDAP entry
 		user.setDn(dn.toString());
 		final var context = new DirContextAdapter(dn);
-		context.setAttributeValues(OBJECT_CLASS, Stream.of("top", "person", "inetOrgPerson", "organizationalPerson", className).distinct().toArray(String[]::new));
+		context.setAttributeValues(OBJECT_CLASS, classNamesCreate);
 		mapToContext(user, context);
 
-		if ("posixAccount".equalsIgnoreCase(className)) {
+		// Handle posixAccount class
+		if (Stream.of(classNamesCreate).anyMatch(x -> x.equalsIgnoreCase("posixAccount"))) {
 			// Set a default gidNumber
 			context.setAttributeValue("gidNumber", DEFAULT_GID_NUMBER);
 			context.setAttributeValue("uidNumber", DEFAULT_UID_NUMBER);
@@ -287,7 +288,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 
 	@Override
 	public List<UserOrg> findAllBy(final String attribute, final String value) {
-		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className))
+		final var filter = new AndFilter().and(newClassesFilter())
 				.and(new EqualsFilter(SEARCH_MAPPER.getOrDefault(attribute, attribute), value));
 		return template.search(baseDn, filter.encode(), mapper).stream()
 				.map(u -> Optional.ofNullable(findById(u.getId())).orElse(u)).toList();
@@ -351,7 +352,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 
 		// Fetch users and their direct attributes
 		final var result = new HashMap<String, UserOrg>();
-		final var userFilter = new EqualsFilter(OBJECT_CLASS, className).encode();
+		final var classFilter = newClassesFilter().encode();
 		final var searchControls = new SearchControls();
 		searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 		searchControls.setReturningAttributes(returnAttrs);
@@ -359,10 +360,10 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		List<UserOrg> users;
 		try {
 			final var processor = new PagedResultsDirContextProcessor(LDAP_SEARCH_PAGE_SIZE, null);
-			users = template.search(baseDn, userFilter, searchControls, mapper, processor);
+			users = template.search(baseDn, classFilter, searchControls, mapper, processor);
 		} catch (final OperationNotSupportedException e) {
 			log.info("Pagination is not supported, regular search ({}) ...", e.getMessage());
-			users = template.search(baseDn, userFilter, searchControls, mapper, LDAP_NULL_PROCESSOR);
+			users = template.search(baseDn, classFilter, searchControls, mapper, LDAP_NULL_PROCESSOR);
 		}
 
 		// Index the users by the identifier
@@ -716,7 +717,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 				final var loginFilter = loginAttributes.stream()
 						.filter(a -> !a.equalsIgnoreCase(property))
 						.reduce(new OrFilter().or(new EqualsFilter(property, name)), (f, a) -> f.or(new EqualsFilter(a, name)), (f, a) -> a);
-				final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className)).and(loginFilter);
+				final var filter = new AndFilter().and(loginFilter).and(newClassesFilter());
 				final var userCaptureCallback = new CaptureAuthenticatedLdapEntryContextCallback();
 				authResult = template.authenticate(LdapUtils.newLdapName(baseDn), filter.encode(), password, userCaptureCallback, LDAP_NULL_ERROR_CALLBACK);
 				if (authResult) {
@@ -765,8 +766,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 
 	@Override
 	public String getToken(final String login) {
-		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className))
-				.and(new EqualsFilter(uidAttribute, login));
+		final var filter = new AndFilter().and(newClassesFilter()).and(new EqualsFilter(uidAttribute, login));
 		return template.search(baseDn, filter.encode(), new AbstractContextMapper<String>() {
 			@Override
 			public String doMapFromContext(final DirContextOperations context) {
@@ -871,7 +871,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		// List of attributes to retrieve from LDAP.
 		final var returnAttrs = new String[]{PWD_ACCOUNT_LOCKED_ATTRIBUTE};
 
-		final var filter = new AndFilter().and(new EqualsFilter(OBJECT_CLASS, className))
+		final var filter = new AndFilter().and(newClassesFilter())
 				.and(new EqualsFilter(uidAttribute, user.getId()));
 		template.search(baseDn, filter.encode(), SearchControls.SUBTREE_SCOPE, returnAttrs,
 				new AbstractContextMapper<UserOrg>() {
