@@ -20,8 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.ldap.core.DirContextAdapter;
-import org.springframework.ldap.core.DirContextOperations;
 
 import java.util.*;
 
@@ -32,7 +30,7 @@ import java.util.*;
  * @param <C> The container cache type.
  */
 @Slf4j
-public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C extends CacheContainer> extends AbstractManagedLdapRepository
+public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C extends CacheContainer> extends AbstractManagedLdapRepository<T>
 		implements IContainerRepository<T> {
 
 	protected static final Sort.Order DEFAULT_ORDER = new Sort.Order(Direction.ASC, "name");
@@ -62,14 +60,6 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 	protected abstract CacheContainerRepository<C> getCacheRepository();
 
 	/**
-	 * Map a container to LDAP.
-	 *
-	 * @param entry   The container entry to map.
-	 * @param context The target context to fill.
-	 */
-	protected abstract void mapToContext(T entry, DirContextOperations context);
-
-	/**
 	 * Create a new container bean. Not in LDAP repository.
 	 *
 	 * @param dn The unique DN of the container.
@@ -84,10 +74,7 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 
 		// First create the LDAP entry
 		log.info("{} {} will be created as {}", type.name(), container.getName(), dn);
-		final var context = new DirContextAdapter(dn);
-		context.setAttributeValues(OBJECT_CLASS, classNamesCreate);
-		mapToContext(container, context);
-		bind(context);
+		bind(container, dn);
 
 		// Return the new container
 		return container;

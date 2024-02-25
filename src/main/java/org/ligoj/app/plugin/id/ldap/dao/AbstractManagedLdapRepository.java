@@ -7,10 +7,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
+import org.ligoj.app.iam.ResourceOrg;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.ldap.NameAlreadyBoundException;
 import org.springframework.ldap.NameNotFoundException;
 import org.springframework.ldap.core.DirContextAdapter;
+import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.filter.OrFilter;
@@ -21,7 +23,7 @@ import java.util.stream.Stream;
  * Base LDAP repository for groups, users and companies.
  */
 @Slf4j
-public class AbstractManagedLdapRepository {
+public abstract class AbstractManagedLdapRepository<T extends ResourceOrg> {
 
 	/**
 	 * LDAP class filter.
@@ -75,11 +77,25 @@ public class AbstractManagedLdapRepository {
 	}
 
 	/**
+	 * Bind the given entry into a context. If the bind fail, a validation exception is generated.
+	 *
+	 * @param entry The container entry to map.
+	 * @param dn    The DN of entry to bind.
+	 */
+	protected void bind(final T entry, final String dn) {
+		final var context = new DirContextAdapter(dn);
+		context.setAttributeValues(OBJECT_CLASS, classNamesCreate);
+		mapToContext(entry, context);
+		bind(context);
+	}
+
+
+	/**
 	 * Bind the given context. If the bind fail, a validation exception is generated.
 	 *
 	 * @param context to bind.
 	 */
-	protected void bind(final DirContextAdapter context) {
+	protected void bind(final DirContextOperations context) {
 		final var dn = context.getDn().toString();
 		try {
 			template.bind(context);
@@ -89,6 +105,14 @@ public class AbstractManagedLdapRepository {
 		}
 	}
 
+
+	/**
+	 * Map a container to LDAP.
+	 *
+	 * @param entry   The container entry to map.
+	 * @param context The target context to fill.
+	 */
+	abstract void mapToContext(final T entry, final DirContextOperations context);
 
 	/**
 	 * Return an LDAP filter based on this container's classes.

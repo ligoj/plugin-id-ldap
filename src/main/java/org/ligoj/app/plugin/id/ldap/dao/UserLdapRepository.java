@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IteratorUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -53,7 +54,7 @@ import java.util.stream.Stream;
  * User LDAP repository
  */
 @Slf4j
-public class UserLdapRepository extends AbstractManagedLdapRepository implements IUserRepository {
+public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> implements IUserRepository {
 
 	private static final String OPEN_LDAP_DATE_FORMAT = "yyyyMMddHHmmss'Z'";
 
@@ -113,13 +114,6 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 
 	private static final AuthenticationErrorCallback LDAP_NULL_ERROR_CALLBACK = new NullAuthenticationErrorCallback();
 
-	/**
-	 * Flag used to hash the password or not.
-	 */
-	@Setter
-	@Getter
-	private boolean clearPassword = false;
-
 	private static final Map<String, Comparator<UserOrg>> COMPARATORS = new HashMap<>();
 
 	/**
@@ -135,6 +129,19 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 	 */
 	public static final RandomStringGenerator GENERATOR = new RandomStringGenerator.Builder()
 			.filteredBy(c -> CharUtils.isAsciiAlphanumeric(Character.toChars(c)[0])).build();
+
+	/**
+	 * Flag used to hash the password or not.
+	 */
+	@Setter
+	@Getter
+	private boolean clearPassword = false;
+
+	/**
+	 * Additional user LDAP attribute names.
+	 */
+	@Setter
+	private String[] customAttributes = ArrayUtils.EMPTY_STRING_ARRAY;
 
 	/**
 	 * UID attribute name.
@@ -240,18 +247,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 
 		// Create the LDAP entry
 		user.setDn(dn.toString());
-		final var context = new DirContextAdapter(dn);
-		context.setAttributeValues(OBJECT_CLASS, classNamesCreate);
-		mapToContext(user, context);
-
-		// Handle posixAccount class
-		if (Stream.of(classNamesCreate).anyMatch(x -> x.equalsIgnoreCase("posixAccount"))) {
-			// Set a default gidNumber
-			context.setAttributeValue("gidNumber", DEFAULT_GID_NUMBER);
-			context.setAttributeValue("uidNumber", DEFAULT_UID_NUMBER);
-			context.setAttributeValue("homeDirectory", DEFAULT_HOME_DIRECTORY);
-		}
-		bind(context);
+		bind(user, user.getDn());
 
 		// Also, update the cache and return the original entry with updated DN
 		return cacheRepository.create(user);
@@ -447,16 +443,26 @@ public class UserLdapRepository extends AbstractManagedLdapRepository implements
 		return "uid=" + login + "," + companyDn;
 	}
 
+	@Override
 	protected void mapToContext(final UserOrg entry, final DirContextOperations context) {
 		context.setAttributeValue("cn", entry.getFirstName() + " " + entry.getLastName());
 		context.setAttributeValue(SN_ATTRIBUTE, entry.getLastName());
 		context.setAttributeValue(GIVEN_NAME_ATTRIBUTE, entry.getFirstName());
 		context.setAttributeValue(uidAttribute, Normalizer.normalize(entry.getId()));
-		context.setAttributeValues(MAIL_ATTRIBUTE, entry.getMails().toArray(), true);
+		context.setAttributeValues(MAIL_ATTRIBUTE, Objects.requireNonNullElse(entry.getMails(), Collections.emptyList()).toArray(), true);
 
 		// Special and also optional attributes
 		Optional.ofNullable(departmentAttribute).ifPresent(a -> context.setAttributeValue(a, entry.getDepartment()));
 		Optional.ofNullable(localIdAttribute).ifPresent(a -> context.setAttributeValue(a, entry.getLocalId()));
+
+		// Handle posixAccount class
+		if (Stream.of(classNamesCreate).anyMatch(x -> x.equalsIgnoreCase("posixAccount"))) {
+			// Set a default gidNumber
+			context.setAttributeValue("gidNumber", DEFAULT_GID_NUMBER);
+			context.setAttributeValue("uidNumber", DEFAULT_UID_NUMBER);
+			context.setAttributeValue("homeDirectory", DEFAULT_HOME_DIRECTORY);
+		}
+
 	}
 
 	private class Mapper extends AbstractContextMapper<UserOrg> {

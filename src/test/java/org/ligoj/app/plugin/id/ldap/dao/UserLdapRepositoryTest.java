@@ -284,6 +284,7 @@ class UserLdapRepositoryTest {
 
 			@Override
 			protected void mapToContext(final UserOrg entry, final DirContextOperations context) {
+				super.mapToContext(entry, context);
 				lastContext.set(context);
 			}
 
