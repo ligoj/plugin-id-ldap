@@ -136,13 +136,13 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String PARAMETER_LOCKED_VALUE = KEY + ":locked-value";
 
 	/**
-	 * LDAP object classes of users for search. Comma and space separated values : organizationalPerson, inetOrgPerson.
+	 * LDAP object classes of users for search. Comma or space separated values : organizationalPerson, inetOrgPerson.
 	 * The first one is used for the creation unless {@link #PARAMETER_PEOPLE_CLASS_CREATE} is defined.
 	 */
 	public static final String PARAMETER_PEOPLE_CLASS = KEY + ":people-class";
 
 	/**
-	 * LDAP object classes of users for the creation. Comma and space separated values.
+	 * LDAP object classes of users for the creation. Comma or space separated values.
 	 * When empty, use the {@link #PARAMETER_PEOPLE_CLASS} classes.
 	 */
 	public static final String PARAMETER_PEOPLE_CLASS_CREATE = KEY + ":people-class-create";
@@ -158,13 +158,13 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String PARAMETER_GROUPS_DN = KEY + ":groups-dn";
 
 	/**
-	 * LDAP object classes of groups for search. Comma and space separated values.
+	 * LDAP object classes of groups for search. Comma or space separated values.
 	 * The first one is used for the creation unless {@link #PARAMETER_GROUPS_CLASS_CREATE} is defined.
 	 */
 	public static final String PARAMETER_GROUPS_CLASS = KEY + ":groups-class";
 
 	/**
-	 * LDAP object classes of groups for the creation. Comma and space separated values.
+	 * LDAP object classes of groups for the creation. Comma or space separated values.
 	 * When empty, use the {@link #PARAMETER_GROUPS_CLASS} classes.
 	 */
 	public static final String PARAMETER_GROUPS_CLASS_CREATE = KEY + ":groups-class-create";
@@ -180,13 +180,13 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String PARAMETER_COMPANIES_DN = KEY + ":companies-dn";
 
 	/**
-	 * LDAP object classes of companies for search. Comma and space separated values.
+	 * LDAP object classes of companies for search. Comma or space separated values.
 	 * The first one is used for the creation unless {@link #PARAMETER_COMPANIES_CLASS_CREATE} is defined.
 	 */
 	public static final String PARAMETER_COMPANIES_CLASS = KEY + ":companies-class";
 
 	/**
-	 * LDAP object classes of groups for the creation. Comma and space separated values.
+	 * LDAP object classes of groups for the creation. Comma or space separated values.
 	 * When empty, use the {@link #PARAMETER_COMPANIES_CLASS} classes.
 	 */
 	public static final String PARAMETER_COMPANIES_CLASS_CREATE = KEY + ":companies-class-create";
@@ -197,7 +197,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String PARAMETER_PEOPLE_INTERNAL_DN = KEY + ":people-internal-dn";
 
 	/**
-	 * List of custom user LDAP attribute names. Comma and space separated values.
+	 * List of mandatory custom user LDAP attribute names. Comma or space separated values.
 	 */
 	public static final String PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES = KEY + ":people-custom-attributes";
 
@@ -237,7 +237,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 
 
 	/**
-	 * Convert a string to a list using comma and space separator.
+	 * Convert a string to a list using Comma or space separator.
 	 */
 	private String[] toParameterList(final String rawParameterValue) {
 		return StringUtils.split(rawParameterValue, ", ");
@@ -247,7 +247,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * Read main parameter from the provided list with {@link #getParameter(Map, String, String)}.
 	 * Then do the same for the given parameter name with "-create" suffix. The last step use the first value as default value.
 	 */
-	private void setParameterClassValues(final AbstractManagedLdapRepository repository, final Map<String, String> parameters, final String name, final String defaultValue) {
+	private void setParameterClassValues(final AbstractManagedLdapRepository<?> repository, final Map<String, String> parameters, final String name, final String defaultValue) {
 		final var classValues = toParameterList(getParameter(parameters, name, defaultValue));
 		repository.setClassNames(classValues);
 		repository.setClassNamesCreate(toParameterList(getParameter(parameters, name + "-create", classValues[0])));
