@@ -2,13 +2,13 @@ id;data;mandatory;secured;type;owner.id;defaultValue;mode
 service:id:ldap:base-dn;;false;false;TEXT;service:id:ldap
 service:id:ldap:companies-dn;;false;false;TEXT;service:id:ldap;ou=people,dc=sample,dc=com
 service:id:ldap:companies-class;;false;false;TEXT;service:id:ldap;organizationalUnit
-service:id:ldap:companies-class-create;;false;false;TEXT;service:id:ldap;organizationalUnit
+service:id:ldap:companies-class-create;;false;false;TEXT;service:id:ldap
 service:id:ldap:company-pattern;;false;false;TEXT;service:id:ldap;[^,]+,ou=([^,]+),.*
 service:id:ldap:clear-password;;false;false;BOOL;service:id:ldap
 service:id:ldap:department-attribute;;false;false;TEXT;service:id:ldap
 service:id:ldap:groups-dn;;false;false;TEXT;service:id:ldap;dc=sample,dc=com
 service:id:ldap:groups-class;;false;false;TEXT;service:id:ldap;groupOfUniqueNames
-service:id:ldap:groups-class-create;;false;false;TEXT;service:id:ldap;groupOfUniqueNames
+service:id:ldap:groups-class-create;;false;false;TEXT;service:id:ldap
 service:id:ldap:groups-member-attribute;;false;false;TEXT;service:id:ldap;uniqueMember
 service:id:ldap:local-id-attribute;;false;false;TEXT;service:id:ldap;employeeNumber
 service:id:ldap:locked-attribute;;false;false;TEXT;service:id:ldap;employeeType
@@ -16,7 +16,8 @@ service:id:ldap:locked-value;;false;false;TEXT;service:id:ldap;LOCKED
 service:id:ldap:login-attributes;;false;false;TEXT;service:id:ldap;uid,mail
 service:id:ldap:password;;false;true;TEXT;service:id:ldap;secret
 service:id:ldap:people-class;;false;false;TEXT;service:id:ldap;inetOrgPerson
-service:id:ldap:people-class-create;;false;false;TEXT;service:id:ldap;inetOrgPerson
+service:id:ldap:people-class-create;;false;false;TEXT;service:id:ldap
+service:id:ldap:people-custom-attributes;;false;false;TEXT;service:id:ldap;
 service:id:ldap:people-dn;;false;false;TEXT;service:id:ldap;dc=sample,dc=com
 service:id:ldap:people-internal-dn;;false;false;TEXT;service:id:ldap
 service:id:ldap:quarantine-dn;;false;false;TEXT;service:id:ldap;ou=quarantine,dc=sample,dc=com

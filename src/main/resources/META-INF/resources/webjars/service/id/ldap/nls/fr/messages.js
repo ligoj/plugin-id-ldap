@@ -27,6 +27,8 @@ define({
     'service:id:ldap:people-class-description': 'Classes LDAP des personnes à rechercher. Séparées pas des espaces ou virgules.',
     'service:id:ldap:people-class-create': 'Classes des personnes (creation)',
     'service:id:ldap:people-class-create-description': 'Classes LDAP des personnes à créer. Séparées pas des espaces ou virgules. Si vide, la première des classes de recherches est utilisée.',
+    'service:id:ldap:people-custom-attributes': 'Attributs personnalisés',
+    'service:id:ldap:people-custom-attributes-description': 'Liste d\'attributs LDAP obligatoires pour les utilisateurs. Séparées pas des espaces ou virgules.',
 	'service:id:ldap:people-dn': 'DN des personnes',
 	'service:id:ldap:people-internal-dn': 'People internal DN',
 	'service:id:ldap:quarantine-dn': 'DN de quarantaine',

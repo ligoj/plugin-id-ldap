@@ -141,6 +141,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 	 * Additional user LDAP attribute names.
 	 */
 	@Setter
+	@Getter
 	private String[] customAttributes = ArrayUtils.EMPTY_STRING_ARRAY;
 
 	/**
@@ -343,8 +344,8 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 	public Map<String, UserOrg> findAllNoCache(final Map<String, GroupOrg> groups) {
 
 		// List of attributes to retrieve from LDAP.
-		final var returnAttrs = new String[]{SN_ATTRIBUTE, GIVEN_NAME_ATTRIBUTE, PASSWORD_ATTRIBUTE, MAIL_ATTRIBUTE,
-				uidAttribute, departmentAttribute, localIdAttribute, lockedAttribute, PWD_ACCOUNT_LOCKED_ATTRIBUTE};
+		final var returnAttrs = ArrayUtils.addAll(new String[]{SN_ATTRIBUTE, GIVEN_NAME_ATTRIBUTE, PASSWORD_ATTRIBUTE, MAIL_ATTRIBUTE,
+				uidAttribute, departmentAttribute, localIdAttribute, lockedAttribute, PWD_ACCOUNT_LOCKED_ATTRIBUTE}, customAttributes);
 
 		// Fetch users and their direct attributes
 		final var result = new HashMap<String, UserOrg>();
@@ -463,6 +464,9 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 			context.setAttributeValue("homeDirectory", DEFAULT_HOME_DIRECTORY);
 		}
 
+		// Map custom user attributes
+		final var userAttributes = Objects.requireNonNullElse(entry.getCustomAttributes(), Collections.emptyMap());
+		Stream.of(customAttributes).filter(userAttributes::containsKey).forEach(a -> context.setAttributeValue(a, userAttributes.get(a)));
 	}
 
 	private class Mapper extends AbstractContextMapper<UserOrg> {
@@ -477,9 +481,15 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 			user.setId(Normalizer.normalize(context.getStringAttribute(uidAttribute)));
 
 			// Special and also optional attributes
-			Optional.ofNullable(departmentAttribute).ifPresent(a -> user.setDepartment(context.getStringAttribute(a)));
-			Optional.ofNullable(localIdAttribute).ifPresent(a -> user.setLocalId(context.getStringAttribute(a)));
-			Optional.ofNullable(lockedAttribute).ifPresent(a -> fillLockedData(user, context.getStringAttribute(a)));
+			if (departmentAttribute != null) {
+				user.setDepartment(context.getStringAttribute(departmentAttribute));
+			}
+			if (localIdAttribute != null) {
+				user.setLocalId(context.getStringAttribute(localIdAttribute));
+			}
+			if (lockedAttribute != null) {
+				fillLockedData(user, context.getStringAttribute(lockedAttribute));
+			}
 
 			// Save the normalized CN of the company
 			user.setCompany(toCompany(user.getDn()));
@@ -490,8 +500,17 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 			}
 
 			// Save the mails
-			user.setMails(
-					new ArrayList<>(CollectionUtils.emptyIfNull(context.getAttributeSortedStringSet(MAIL_ATTRIBUTE))));
+			user.setMails(new ArrayList<>(CollectionUtils.emptyIfNull(context.getAttributeSortedStringSet(MAIL_ATTRIBUTE))));
+
+			// Save custom user attributes
+			user.setCustomAttributes(new HashMap<>());
+			for (var a : customAttributes) {
+				final String value = context.getStringAttribute(a);
+				if (value != null) {
+					user.getCustomAttributes().put(a, value);
+				}
+			}
+
 			return user;
 		}
 
