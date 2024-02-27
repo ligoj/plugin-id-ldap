@@ -656,6 +656,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	@Test
 	void authenticateByCN() {
 		parameterValueRepository.findAllBy("parameter.id", "service:id:ldap:login-attributes").getFirst().setData("cn,uid");
+		clearAllCache();
 		em.flush();
 		final var authentication = new UsernamePasswordAuthenticationToken("Fabrice Daugan", "Secret01");
 		Assertions.assertEquals("fdaugan", resource.authenticate(authentication, "service:id:ldap:dig", true).getName());
