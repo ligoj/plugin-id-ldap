@@ -61,7 +61,7 @@ class LdapPluginResourceZDeleteTest extends AbstractLdapPluginResourceTest {
 		final Subscription childSubscription = createSubGroup(parentSubscription.getProject(), "sea-parent-for-2deletion",
 				"sea-parent-for-2deletion-sub");
 
-		// Check the sub-group and the parent are there
+		// Check the subgroup and the parent are there
 		Assertions.assertEquals(2, resource.findGroupsByName("sea-parent-for-2deletion").size());
 		final Map<String, String> parentParameters = subscriptionResource.getParameters(parentSubscription.getId());
 		Assertions.assertTrue(resource.checkSubscriptionStatus(parentParameters).getStatus().isUp());
@@ -82,7 +82,7 @@ class LdapPluginResourceZDeleteTest extends AbstractLdapPluginResourceTest {
 		Assertions.assertEquals(1, resource.findGroupsByName("sea-parent-for-2deletion").size());
 		Assertions.assertTrue(getGroup().findAll().get("sea-parent-for-2deletion").getSubGroups().isEmpty());
 		Assertions.assertNull(getGroup().findAll().get("sea-parent-for-2deletion-sub"));
-		Assertions.assertEquals("sea-parent-for-2deletion", resource.findGroupsByName("sea-parent-for-2deletion").get(0).getId());
+		Assertions.assertEquals("sea-parent-for-2deletion", resource.findGroupsByName("sea-parent-for-2deletion").getFirst().getId());
 		Assertions.assertNull(getGroup().findAllNoCache().get("sea-parent-for-2deletion-sub"));
 
 		// Check the new status of the deleted child

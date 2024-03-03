@@ -94,14 +94,14 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 		Assertions.assertEquals(1, tableItem.getRecordsFiltered());
 		Assertions.assertEquals(1, tableItem.getData().size());
 
-		final UserOrgVo userLdap = tableItem.getData().get(0);
+		final UserOrgVo userLdap = tableItem.getData().getFirst();
 		Assertions.assertEquals("flasta", userLdap.getId());
 		Assertions.assertEquals("Firsta", userLdap.getFirstName());
 		Assertions.assertEquals("Lasta", userLdap.getLastName());
 		Assertions.assertEquals("ing", userLdap.getCompany());
-		Assertions.assertEquals("flasta@ing.com", userLdap.getMails().get(0));
+		Assertions.assertEquals("flasta@ing.com", userLdap.getMails().getFirst());
 		Assertions.assertEquals(1, userLdap.getGroups().size());
-		Assertions.assertEquals("DIG RHA", userLdap.getGroups().get(0).getName());
+		Assertions.assertEquals("DIG RHA", userLdap.getGroups().getFirst().getName());
 	}
 
 	@Override
@@ -130,7 +130,7 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 		Assertions.assertEquals("Fabrice", userLdap.getFirstName());
 		Assertions.assertEquals("Daugan", userLdap.getLastName());
 		Assertions.assertEquals("ligoj", userLdap.getCompany());
-		Assertions.assertEquals("fabrice.daugan@sample.com", userLdap.getMails().get(0));
+		Assertions.assertEquals("fabrice.daugan@sample.com", userLdap.getMails().getFirst());
 		Assertions.assertEquals(1, userLdap.getGroups().size());
 		Assertions.assertEquals("Hub Paris", userLdap.getGroups().iterator().next());
 	}
@@ -150,20 +150,20 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 		Assertions.assertEquals(1, tableItem.getRecordsFiltered());
 		Assertions.assertEquals(1, tableItem.getData().size());
 
-		UserOrgVo userLdap = tableItem.getData().get(0);
+		UserOrgVo userLdap = tableItem.getData().getFirst();
 		Assertions.assertEquals("jlast3", userLdap.getId());
 		Assertions.assertEquals("John3", userLdap.getFirstName());
 		Assertions.assertEquals("Last3", userLdap.getLastName());
 		Assertions.assertEquals("ing", userLdap.getCompany());
-		Assertions.assertEquals("john3.last3@ing.com", userLdap.getMails().get(0));
+		Assertions.assertEquals("john3.last3@ing.com", userLdap.getMails().getFirst());
 		Assertions.assertEquals(0, userLdap.getGroups().size());
 	}
 
 	protected DirContextAdapter getContext(final String base, final String uid) {
 		final AndFilter filter = new AndFilter();
-		filter.and(new EqualsFilter("objectclass", "inetOrgPerson"));
+		filter.and(new EqualsFilter("objectClass", "inetOrgPerson"));
 		filter.and(new EqualsFilter("uid", uid));
-		return getTemplate().search(base, filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).get(0);
+		return getTemplate().search(base, filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).getFirst();
 	}
 
 	protected DirContextAdapter getContext(final String uid) {
@@ -186,10 +186,10 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 	 */
 	protected void checkMember(final String dn) {
 		final AndFilter filter = new AndFilter();
-		filter.and(new EqualsFilter("objectclass", "groupOfUniqueNames"));
+		filter.and(new EqualsFilter("objectClass", "groupOfUniqueNames"));
 		filter.and(new EqualsFilter("cn", "ligoj-Jupiter"));
 		final DirContextAdapter groupContext = getTemplate()
-				.search("ou=ligoj,ou=project,dc=sample,dc=com", filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).get(0);
+				.search("ou=ligoj,ou=project,dc=sample,dc=com", filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).getFirst();
 		final String[] members = groupContext.getStringAttributes("uniqueMember");
 		Assertions.assertEquals(1, members.length);
 		Assertions.assertEquals(dn, members[0]);
@@ -215,7 +215,7 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 	}
 
 	protected DirContextAdapter checkUnlocked() {
-		assertUnlocked(resource.findAll("ligoj", null, "admin-test", newUriInfo()).getData().get(0));
+		assertUnlocked(resource.findAll("ligoj", null, "admin-test", newUriInfo()).getData().getFirst());
 		assertUnlocked(getUser().findByIdNoCache("admin-test"));
 		assertUnlocked(getUser().findById("admin-test"));
 		Assertions.assertTrue(getGroup().findAll().get("ligoj-jupiter").getMembers().contains("admin-test"));
@@ -228,7 +228,7 @@ public abstract class AbstractUserLdapResourceTest extends AbstractLdapTest {
 	protected DirContextAdapter check(final String company, final String base, final String patternLocked,
 			final Consumer<SimpleUserOrg> checker) {
 		// Check the status at business layer
-		checker.accept(resource.findAll(company, null, "admin-test", newUriInfo()).getData().get(0));
+		checker.accept(resource.findAll(company, null, "admin-test", newUriInfo()).getData().getFirst());
 		checker.accept(resource.findById("admin-test"));
 
 		// Check the status at cache layer

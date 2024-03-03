@@ -677,7 +677,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	}
 
 	/**
-	 * Search the LDAP Groups matching to the given criteria and for type "Project". Node identifier is ignored for now.
+	 * Search the LDAP groups matching to the given criteria and of type "Project". Node identifier is ignored for now.
 	 *
 	 * @param criteria the search criteria.
 	 * @return LDAP Groups matching the criteria.
@@ -709,7 +709,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 
 	/**
 	 * Search the LDAP Customers matching to the given criteria and for type "Project". Node identifier is ignored for
-	 * now. Node is ignored.
+	 * now.
 	 *
 	 * @param criteria the search criteria.
 	 * @return LDAP Customers matching the criteria.
