@@ -8,6 +8,49 @@ define(function () {
 			current.registerIdParentGroupSelect2(configuration, $container, 'service:id:parent-group');
 			current.registerIdGroupSelect2(configuration, $container, 'service:id:group');
 			current.registerIdOuSelect2(configuration, $container, 'service:id:ou');
+			if (current.$super('isNodeMode')($container)){
+                current.$super('layoutParameters')(configuration, [
+                    {'section': 'server'},
+                    'service:id:ldap:url',
+                    'service:id:ldap:user-dn',
+                    'service:id:ldap:password',
+                    'service:id:ldap:base-dn',
+
+                    {'section': 'authentication'},
+                    'service:id:ldap:clear-password',
+                    'service:id:ldap:local-id-attribute',
+                    'service:id:ldap:locked-attribute',
+                    'service:id:ldap:referral',
+                    'service:id:ldap:locked-value',
+                    'service:id:uid-pattern',
+                    'service:id:ldap:self-search',
+                    'service:id:ldap:department-attribute',
+                    'service:id:ldap:login-attributes',
+                    'service:id:ldap:uid-attribute',
+
+                    {'section': 'people'},
+                    'service:id:ldap:people-dn',
+                    'service:id:ldap:people-internal-dn',
+                    'service:id:ldap:quarantine-dn',
+                    'service:id:ldap:people-class',
+                    'service:id:ldap:people-class-create',
+                    'service:id:ldap:people-custom-attributes',
+
+                    {'section': 'groups'},
+                    'service:id:ldap:groups-dn',
+                    'service:id:ldap:groups-class',
+                    'service:id:ldap:groups-class-create',
+                    'service:id:ldap:groups-member-attribute',
+
+                    {'section': 'companies'},
+                    'service:id:ldap:companies-dn',
+                    'service:id:ldap:company-pattern',
+                    'service:id:ldap:companies-class',
+                    'service:id:ldap:companies-class-create',
+                 ]);
+			} else {
+               current.$super('layoutParameters')(configuration, ['service:id:ou', 'service:id:parent-group','service:id:group']);
+            }
 		},
 
 		/**
@@ -64,13 +107,16 @@ define(function () {
 					const parentParameter = $.extend({}, parameter);
 					parentParameter.description = null;
 					const $fieldset = previousProvider(parentParameter, container, $input).parent();
-					$input.attr('readonly', 'readonly');
+					$input.attr('readonly', 'readonly').removeAttr('required').attr('disabled', 'disabled');
+					$input.attr('placeholder', current.$messages ['service:id:ldap:group-create'])
+					$input.closest('.form-group').removeClass('required');
 
 					// Create the input corresponding to the last part of the final group name
 					const $simpleInput = $('<input class="form-control" type="text" id="' + simpleGroupId + '" required autocomplete="off">');
 					cProviders.standard({
 						id: simpleGroupId,
-						mandatory: true
+						mandatory: true,
+						layout: 'prepend',
 					}, $fieldset, $simpleInput);
 				};
 			} else {
