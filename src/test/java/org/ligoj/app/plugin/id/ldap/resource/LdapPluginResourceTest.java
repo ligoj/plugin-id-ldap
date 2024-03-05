@@ -301,7 +301,22 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com", "some"));
 		Assertions.assertTrue(projectCustomerLdapRepository.findAll("ou=project,dc=sample,dc=com").contains("some"));
 
+		// Attach the new group
+		final var subscription3 = new Subscription();
+		subscription3.setProject(subscription2.getProject());
+		subscription3.setNode(subscription.getNode());
+		em.persist(subscription3);
+
+		// Add parameters
+		setGroup(subscription3, "some-new-project-sub");
+		setOu(subscription3, "some");
+		basicCreate(subscription3);
+
+		// Delete the group, and also try to delete the parent OU. This last step fail silently
 		resource.delete(subscription2.getId(), true);
+
+		// Delete the group, and also delete sucessfully the parent
+		resource.delete(subscription3.getId(), true);
 	}
 
 	@Test

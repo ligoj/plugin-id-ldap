@@ -3,14 +3,7 @@
  */
 package org.ligoj.app.plugin.id.ldap.dao;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.cache.annotation.CacheKey;
-import javax.cache.annotation.CachePut;
-import javax.cache.annotation.CacheResult;
-import javax.cache.annotation.CacheValue;
-
+import lombok.extern.slf4j.Slf4j;
 import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.plugin.id.DnUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +14,9 @@ import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.stereotype.Component;
 
-import lombok.extern.slf4j.Slf4j;
+import javax.cache.annotation.*;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.ligoj.app.plugin.id.ldap.dao.AbstractManagedLdapRepository.OBJECT_CLASS;
 
@@ -72,7 +67,7 @@ public class ProjectCustomerLdapRepository {
 	}
 
 	/**
-	 * Create a new group. There is no synchronized block, so error could occur; this is assumed for performance
+	 * Create a new organizational unit. There is no synchronized block, so error could occur; this is assumed for performance
 	 * purpose.
 	 *
 	 * @param baseDn Base DN.
@@ -90,6 +85,23 @@ public class ProjectCustomerLdapRepository {
 		context.setAttributeValues(OBJECT_CLASS, new String[]{CUSTOMER_OF_PROJECT});
 		mapToContext(ou, context);
 		getUser().getTemplate().bind(context);
+	}
+
+	/**
+	 * Delete the given organizational unit.
+	 *
+	 * @param baseDn Base DN.
+	 * @param ou     The formatted OU.
+	 * @param dn     The DN of new customer. Must ends with the OU.
+	 */
+	@CacheRemove(cacheName = "customers-by-id")
+	public void delete(@CacheKey final String baseDn, @CacheKey final String ou, final String dn) {
+		// Invalidate the customers set
+		cacheManager.getCache("customers").evict(baseDn);
+
+		// First create the LDAP entry
+		log.info("Customer (OU) {} will be delete from {}", ou, dn);
+		getUser().getTemplate().unbind(dn);
 	}
 
 	/**

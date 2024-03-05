@@ -436,6 +436,17 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	}
 
 	/**
+	 * Return the normalized OU DN.
+	 */
+	private String getParentOu(final String ou) {
+		final var groupTypeLdap = containerScopeResource.findByName(ContainerType.GROUP, ContainerScope.TYPE_PROJECT);
+		final var parentDn = groupTypeLdap.getDn();
+
+		// Build the complete normalized DN from the OU and new Group
+		return "ou=" + ou + "," + parentDn;
+	}
+
+	/**
 	 * Validate the group against its direct parent (a normalized OU) and return its DN.
 	 */
 	private String validateAndCreateParentOu(final String group, final String ou, final String pkey, final int subscription) {
@@ -443,7 +454,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		final var parentDn = groupTypeLdap.getDn();
 
 		// Build the complete normalized DN from the OU and new Group
-		final var ouDn = "ou=" + ou + "," + parentDn;
+		final var ouDn = getParentOu(ou);
 
 		// Check the target OU exists or not and create the OU as needed
 		if (projectCustomerLdapRepository.findById(parentDn, ou) == null) {
@@ -738,7 +749,8 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 
 	@Override
 	public void delete(final int subscription, final boolean deleteRemoteData) {
-		final var projectId = subscriptionRepository.findOne(subscription).getProject().getId();
+		final var project = subscriptionRepository.findOne(subscription).getProject();
+		final var projectId = project.getId();
 		final var parameters = subscriptionResource.getParameters(subscription);
 		final var group = parameters.get(IdentityResource.PARAMETER_GROUP);
 		cacheProjectGroupRepository.deleteAllBy("group.id", group, new String[]{"project.id"}, projectId);
@@ -750,6 +762,19 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 			if (groupLdap != null) {
 				// Perform the deletion
 				repository.delete(groupLdap);
+			}
+
+			// Also try to delete the parent OU. Ignore the failures.
+			final var ou = parameters.get(IdentityResource.PARAMETER_OU);
+			if (ou != null) {
+				final var groupTypeLdap = containerScopeResource.findByName(ContainerType.GROUP, ContainerScope.TYPE_PROJECT);
+				try {
+					projectCustomerLdapRepository.delete(groupTypeLdap.getDn(), ou, getParentOu(ou));
+					log.info("OU {} has been cleaned, after deleting group {}, project {} and subscription {}", ou, group, project.getPkey(), subscription);
+				} catch (Exception e) {
+					// Ignore this failure, this OU might not be empty
+					log.info("OU {} could not be deleted while deleting group {}, project {} and subscription {}", ou, group, project.getPkey(), subscription);
+				}
 			}
 		}
 	}
