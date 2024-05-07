@@ -10,7 +10,7 @@ define({
 	    'service:id:ldap:companies-class-create': 'Companies classes (create)',
 	    'service:id:ldap:companies-class-create-description': 'LDAP object classes of companies for the creation. Comma or space separated values. When empty, use the first of search classes.',
 		'service:id:ldap:company-pattern': 'Company pattern capture id from DN',
-		'service:id:ldap:department-attribute': 'Comma or space separated values.',
+		'service:id:ldap:department-attribute': 'Department attribute',
 		'service:id:ldap:group-create': 'Group name (computed)',
 		'service:id:ldap:groups-dn': 'Groups DN',
 		'service:id:ldap:groups-class': 'Groups classes',
