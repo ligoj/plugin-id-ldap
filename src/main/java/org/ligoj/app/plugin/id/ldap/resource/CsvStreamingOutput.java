@@ -102,7 +102,7 @@ public class CsvStreamingOutput implements StreamingOutput {
 		writer.write(";");
 		writer.write(user.getLastName());
 		writer.write(";");
-		writer.write(user.getMails().isEmpty() ? "" : user.getMails().get(0));
+		writer.write(user.getMails().isEmpty() ? "" : user.getMails().getFirst());
 	}
 
 	/**

@@ -146,7 +146,7 @@ class SubscriptionForLdapResourceTest extends AbstractLdapTest {
 
 	private String[] getMembers() {
 		final var groupContext = getTemplate().search("cn=ligoj-jupiter,ou=ligoj,ou=project,dc=sample,dc=com",
-				new EqualsFilter("cn", "ligoj-jupiter").encode(), (Object ctx) -> (DirContextAdapter) ctx).get(0);
+				new EqualsFilter("cn", "ligoj-jupiter").encode(), (Object ctx) -> (DirContextAdapter) ctx).getFirst();
 		return groupContext.getStringAttributes("uniqueMember");
 	}
 

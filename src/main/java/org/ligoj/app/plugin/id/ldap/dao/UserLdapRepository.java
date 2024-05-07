@@ -375,15 +375,6 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 		return result;
 	}
 
-	@Override
-	public void updateMembership(final Collection<String> groups, final UserOrg user) {
-		// Add new groups
-		addUserToGroups(user, CollectionUtils.subtract(groups, user.getGroups()));
-
-		// Remove old groups
-		removeUserFromGroups(user, CollectionUtils.subtract(user.getGroups(), groups));
-	}
-
 	/**
 	 * Update the membership of given group. All users are checked.
 	 */
@@ -582,26 +573,6 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 				&& StringUtils.containsIgnoreCase(userLdap.getMails().getFirst(), criteria);
 	}
 
-	/**
-	 * Add the user from the given groups. Cache is also updated.
-	 *
-	 * @param user   The user to add to the given groups.
-	 * @param groups the groups to add, normalized.
-	 */
-	protected void addUserToGroups(final UserOrg user, final Collection<String> groups) {
-		groups.forEach(g -> groupLdapRepository.addUser(user, g));
-	}
-
-	/**
-	 * Remove the user from the given groups.Cache is also updated.
-	 *
-	 * @param user   The user to remove from the given groups.
-	 * @param groups the groups to remove, normalized.
-	 */
-	protected void removeUserFromGroups(final UserOrg user, final Collection<String> groups) {
-		groups.forEach(g -> groupLdapRepository.removeUser(user, g));
-	}
-
 	@Override
 	public void updateUser(final UserOrg user) {
 		final var context = template
@@ -711,7 +682,6 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 		}
 	}
 
-
 	@Getter
 	static final class CaptureAuthenticatedLdapEntryContextCallback implements AuthenticatedLdapEntryContextCallback, AuthenticatedLdapEntryContextMapper<Object> {
 
@@ -733,7 +703,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 		log.info("Authenticating {} ...", name);
 		final var property = getAuthenticateProperty(name);
 		UserOrg user = null;
-		boolean authResult = false;
+		var authResult = false;
 		String reason;
 		try {
 			if (selfSearch) {

@@ -46,7 +46,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		final var groups = resource.findAll(newUriInfoAscSearch("name", "d"));
 		Assertions.assertEquals(5, groups.getRecordsTotal());
 
-		final ContainerCountVo group0 = groups.getData().get(0);
+		final ContainerCountVo group0 = groups.getData().getFirst();
 		Assertions.assertEquals("DIG", group0.getName());
 		Assertions.assertEquals(0, group0.getCount());
 		Assertions.assertEquals(0, group0.getCountVisible());
@@ -83,7 +83,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		final var groups = resource.findAll(newUriInfoAscSearch("name", "sea-octopus"));
 		Assertions.assertEquals(1, groups.getRecordsTotal());
 
-		final ContainerCountVo group0 = groups.getData().get(0);
+		final ContainerCountVo group0 = groups.getData().getFirst();
 		Assertions.assertEquals("sea-octopus", group0.getName());
 		Assertions.assertEquals(0, group0.getCount());
 		Assertions.assertEquals(0, group0.getCountVisible());
@@ -100,7 +100,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assertions.assertTrue(groups.getRecordsTotal() >= 16);
 
 		// No group type case
-		final ContainerCountVo group0 = groups.getData().get(0);
+		final ContainerCountVo group0 = groups.getData().getFirst();
 		Assertions.assertEquals("VigiReport", group0.getName());
 	}
 
@@ -122,7 +122,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		initSpringSecurityContext("mmartin");
 		final var groups = resource.findAll(newUriInfoAscSearch("name", "hub"));
 		Assertions.assertEquals(2, groups.getRecordsTotal());
-		Assertions.assertEquals("Hub France", groups.getData().get(0).getName());
+		Assertions.assertEquals("Hub France", groups.getData().getFirst().getName());
 		Assertions.assertEquals("Hub Paris", groups.getData().get(1).getName());
 	}
 
@@ -143,7 +143,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		final var groups = resource.findAll(newUriInfoAscSearch("name", "dig as"));
 		Assertions.assertEquals(1, groups.getRecordsTotal());
 
-		final ContainerCountVo group0 = groups.getData().get(0);
+		final ContainerCountVo group0 = groups.getData().getFirst();
 		Assertions.assertEquals("DIG AS", group0.getName());
 		Assertions.assertEquals(1, group0.getCount());
 		Assertions.assertEquals(1, group0.getCountVisible());
@@ -276,7 +276,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		filter.and(new EqualsFilter("objectclass", "groupOfUniqueNames"));
 		filter.and(new EqualsFilter("cn", "New-Ax-1-z:Z 0"));
 		final DirContextAdapter contextAdapter = getTemplate()
-				.search("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).get(0);
+				.search("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).getFirst();
 		Assertions.assertEquals("uid=wuser,ou=ing,ou=external,ou=people,dc=sample,dc=com", contextAdapter.getObjectAttribute("seeAlso"));
 		Assertions.assertEquals("SOME", contextAdapter.getStringAttribute("businessCategory"));
 		Assertions.assertEquals("uid=fdaugan,ou=ligoj,ou=france,ou=people,dc=sample,dc=com", contextAdapter.getStringAttribute("owner"));
@@ -286,14 +286,14 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		// Pre check
 		final var groups = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
 		Assertions.assertEquals(1, groups.getRecordsTotal());
-		Assertions.assertEquals(1, groups.getData().get(0).getCount());
+		Assertions.assertEquals(1, groups.getData().getFirst().getCount());
 
 		resource.empty("New-Ax-1-z:Z 0");
 
 		// Post check
 		final var groupsEmpty = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
 		Assertions.assertEquals(1, groupsEmpty.getRecordsTotal());
-		Assertions.assertEquals(0, groupsEmpty.getData().get(0).getCount());
+		Assertions.assertEquals(0, groupsEmpty.getData().getFirst().getCount());
 
 		resource.delete("New-Ax-1-z:Z 0");
 
@@ -312,14 +312,14 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		// Pre check
 		final var groups = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
 		Assertions.assertEquals(1, groups.getRecordsTotal());
-		Assertions.assertEquals(1, groups.getData().get(0).getCount());
+		Assertions.assertEquals(1, groups.getData().getFirst().getCount());
 
 		resource.empty("New-Ax-1-z:Z 0");
 
 		// Post check
 		final var groupsEmpty = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
 		Assertions.assertEquals(1, groupsEmpty.getRecordsTotal());
-		Assertions.assertEquals(0, groupsEmpty.getData().get(0).getCount());
+		Assertions.assertEquals(0, groupsEmpty.getData().getFirst().getCount());
 
 		resource.delete("New-Ax-1-z:Z 0");
 
@@ -338,7 +338,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		final var groups = resource.findAll(newUriInfoAscSearch("name", "ew-Ax"));
 		Assertions.assertEquals(1, groups.getRecordsTotal());
 
-		final ContainerCountVo group0 = groups.getData().get(0);
+		final ContainerCountVo group0 = groups.getData().getFirst();
 		Assertions.assertEquals("New-Ax-1-z:Z 0", group0.getName());
 		Assertions.assertEquals(0, group0.getCount());
 		Assertions.assertEquals(0, group0.getCountVisible());
@@ -499,12 +499,12 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assertions.assertEquals(2, tableItem.getData().size());
 
 		// Check the groups "Business Solution"
-		Assertions.assertEquals("Business Solution", tableItem.getData().get(0).getName());
+		Assertions.assertEquals("Business Solution", tableItem.getData().getFirst().getName());
 		Assertions.assertEquals("Sub Business Solution", tableItem.getData().get(1).getName());
 
 		// Check the groups
-		Assertions.assertEquals(0, tableItem.getData().get(0).getCountVisible());
-		Assertions.assertEquals(1, tableItem.getData().get(0).getCount());
+		Assertions.assertEquals(0, tableItem.getData().getFirst().getCountVisible());
+		Assertions.assertEquals(1, tableItem.getData().getFirst().getCount());
 	}
 
 }

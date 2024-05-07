@@ -19,14 +19,10 @@
  */
 package org.apache.directory.server.core.avltree;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Comparator;
-
 import org.apache.directory.shared.ldap.util.StringTools;
+
+import java.io.*;
+import java.util.Comparator;
 
 /**
  * Class to serialize the Array data. Only there for Java11 compliance.
@@ -68,7 +64,7 @@ public class ArrayMarshaller<E> implements Marshaller<ArrayTree<E>> {
 
 	@Override
 	public byte[] serialize(ArrayTree<E> tree) {
-		if ((tree == null) || (tree.size() == 0)) {
+		if (tree == null || tree.isEmpty()) {
 			return EMPTY_TREE;
 		}
 

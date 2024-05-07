@@ -94,9 +94,7 @@ class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 		user.setCompany("any");
 		user.setMail("flastc@ing.com");
 		initSpringSecurityContext("fdaugan");
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.create(user);
-		}), "company", BusinessException.KEY_UNKNOWN_ID);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.create(user)), "company", BusinessException.KEY_UNKNOWN_ID);
 	}
 
 	@Test
@@ -108,9 +106,7 @@ class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 		user.setCompany("ing");
 		user.setMail("flastd@ing.com");
 		initSpringSecurityContext("any");
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.create(user);
-		}), "company", BusinessException.KEY_UNKNOWN_ID);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.create(user)), "company", BusinessException.KEY_UNKNOWN_ID);
 	}
 
 	@Test
@@ -122,9 +118,7 @@ class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 		user.setCompany("socygan");
 		user.setMail("flastc@ing.com");
 		initSpringSecurityContext("fdaugan");
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.create(user);
-		}), "company", BusinessException.KEY_UNKNOWN_ID);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.create(user)), "company", BusinessException.KEY_UNKNOWN_ID);
 	}
 
 	@Test
@@ -139,9 +133,7 @@ class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 		groups.add("dig sud ouest");
 		user.setGroups(groups);
 		initSpringSecurityContext("someone");
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.create(user);
-		}), "group", BusinessException.KEY_UNKNOWN_ID);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.create(user)), "group", BusinessException.KEY_UNKNOWN_ID);
 	}
 
 	/**

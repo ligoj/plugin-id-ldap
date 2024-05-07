@@ -76,7 +76,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		Assertions.assertEquals(2, result.getRecordsTotal());
 
 		// someone;group;dig rha;false;false;cn=dig rha,cn=dig as,cn=dig,ou=fonction,ou=groups,dc=sample,dc=com
-		DelegateOrgLightVo entity = result.getData().get(0);
+		DelegateOrgLightVo entity = result.getData().getFirst();
 		Assertions.assertEquals("DIG RHA", entity.getName());
 		Assertions.assertEquals(DelegateType.GROUP, entity.getType());
 		Assertions.assertNotNull(entity.getCreatedDate());
@@ -116,7 +116,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 
 		// mlavoine;tree;cn=Biz Agency,ou=tools;false;false;cn=Biz
 		// Agency,ou=tools,dc=sample,dc=com
-		final DelegateOrgLightVo entity = result.getData().get(0);
+		final DelegateOrgLightVo entity = result.getData().getFirst();
 		Assertions.assertEquals("cn=biz agency,ou=tools,dc=sample,dc=com", entity.getName());
 		Assertions.assertEquals(DelegateType.TREE, entity.getType());
 		Assertions.assertNotNull(entity.getCreatedDate());
@@ -134,8 +134,8 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		Assertions.assertEquals("ing", result.getData().get(2).getName());
 
 		// mlavoine;tree;cn=biz agency,ou=tools,dc=sample,dc=com
-		Assertions.assertEquals(DelegateType.TREE, result.getData().get(0).getType());
-		Assertions.assertEquals("cn=biz agency,ou=tools,dc=sample,dc=com", result.getData().get(0).getName());
+		Assertions.assertEquals(DelegateType.TREE, result.getData().getFirst().getType());
+		Assertions.assertEquals("cn=biz agency,ou=tools,dc=sample,dc=com", result.getData().getFirst().getName());
 	}
 
 	@Test
@@ -166,7 +166,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		Assertions.assertEquals(1, result.getData().size());
 		Assertions.assertEquals(1, result.getRecordsTotal());
 
-		final DelegateOrgLightVo vo = result.getData().get(0);
+		final DelegateOrgLightVo vo = result.getData().getFirst();
 		Assertions.assertEquals("ing", vo.getName());
 		Assertions.assertEquals(DelegateType.COMPANY, vo.getType());
 		Assertions.assertEquals("ligoj-jupiter", vo.getReceiver().getId());
@@ -182,7 +182,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		Assertions.assertEquals(1, result.getData().size());
 		Assertions.assertEquals(1, result.getRecordsTotal());
 
-		final DelegateOrgLightVo entity = result.getData().get(0);
+		final DelegateOrgLightVo entity = result.getData().getFirst();
 		Assertions.assertEquals("Business Solution", entity.getName());
 		Assertions.assertEquals(DelegateType.GROUP, entity.getType());
 		Assertions.assertEquals("ing", entity.getReceiver().getId());
@@ -374,9 +374,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		vo.setName("cn=myDn");
 		vo.setReceiver("fdaugan");
 		vo.setType(DelegateType.TREE);
-		Assertions.assertThrows(ForbiddenException.class, () -> {
-			resource.create(vo);
-		});
+		Assertions.assertThrows(ForbiddenException.class, () -> resource.create(vo));
 	}
 
 	@Test
@@ -386,20 +384,16 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		vo.setName("myDn*Partial");
 		vo.setReceiver("fdaugan");
 		vo.setType(DelegateType.TREE);
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.create(vo);
-		}), "tree", "DistinguishName");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.create(vo)), "tree", "DistinguishName");
 	}
 
 	@Test
-	void createOnUnkownCompany() {
+	void createOnUnknownCompany() {
 		final DelegateOrgEditionVo vo = new DelegateOrgEditionVo();
 		vo.setName("any");
 		vo.setType(DelegateType.COMPANY);
 		vo.setReceiver("fdaugan");
-		Assertions.assertThrows(ForbiddenException.class, () -> {
-			resource.create(vo);
-		});
+		Assertions.assertThrows(ForbiddenException.class, () -> resource.create(vo));
 	}
 
 	@Test
@@ -429,9 +423,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		vo.setName("myDn,dc=sample,dc=com");
 		vo.setReceiver("fdaugan");
 		vo.setType(DelegateType.TREE);
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.create(vo);
-		}), "tree", "DistinguishName");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.create(vo)), "tree", "DistinguishName");
 	}
 
 	@Test
@@ -442,9 +434,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		vo.setName("Biz Agency");
 		vo.setReceiver("mlavoine");
 		vo.setType(DelegateType.GROUP);
-		Assertions.assertThrows(ForbiddenException.class, () -> {
-			resource.update(vo);
-		});
+		Assertions.assertThrows(ForbiddenException.class, () -> resource.update(vo));
 	}
 
 	@Test
@@ -455,9 +445,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		vo.setName("Biz Agency");
 		vo.setReceiver("any");
 		vo.setType(DelegateType.GROUP);
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.update(vo);
-		}), "id", "unknown-id");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.update(vo)), "id", "unknown-id");
 	}
 
 	@Test
@@ -470,9 +458,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		vo.setName("socygan");
 		vo.setReceiver("mtuyer");
 		vo.setType(DelegateType.COMPANY);
-		Assertions.assertThrows(ForbiddenException.class, () -> {
-			resource.update(vo);
-		});
+		Assertions.assertThrows(ForbiddenException.class, () -> resource.update(vo));
 	}
 
 	@Test
@@ -483,9 +469,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		vo.setName("ing");
 		vo.setReceiver("fdaugan");
 		vo.setType(DelegateType.COMPANY);
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.update(vo);
-		}), "id", "unknown-id");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.update(vo)), "id", "unknown-id");
 	}
 
 	@Test
@@ -497,9 +481,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		vo.setReceiver("socygan");
 		vo.setReceiverType(ReceiverType.COMPANY);
 		vo.setType(DelegateType.COMPANY);
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.update(vo);
-		}), "company", "unknown-id");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.update(vo)), "company", "unknown-id");
 	}
 
 	@Test
@@ -511,9 +493,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		vo.setReceiver("biz agency");
 		vo.setReceiverType(ReceiverType.GROUP);
 		vo.setType(DelegateType.COMPANY);
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.update(vo);
-		}), "group", "unknown-id");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.update(vo)), "group", "unknown-id");
 	}
 
 	@Test
@@ -524,9 +504,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		vo.setName("ing");
 		vo.setReceiver("mtuyer");
 		vo.setType(DelegateType.GROUP);
-		Assertions.assertThrows(ForbiddenException.class, () -> {
-			resource.update(vo);
-		});
+		Assertions.assertThrows(ForbiddenException.class, () -> resource.update(vo));
 	}
 
 	@Test
@@ -539,9 +517,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		vo.setName("ou=z,ou=groups,dc=sample,dc=com");
 		vo.setReceiver("mtuyer");
 		vo.setType(DelegateType.TREE);
-		Assertions.assertThrows(ForbiddenException.class, () -> {
-			resource.update(vo);
-		});
+		Assertions.assertThrows(ForbiddenException.class, () -> resource.update(vo));
 	}
 
 	@Test
@@ -581,9 +557,7 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		vo.setName("ing");
 		vo.setReceiver("mtuyer");
 		vo.setType(DelegateType.COMPANY);
-		Assertions.assertThrows(ObjectRetrievalFailureException.class, () -> {
-			resource.update(vo);
-		});
+		Assertions.assertThrows(ObjectRetrievalFailureException.class, () -> resource.update(vo));
 	}
 
 	@Test
@@ -679,15 +653,11 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 		initSpringSecurityContext("someone");
 		final int id = em.createQuery("SELECT id FROM DelegateOrg WHERE receiver=:user AND name=:name", Integer.class)
 				.setParameter("user", "someone").setParameter("name", "dig rha").getSingleResult();
-		Assertions.assertThrows(ForbiddenException.class, () -> {
-			resource.delete(id);
-		});
+		Assertions.assertThrows(ForbiddenException.class, () -> resource.delete(id));
 	}
 
 	@Test
 	void deleteUnknown() {
-		Assertions.assertThrows(ObjectRetrievalFailureException.class, () -> {
-			resource.delete(-5);
-		});
+		Assertions.assertThrows(ObjectRetrievalFailureException.class, () -> resource.delete(-5));
 	}
 }

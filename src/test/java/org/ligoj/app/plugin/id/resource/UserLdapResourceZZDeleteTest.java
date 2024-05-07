@@ -39,9 +39,9 @@ class UserLdapResourceZZDeleteTest extends AbstractUserLdapResourceTest {
 		final List<DirContextAdapter> groups = getTemplate().search("ou=groups,dc=sample,dc=com", filter.encode(),
 				(Object ctx) -> (DirContextAdapter) ctx);
 		Assertions.assertEquals(1, groups.size());
-		final DirContextAdapter group = groups.get(0);
+		final DirContextAdapter group = groups.getFirst();
 		final String[] stringAttributes = group.getStringAttributes("uniqueMember");
-		Assertions.assertFalse(stringAttributes.length == 0);
+		Assertions.assertEquals(0, stringAttributes.length);
 		for (final String memberDN : stringAttributes) {
 			Assertions.assertFalse(memberDN.startsWith("uid=jdoe5"));
 		}
