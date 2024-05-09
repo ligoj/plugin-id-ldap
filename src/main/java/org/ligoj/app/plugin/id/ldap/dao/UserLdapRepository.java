@@ -254,6 +254,11 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 		return cacheRepository.create(user);
 	}
 
+	@Override
+	public IGroupRepository getGroupRepository() {
+		return groupLdapRepository;
+	}
+
 	/**
 	 * Replace a value by another one without touching other values.
 	 *
