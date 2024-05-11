@@ -273,7 +273,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 		// Check the group and its attributes
 		final AndFilter filter = new AndFilter();
-		filter.and(new EqualsFilter("objectclass", "groupOfUniqueNames"));
+		filter.and(new EqualsFilter("objectClass", "groupOfUniqueNames"));
 		filter.and(new EqualsFilter("cn", "New-Ax-1-z:Z 0"));
 		final DirContextAdapter contextAdapter = getTemplate()
 				.search("cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com", filter.encode(), (Object ctx) -> (DirContextAdapter) ctx).getFirst();
