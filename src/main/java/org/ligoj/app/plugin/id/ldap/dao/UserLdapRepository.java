@@ -358,7 +358,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 		final var searchControls = new SearchControls();
 		searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 		searchControls.setReturningAttributes(returnAttrs);
-		searchControls.setReturningObjFlag(true);
+		searchControls.setReturningObjFlag(false);
 		List<UserOrg> users;
 		try {
 			final var processor = new PagedResultsDirContextProcessor(LDAP_SEARCH_PAGE_SIZE, null);
