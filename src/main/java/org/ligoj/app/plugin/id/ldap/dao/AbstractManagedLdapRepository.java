@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 /**
  * Base LDAP repository for groups, users and companies.
+ * @param <T> Managed LDAP resource type.
  */
 @Slf4j
 public abstract class AbstractManagedLdapRepository<T extends ResourceOrg> {

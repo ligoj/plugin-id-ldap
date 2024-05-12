@@ -128,7 +128,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 	 * Shared random string generator used for temporary passwords.
 	 */
 	public static final RandomStringGenerator GENERATOR = new RandomStringGenerator.Builder()
-			.filteredBy(c -> CharUtils.isAsciiAlphanumeric(Character.toChars(c)[0])).build();
+			.filteredBy(c -> CharUtils.isAsciiAlphanumeric(Character.toChars(c)[0])).get();
 
 	/**
 	 * Flag used to hash the password or not.
