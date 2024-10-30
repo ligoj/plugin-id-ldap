@@ -167,13 +167,26 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 		 * rebuilding the cache from the LDAP. This save a lot of computations.
 		 */
 		findAll().values().stream().filter(g -> DnUtils.equalsOrParentOf(group.getDn(), g.getDn())).toList()
-				.forEach(this::removeFromJavaCache);
+				.forEach(g -> {
+					// Remove the subgroups from LDAP
+					new ArrayList<>(g.getSubGroups()).forEach(child -> {
+						var checkedGroup = findById(child);
+						if (checkedGroup != null && findById(g.getId()) != null) {
+							removeGroup(checkedGroup, g.getId());
+						}
+					});
 
-		// Remove recursively from LDAP the group. Anything that was not nicely cleaned will be deleted there.
-		super.unbind(group.getDn());
+					// Remove from the parent LDAP groups
+					if (g.getParent() != null && findById(g.getParent()) != null) {
+						removeGroup(g, g.getParent());
+					}
 
-		// Also, update the cache
-		cacheRepository.delete(group);
+					// Remove recursively from LDAP the group. Anything that was not nicely cleaned will be deleted there.
+					super.unbind(group.getDn());
+
+					// Also, update the cache
+					cacheRepository.delete(group);
+				});
 	}
 
 	@Override
