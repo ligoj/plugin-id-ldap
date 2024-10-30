@@ -753,7 +753,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		final var projectId = project.getId();
 		final var parameters = subscriptionResource.getParameters(subscription);
 		final var group = parameters.get(IdentityResource.PARAMETER_GROUP);
-		cacheProjectGroupRepository.deleteAllBy("group.id", group, new String[]{"project.id"}, projectId);
+		cacheProjectGroupRepository.deleteAll(cacheProjectGroupRepository.findAllBy("group.id", group, new String[]{"project.id"}, projectId));
 
 		if (deleteRemoteData) {
 			// Check the group exists, but is not required to continue the process
