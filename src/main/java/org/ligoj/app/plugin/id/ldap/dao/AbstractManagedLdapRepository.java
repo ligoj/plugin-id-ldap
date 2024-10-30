@@ -73,7 +73,7 @@ public abstract class AbstractManagedLdapRepository<T extends ResourceOrg> {
 			template.unbind(dn, true);
 		} catch (final NameNotFoundException nne) {
 			// Already deleted user, ignore this error
-			log.warn("{} LDAP entry {} seems te have been deleted from the LDAP repository", typeName, dn);
+			log.warn("{} LDAP entry {} seems to have been deleted from the LDAP repository", typeName, dn);
 		}
 	}
 
