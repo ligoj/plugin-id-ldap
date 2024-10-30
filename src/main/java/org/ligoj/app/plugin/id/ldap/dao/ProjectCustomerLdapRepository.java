@@ -100,7 +100,7 @@ public class ProjectCustomerLdapRepository {
 		cacheManager.getCache("customers").evict(baseDn);
 
 		// First create the LDAP entry
-		log.info("Customer (OU) {} will be delete from {}", ou, dn);
+		log.info("Customer (OU) {} will be deleted from {}", ou, dn);
 		getUser().getTemplate().unbind(dn);
 	}
 
