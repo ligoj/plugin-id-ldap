@@ -628,7 +628,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	private void addUserActivities(final Map<String, Map<String, Activity>> activities, final Node node,
 			final Entry<String, Activity> userActivity) {
 		final var user = userActivity.getKey();
-		activities.computeIfAbsent(user, k -> new HashMap<>()).put(node.getId(), userActivity.getValue());
+		activities.computeIfAbsent(user, _ -> new HashMap<>()).put(node.getId(), userActivity.getValue());
 	}
 
 	/**
@@ -780,13 +780,13 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	}
 
 	@Override
-	@Transactional(value = TxType.NOT_SUPPORTED)
+	@Transactional(TxType.NOT_SUPPORTED)
 	public String getKey() {
 		return KEY;
 	}
 
 	@Override
-	@Transactional(value = TxType.NOT_SUPPORTED)
+	@Transactional(TxType.NOT_SUPPORTED)
 	public String getLastVersion() {
 		return LDAP_VERSION;
 	}

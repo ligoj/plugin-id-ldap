@@ -121,7 +121,7 @@ public abstract class AbstractManagedLdapRepository<T extends ResourceOrg> {
 	 * @return An LDAP filter based on this container's classes.
 	 */
 	protected OrFilter newClassesFilter() {
-		return Stream.of(classNames).reduce(new OrFilter(), (f, a) -> f.or(new EqualsFilter(OBJECT_CLASS, a)), (f, a) -> a);
+		return Stream.of(classNames).reduce(new OrFilter(), (f, a) -> f.or(new EqualsFilter(OBJECT_CLASS, a)), (_, a) -> a);
 	}
 
 }
