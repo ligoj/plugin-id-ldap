@@ -10,7 +10,7 @@
 
     <groupId>org.ligoj.plugin</groupId>
     <artifactId>plugin-id-ldap</artifactId>
-    <version>2.2.4-SNAPSHOT</version>
+    <version>2.2.4</version>
     <packaging>jar</packaging>
     <name>Ligoj - Plugin ID - LDAP</name>
     <description>LDAP implementation for IAM</description>
