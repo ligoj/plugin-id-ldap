@@ -628,7 +628,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	private void addUserActivities(final Map<String, Map<String, Activity>> activities, final Node node,
 			final Entry<String, Activity> userActivity) {
 		final var user = userActivity.getKey();
-		activities.computeIfAbsent(user, _ -> new HashMap<>()).put(node.getId(), userActivity.getValue());
+		activities.computeIfAbsent(user, e -> new HashMap<>()).put(node.getId(), userActivity.getValue());
 	}
 
 	/**
