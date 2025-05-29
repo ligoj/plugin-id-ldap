@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.ligoj.api</groupId>
         <artifactId>plugin-parent</artifactId>
-        <version>4.1.11</version>
+        <version>4.1.12</version>
         <relativePath/>
     </parent>
 
@@ -18,8 +18,8 @@
 
     <properties>
         <shared-ldap.version>0.9.15</shared-ldap.version>
-        <spring-ldap.version>3.2.3</spring-ldap.version>
-        <spring-ldap-tiger.version>2.4.1</spring-ldap-tiger.version>
+        <spring-ldap.version>3.2.12</spring-ldap.version>
+        <spring-ldap-tiger.version>2.4.4</spring-ldap-tiger.version>
     </properties>
 
     <scm>
@@ -33,7 +33,7 @@
             <dependency>
                 <groupId>org.ligoj.plugin</groupId>
                 <artifactId>plugin-id</artifactId>
-                <version>[2.2.5,2.3.0)</version>
+                <version>[2.2.7,2.3.0)</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -76,12 +76,12 @@
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15to18</artifactId>
-                <version>1.78.1</version>
+                <version>1.80</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.mina</groupId>
                 <artifactId>mina-core</artifactId>
-                <version>2.0.25</version>
+                <version>2.2.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
