@@ -40,7 +40,7 @@ public class ProjectCustomerLdapRepository {
 	 * current state of LDAP.
 	 *
 	 * @param baseDn Base DN.
-	 * @return all normalized customers for projects. Note the result use cache, so does not reflect the LDAP. current
+	 * @return all normalized customers for projects. Note the result uses cache, so does not reflect the LDAP current
 	 * state of LDAP. Key is the normalized name, Value is the DN.
 	 */
 	@CacheResult(cacheName = "customers")
@@ -67,19 +67,19 @@ public class ProjectCustomerLdapRepository {
 	}
 
 	/**
-	 * Create a new organizational unit. There is no synchronized block, so error could occur; this is assumed for performance
+	 * Create a new organizational unit. There is no synchronized block, so errors could occur; this is assumed for performance
 	 * purpose.
 	 *
 	 * @param baseDn Base DN.
 	 * @param ou     The formatted OU.
-	 * @param dn     The DN of new customer. Must ends with the OU.
+	 * @param dn     The DN of the new customer. Must end with the OU.
 	 */
 	@CachePut(cacheName = "customers-by-id")
 	public void create(@CacheKey final String baseDn, @CacheKey final String ou, @CacheValue final String dn) {
-		// Invalidate the customers set
+		// Invalidate the customers
 		cacheManager.getCache("customers").evict(baseDn);
 
-		// First create the LDAP entry
+		// First, create the LDAP entry
 		log.info("Customer (OU) {} will be created as {}", ou, dn);
 		final var context = new DirContextAdapter(dn);
 		context.setAttributeValues(OBJECT_CLASS, new String[]{CUSTOMER_OF_PROJECT});
@@ -92,14 +92,14 @@ public class ProjectCustomerLdapRepository {
 	 *
 	 * @param baseDn Base DN.
 	 * @param ou     The formatted OU.
-	 * @param dn     The DN of new customer. Must ends with the OU.
+	 * @param dn     The DN of the customer to delete. Must end with the OU.
 	 */
 	@CacheRemove(cacheName = "customers-by-id")
 	public void delete(@CacheKey final String baseDn, @CacheKey final String ou, final String dn) {
-		// Invalidate the customers set
+		// Invalidate the customer
 		cacheManager.getCache("customers").evict(baseDn);
 
-		// First create the LDAP entry
+		// Delete the LDAP entry
 		log.info("Customer (OU) {} will be deleted from {}", ou, dn);
 		getUser().getTemplate().unbind(dn);
 	}

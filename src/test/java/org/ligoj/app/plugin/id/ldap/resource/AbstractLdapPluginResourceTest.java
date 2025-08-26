@@ -102,9 +102,9 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com", "sea"));
 
 		// Attach the new group
-		final Subscription subscription = em.find(Subscription.class, this.subscription);
-		final Subscription subscription2 = new Subscription();
-		final Project newProject = newProject(groupAndProject);
+		final var subscription = em.find(Subscription.class, this.subscription);
+		final var subscription2 = new Subscription();
+		final var newProject = newProject(groupAndProject);
 		subscription2.setProject(newProject);
 		subscription2.setNode(subscription.getNode());
 		em.persist(subscription2);
@@ -116,7 +116,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 		basicCreate(subscription2);
 
 		// Checks
-		final GroupOrg groupLdap = getGroup().findById(groupAndProject);
+		final var groupLdap = getGroup().findById(groupAndProject);
 		Assertions.assertNotNull(groupLdap);
 		Assertions.assertEquals(groupAndProject, groupLdap.getName());
 		Assertions.assertEquals(groupAndProject, groupLdap.getId());
@@ -131,7 +131,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 	 * Reload the LDAP cache
 	 */
 	protected void reloadLdapCache() {
-		// Ensure LDAP cache is loaded
+		// Ensure the LDAP cache is loaded
 		cacheManager.getCache("id-ldap-data").clear();
 		cache.getData();
 		em.flush();
@@ -142,7 +142,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 	 * Create a new project
 	 */
 	protected Project newProject(final String pkey) {
-		final Project project = new Project();
+		final var project = new Project();
 		project.setPkey(pkey);
 		project.setName("ANY - " + pkey);
 		project.setTeamLeader(DEFAULT_USER);
@@ -155,7 +155,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 	}
 
 	protected ParameterValue setData(final Subscription subscription, final String parameter, String data) {
-		final Parameter groupParameter = parameterRepository.findOneExpected(parameter);
+		final var groupParameter = parameterRepository.findOneExpected(parameter);
 		ParameterValue value = parameterValueRepository
 				.findAllBy("subscription.id", subscription.isNew() ? 0 : subscription.getId()).stream()
 				.filter(v -> v.getParameter().getId().equals(parameter)).findFirst().orElseGet(() -> {
@@ -208,8 +208,8 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 		Assertions.assertNotNull(projectCustomerLdapRepository.findById("ou=project,dc=sample,dc=com", "sea"));
 
 		// Attach the new group
-		final Subscription subscription = em.find(Subscription.class, this.subscription);
-		final Subscription subscription2 = new Subscription();
+		final var subscription = em.find(Subscription.class, this.subscription);
+		final var subscription2 = new Subscription();
 		subscription2.setProject(newProject);
 		subscription2.setNode(subscription.getNode());
 		em.persist(subscription2);
@@ -222,21 +222,21 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 		basicCreate(subscription2);
 
 		// Checks
-		final GroupOrg groupLdap = getGroup().findById(subGroup);
+		final var groupLdap = getGroup().findById(subGroup);
 		Assertions.assertNotNull(groupLdap);
 		Assertions.assertEquals(subGroup, groupLdap.getName());
 		Assertions.assertEquals("cn=" + subGroup + ",cn=" + parentGroup + ",ou=sea,ou=project,dc=sample,dc=com",
 				groupLdap.getDn());
 		Assertions.assertEquals(subGroup, groupLdap.getId());
 		Assertions.assertEquals(parentGroup, groupLdap.getParent());
-		final GroupOrg groupLdapParent = getGroup().findById(parentGroup);
+		final var groupLdapParent = getGroup().findById(parentGroup);
 		Assertions.assertEquals(1, groupLdapParent.getSubGroups().size());
 		Assertions.assertTrue(groupLdapParent.getSubGroups().contains(subGroup));
 		return subscription2;
 	}
 
 	protected void newLdap() {
-		final Node ldap = new Node();
+		final var ldap = new Node();
 		ldap.setId("service:id:ldap:secondary");
 		ldap.setRefined(nodeRepository.findOneExpected("service:id:ldap"));
 		ldap.setName("LDAP Test");
@@ -261,7 +261,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 	}
 
 	protected void persistParameter(final Node node, final String id, final String value) {
-		final ParameterValue parameterValue = new ParameterValue();
+		final var parameterValue = new ParameterValue();
 		parameterValue.setNode(node);
 		parameterValue.setParameter(parameterRepository.findOneExpected(id));
 		parameterValue.setData(value);

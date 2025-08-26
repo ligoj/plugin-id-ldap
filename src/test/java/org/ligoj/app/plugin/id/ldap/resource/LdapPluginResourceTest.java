@@ -188,7 +188,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		setGroup(subscription2, "sea-octopusZZ");
 		setOu(subscription2, "sea");
 
-		// Invoke link for an already linked entity, since for now
+		// Create a link for an already linked entity, since for now
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> basicCreate(subscription2)), IdentityResource.PARAMETER_GROUP, "pattern");
 	}
 
@@ -214,12 +214,12 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		setGroup(subscription2, "sea-octopus-");
 		setOu(subscription2, "sea");
 
-		// Invoke link for an already linked entity, since for now
+		// Create a link for an already linked entity, since for now
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> basicCreate(subscription2)), IdentityResource.PARAMETER_GROUP, "pattern");
 	}
 
 	/**
-	 * Create a group for an existing project, perfect match with the pkey, but without reusing the OU of this project.
+	 * Create a group for an existing project with a perfect match with the pkey, but without reusing the OU of this project.
 	 */
 	@Test
 	void createNotCompliantGroupForOu() {
@@ -238,7 +238,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		setGroup(subscription2, "sea-invalid-ou");
 		setOu(subscription2, "ligoj");
 
-		// Invoke link for an already linked entity, since for now
+		// Create a link for an already linked entity, since for now
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> basicCreate(subscription2)), IdentityResource.PARAMETER_GROUP, "pattern");
 	}
 
@@ -264,12 +264,12 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		setParentGroup(subscription2, "sea-orphan");
 		setOu(subscription2, "sea");
 
-		// Invoke link for an already linked entity, since for now
+		// Create a link for an already linked entity, since for now
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> basicCreate(subscription2)), IdentityResource.PARAMETER_PARENT_GROUP, "unknown-id");
 	}
 
 	/**
-	 * Create a group inside a new organizational unit. Not an error, lazy creation. Exact match for group and pkey.
+	 * Create a group inside a new organizational unit. Not an error, lazy creation. Exact match for the group and pkey.
 	 */
 	@Test
 	void createOuNotExists() {
@@ -312,10 +312,10 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		setOu(subscription3, "some");
 		basicCreate(subscription3);
 
-		// Delete the group, and also try to delete the parent OU. This last step fail silently
+		// Delete the group and also try to delete the parent OU. This last step fails silently
 		resource.delete(subscription2.getId(), true);
 
-		// Delete the group, and also delete sucessfully the parent
+		// Delete the group and also successfully delete the parent
 		resource.delete(subscription3.getId(), true);
 	}
 
@@ -356,7 +356,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		membership.setGroup(group);
 		em.persist(membership);
 
-		// Invoke link for an already linked entity, since for now
+		// Create a link for an already linked entity, since for now
 		basicLink(subscription2);
 		// Nothing to validate for now...
 		resource.delete(subscription2.getId(), false);
@@ -365,7 +365,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	@Test
 	void linkNotVisibleProject() {
 
-		// Invoke link for an already created entity, since for now
+		// Create a link for an already created entity, since for now
 		initSpringSecurityContext("any");
 		Assertions.assertThrows(EntityNotFoundException.class, () -> resource.link(this.subscription));
 	}
@@ -379,13 +379,13 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		final var subscription = em.find(Subscription.class, this.subscription);
 		setGroup(subscription, "sea-octopus");
 
-		// Invoke link for an already created entity, since for now
+		// Create a link for an already created entity, since for now
 		initSpringSecurityContext("fdaugan");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.link(this.subscription)), IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOWN_ID);
 	}
 
 	/**
-	 * Visible project, but target group does not exist
+	 * Visible project, but the target group does not exist
 	 */
 	@Test
 	void linkNotExistingGroup() {

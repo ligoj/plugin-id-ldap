@@ -114,7 +114,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	/**
 	 * User "mmartin" is member of group "Production", so can see this group and
 	 * all subgroups. Including the 7 groups "Hub *". These groups are only
-	 * visible because of the membership of group "Production" and does not
+	 * visible because of the membership of group "Production" and do not
 	 * involve delegates.
 	 */
 	@Test
@@ -127,7 +127,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	/**
-	 * User "jlast3" has no delegate and is not member of a group owning any
+	 * User "jlast3" has no delegate and is not a member of a group owning any
 	 * "Hub *" group.
 	 */
 	@Test
@@ -334,7 +334,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		group.setScope(typeLdap.getId());
 		resource.create(group);
 
-		// Check the creation from cache
+		// Check the creation from the cache
 		final var groups = resource.findAll(newUriInfoAscSearch("name", "ew-Ax"));
 		Assertions.assertEquals(1, groups.getRecordsTotal());
 
@@ -353,7 +353,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 		Assertions.assertEquals("New-Ax-1-z:Z 0", groupLdap.getName());
 		Assertions.assertEquals(expected, groupLdap.getDn());
 
-		// Dummy group is there
+		// The test group is there
 		Assertions.assertEquals(1, groupLdap.getMembers().size());
 
 		// For coverage
@@ -389,7 +389,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 	}
 
 	/**
-	 * Check managed group is filtered against available groups for write.
+	 * Check managed group is filtered against available groups for a write operation.
 	 */
 	@Test
 	void getContainersForWrite() {

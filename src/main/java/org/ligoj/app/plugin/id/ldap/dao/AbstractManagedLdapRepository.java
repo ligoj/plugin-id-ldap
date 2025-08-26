@@ -48,7 +48,7 @@ public abstract class AbstractManagedLdapRepository<T extends ResourceOrg> {
 	protected String[] classNamesCreate = ArrayUtils.EMPTY_STRING_ARRAY;
 
 	/**
-	 * LDAP base DN where all objects of this class are located. May be different from the generic base DN of server.
+	 * LDAP base DN where all objects of this class are located. Can be different from the generic base DN of server.
 	 */
 	@Setter
 	protected String baseDn;
@@ -78,9 +78,9 @@ public abstract class AbstractManagedLdapRepository<T extends ResourceOrg> {
 	}
 
 	/**
-	 * Bind the given entry into a context. If the bind fail, a validation exception is generated.
+	 * Bind the given entry into a context. If the bind fails, a validation exception is generated.
 	 *
-	 * @param entry The container entry to map.
+	 * @param entry The container entry to be mapped.
 	 * @param dn    The DN of entry to bind.
 	 */
 	protected void bind(final T entry, final String dn) {
@@ -92,7 +92,7 @@ public abstract class AbstractManagedLdapRepository<T extends ResourceOrg> {
 
 
 	/**
-	 * Bind the given context. If the bind fail, a validation exception is generated.
+	 * Bind the given context. If the bind fails, a validation exception is generated.
 	 *
 	 * @param context to bind.
 	 */
@@ -110,7 +110,7 @@ public abstract class AbstractManagedLdapRepository<T extends ResourceOrg> {
 	/**
 	 * Map a container to LDAP.
 	 *
-	 * @param entry   The container entry to map.
+	 * @param entry   The container entry to be mapped.
 	 * @param context The target context to fill.
 	 */
 	abstract void mapToContext(final T entry, final DirContextOperations context);

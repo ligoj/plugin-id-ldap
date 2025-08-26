@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * LDAP in memory cache with JPA back-end cache.
+ * LDAP in-memory cache with JPA back-end cache.
  */
 @Component
 @Slf4j
