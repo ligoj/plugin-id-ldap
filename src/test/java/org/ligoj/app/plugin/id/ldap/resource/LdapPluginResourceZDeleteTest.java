@@ -3,14 +3,9 @@
  */
 package org.ligoj.app.plugin.id.ldap.resource;
 
-import java.util.Map;
-
 import jakarta.transaction.Transactional;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.ligoj.app.model.Subscription;
-import org.ligoj.app.plugin.id.ldap.dao.GroupLdapRepository;
 import org.springframework.test.annotation.Rollback;
 
 /**
@@ -20,17 +15,17 @@ import org.springframework.test.annotation.Rollback;
 @Transactional
 class LdapPluginResourceZDeleteTest extends AbstractLdapPluginResourceTest {
 	@Test
-	void zzdeleteWithSubGroup() {
+	void zzDeleteWithSubGroup() {
 		// Create the data
 		initSpringSecurityContext("fdaugan");
 
 		// Create the parent group
-		final Subscription parentSubscription = create("sea-parent-for-1deletion");
+		final var parentSubscription = create("sea-parent-for-1deletion");
 		createSubGroup(parentSubscription.getProject(), "sea-parent-for-1deletion", "sea-parent-for-1deletion-sub");
 
 		// Check the subgroups are there
 		Assertions.assertEquals(2, resource.findGroupsByName("sea-parent-for-1deletion").size());
-		final Map<String, String> parameters = subscriptionResource.getParameters(parentSubscription.getId());
+		final var parameters = subscriptionResource.getParameters(parentSubscription.getId());
 		Assertions.assertTrue(resource.checkSubscriptionStatus(parameters).getStatus().isUp());
 		Assertions.assertEquals(1, getGroup().findAll().get("sea-parent-for-1deletion").getSubGroups().size());
 		Assertions.assertEquals("sea-parent-for-1deletion-sub",
@@ -41,7 +36,8 @@ class LdapPluginResourceZDeleteTest extends AbstractLdapPluginResourceTest {
 		em.flush();
 		em.clear();
 
-		// Check the new status
+		// Check the new status after refresh
+		reloadLdapCache();
 		Assertions.assertNull(getGroup().findAll().get("sea-parent-for-1deletion"));
 		Assertions.assertNull(getGroup().findAll().get("sea-parent-for-1deletion-sub"));
 		Assertions.assertFalse(resource.checkSubscriptionStatus(parameters).getStatus().isUp());
@@ -49,23 +45,23 @@ class LdapPluginResourceZDeleteTest extends AbstractLdapPluginResourceTest {
 	}
 
 	/**
-	 * Delete a group that is also member from another group.
+	 * Delete a group that is also a member from another group.
 	 */
 	@Test
-	void zzdeleteFromParentGroup() {
+	void zzDeleteFromParentGroup() {
 		// Create the data
 		initSpringSecurityContext("fdaugan");
 
 		// Create the parent group
-		final Subscription parentSubscription = create("sea-parent-for-2deletion");
-		final Subscription childSubscription = createSubGroup(parentSubscription.getProject(), "sea-parent-for-2deletion",
+		final var parentSubscription = create("sea-parent-for-2deletion");
+		final var childSubscription = createSubGroup(parentSubscription.getProject(), "sea-parent-for-2deletion",
 				"sea-parent-for-2deletion-sub");
 
-		// Check the subgroup and the parent are there
+		// Check the subgroup and the parents are there
 		Assertions.assertEquals(2, resource.findGroupsByName("sea-parent-for-2deletion").size());
-		final Map<String, String> parentParameters = subscriptionResource.getParameters(parentSubscription.getId());
+		final var parentParameters = subscriptionResource.getParameters(parentSubscription.getId());
 		Assertions.assertTrue(resource.checkSubscriptionStatus(parentParameters).getStatus().isUp());
-		final Map<String, String> childParameters = subscriptionResource.getParameters(childSubscription.getId());
+		final var childParameters = subscriptionResource.getParameters(childSubscription.getId());
 		Assertions.assertTrue(resource.checkSubscriptionStatus(childParameters).getStatus().isUp());
 		Assertions.assertEquals(1, getGroup().findAll().get("sea-parent-for-2deletion").getSubGroups().size());
 		Assertions.assertEquals("sea-parent-for-2deletion-sub",
@@ -94,6 +90,6 @@ class LdapPluginResourceZDeleteTest extends AbstractLdapPluginResourceTest {
 		Assertions.assertNull(getGroup().findAll().get("sea-parent-for-2deletion"));
 
 		// Check the LDAP content
-		Assertions.assertNull(((GroupLdapRepository) getGroup()).findAllNoCache().get("sea-parent-for-2deletion"));
+		Assertions.assertNull((getGroup()).findAllNoCache().get("sea-parent-for-2deletion"));
 	}
 }
