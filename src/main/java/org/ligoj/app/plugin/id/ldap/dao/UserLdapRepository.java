@@ -8,12 +8,9 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IteratorUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.CharUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.*;
 import org.apache.commons.text.RandomStringGenerator;
-import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
+import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
 import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.iam.*;
 import org.ligoj.app.plugin.id.DnUtils;
@@ -45,6 +42,7 @@ import javax.naming.ldap.LdapContext;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
@@ -307,10 +305,10 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 			final String criteria, final Pageable pageable) {
 		// Create the set with the right comparator
 		final var orders = IteratorUtils
-				.toList(ObjectUtils.defaultIfNull(pageable.getSort(), new ArrayList<Sort.Order>()).iterator());
+				.toList(ObjectUtils.getIfNull(pageable.getSort(), new ArrayList<Sort.Order>()).iterator());
 		orders.add(DEFAULT_ORDER);
 		final var order = orders.getFirst();
-		var comparator = ObjectUtils.defaultIfNull(COMPARATORS.get(order.getProperty()), DEFAULT_COMPARATOR);
+		var comparator = ObjectUtils.getIfNull(COMPARATORS.get(order.getProperty()), DEFAULT_COMPARATOR);
 		if (order.getDirection() == Direction.DESC) {
 			comparator = Collections.reverseOrder(comparator);
 		}
@@ -518,10 +516,10 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 		 * @param lockedValue The locked value flag. May be <code>null</code>.
 		 */
 		private void fillLockedData(final SimpleUserOrg user, final String lockedValue) {
-			if (StringUtils.startsWith(lockedValue, UserLdapRepository.this.lockedValue)) {
+			if (Strings.CS.startsWith(lockedValue, UserLdapRepository.this.lockedValue)) {
 				// A locked account
 				final var fragments = StringUtils.splitPreserveAllTokens(lockedValue, '|');
-				user.setLocked(new Date(Long.parseLong(fragments[1])));
+				user.setLocked(Instant.ofEpochMilli(Long.parseLong(fragments[1])));
 				user.setLockedBy(fragments[2]);
 				user.setIsolated(StringUtils.defaultIfEmpty(fragments[3], null));
 			}
@@ -572,10 +570,10 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 	 * Indicates the given user match to the given pattern.
 	 */
 	private boolean matchPattern(final UserOrg userLdap, final String criteria) {
-		return StringUtils.containsIgnoreCase(userLdap.getFirstName(), criteria)
-				|| StringUtils.containsIgnoreCase(userLdap.getLastName(), criteria)
-				|| StringUtils.containsIgnoreCase(userLdap.getId(), criteria) || !userLdap.getMails().isEmpty()
-				&& StringUtils.containsIgnoreCase(userLdap.getMails().getFirst(), criteria);
+		return Strings.CI.contains(userLdap.getFirstName(), criteria)
+				|| Strings.CI.contains(userLdap.getLastName(), criteria)
+				|| Strings.CI.contains(userLdap.getId(), criteria) || !userLdap.getMails().isEmpty()
+				&& Strings.CI.contains(userLdap.getMails().getFirst(), criteria);
 	}
 
 	@Override
@@ -632,7 +630,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 			template.modifyAttributes(org.springframework.ldap.support.LdapUtils.newLdapName(user.getDn()), mods);
 
 			// Also update the disabled date
-			user.setLocked(new Date(timeInMillis));
+			user.setLocked(Instant.ofEpochMilli(timeInMillis));
 			user.setLockedBy(principal);
 		}
 	}
@@ -772,7 +770,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 			public String doMapFromContext(final DirContextOperations context) {
 				// Get the password
 				return new String(
-						ObjectUtils.defaultIfNull((byte[]) context.getObjectAttribute(PASSWORD_ATTRIBUTE), new byte[0]),
+						ObjectUtils.getIfNull((byte[]) context.getObjectAttribute(PASSWORD_ATTRIBUTE), new byte[0]),
 						StandardCharsets.UTF_8);
 			}
 		}).stream().findFirst().orElse(null);
@@ -854,12 +852,12 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 	 * @param utc OpenLdap date format.
 	 * @return normalized date.
 	 */
-	public Date parseLdapDate(final String utc) {
+	public Instant parseLdapDate(final String utc) {
 		// setup x.208 generalized time formatter
 		final var formatter = new SimpleDateFormat(OPEN_LDAP_DATE_FORMAT);
 		try {
 			// Parse UTC into Date
-			return formatter.parse(utc);
+			return formatter.parse(utc).toInstant();
 		} catch (final ParseException e) {
 			log.info("Error while parsing date {}: {}", utc, e.getMessage());
 			throw new BusinessException(BusinessException.KEY_UNKNOWN_ID);

@@ -28,8 +28,8 @@ import javax.naming.directory.InvalidAttributeValueException;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.ldap.LdapContext;
+import java.time.Instant;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -319,7 +319,7 @@ class UserLdapRepositoryTest {
 	void validLdapDate() {// <1517908964000> but was: <1517912564000>
 		final var ldapDate = "20180206102244Z";
 		final var date = repository.parseLdapDate(ldapDate);
-		Assertions.assertTrue(date.compareTo(new Date(LOCKED_DATE)) <= ONE_HOUR_MS, "Was :" + date);
+		Assertions.assertTrue(date.compareTo(Instant.ofEpochMilli(LOCKED_DATE)) <= ONE_HOUR_MS, "Was :" + date);
 	}
 
 	@Test
@@ -337,7 +337,7 @@ class UserLdapRepositoryTest {
 		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.eq(2),
 				ArgumentMatchers.any(), (ContextMapper<UserOrg>) ArgumentMatchers.any())).thenAnswer(i -> {
 			((AbstractContextMapper<DirContextOperations>) i.getArgument(4)).mapFromContext(dirCtx);
-			user.setLocked(new Date(LOCKED_DATE));
+			user.setLocked(Instant.ofEpochMilli(LOCKED_DATE));
 			user.setLockedBy("_password_policy");
 			return null;
 		});
@@ -346,7 +346,7 @@ class UserLdapRepositoryTest {
 		repository.setTemplate(mock);
 		repository.checkLockStatus(user);
 
-		Assertions.assertTrue(user.getLocked().compareTo(new Date(LOCKED_DATE)) <= ONE_HOUR_MS, "Was :" + user.getLocked());
+		Assertions.assertTrue(user.getLocked().compareTo(Instant.ofEpochMilli(LOCKED_DATE)) <= ONE_HOUR_MS, "Was :" + user.getLocked());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -358,7 +358,7 @@ class UserLdapRepositoryTest {
 		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
 				(ContextMapper<UserOrg>) ArgumentMatchers.any(), ArgumentMatchers.any())).thenAnswer(i -> {
 			((AbstractContextMapper<DirContextOperations>) i.getArgument(3)).mapFromContext(dirCtx);
-			user.setLocked(new Date(LOCKED_DATE));
+			user.setLocked(Instant.ofEpochMilli(LOCKED_DATE));
 			user.setLockedBy("_password_policy");
 			return Collections.singletonList(user);
 		});
@@ -370,7 +370,7 @@ class UserLdapRepositoryTest {
 		final Map<String, GroupOrg> groups = MapUtils.EMPTY_SORTED_MAP;
 		repository.findAllNoCache(groups);
 
-		Assertions.assertEquals(LOCKED_DATE, user.getLocked().getTime());
+		Assertions.assertEquals(LOCKED_DATE, user.getLocked().toEpochMilli());
 	}
 
 	@Test

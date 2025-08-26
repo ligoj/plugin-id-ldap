@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.iam.ContainerOrg;
 import org.ligoj.app.iam.IContainerRepository;
@@ -53,14 +54,14 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 	}
 
 	/**
-	 * Return the repository managing the container as cache.
+	 * Return the repository managing the cached containers.
 	 *
-	 * @return the repository managing the container as cache.
+	 * @return the repository managing the cached containers.
 	 */
 	protected abstract CacheContainerRepository<C> getCacheRepository();
 
 	/**
-	 * Create a new container bean. Not in LDAP repository.
+	 * Create a new container bean. Not in the LDAP repository.
 	 *
 	 * @param dn The unique DN of the container.
 	 * @param cn The human-readable name (CN) that will be used to build the identifier.
@@ -72,7 +73,7 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 	public T create(final String dn, final String cn) {
 		final var container = newContainer(dn, cn);
 
-		// First create the LDAP entry
+		// First, create the LDAP entry
 		log.info("{} {} will be created as {}", type.name(), container.getName(), dn);
 		bind(container, dn);
 
@@ -85,7 +86,7 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 			final Map<String, Comparator<T>> customComparators) {
 		// Create the set with the right comparator
 		final var orders = IteratorUtils
-				.toList(ObjectUtils.defaultIfNull(pageable.getSort(), new ArrayList<Sort.Order>()).iterator());
+				.toList(ObjectUtils.getIfNull(pageable.getSort(), new ArrayList<Sort.Order>()).iterator());
 		orders.add(DEFAULT_ORDER);
 		final var order = orders.getFirst();
 		var comparator = customComparators.get(order.getProperty());
@@ -125,7 +126,7 @@ public abstract class AbstractContainerLdapRepository<T extends ContainerOrg, C 
 	 * Indicates the given group matches to the given pattern.
 	 */
 	private boolean matchPattern(final T group, final String criteria) {
-		return StringUtils.containsIgnoreCase(group.getName(), criteria);
+		return Strings.CI.contains(group.getName(), criteria);
 	}
 
 	/**
