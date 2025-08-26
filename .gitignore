@@ -10,3 +10,4 @@
 **/*.iml
 /package-lock.json
 /.init.sh
+/bench.ldiff
