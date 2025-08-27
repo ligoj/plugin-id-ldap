@@ -21,6 +21,7 @@
         <spring-ldap.version>3.3.3</spring-ldap.version>
         <spring-ldap-tiger.version>2.4.4</spring-ldap-tiger.version>
         <mina.version>2.0.27</mina.version>
+        <bcprov.version>1.81</bcprov.version>
     </properties>
     <scm>
         <connection>scm:git:https://github.com/ligoj/plugin-id-ldap</connection>
@@ -76,7 +77,7 @@
             <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15to18</artifactId>
-                <version>1.81</version>
+                <version>${bcprov.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.mina</groupId>
