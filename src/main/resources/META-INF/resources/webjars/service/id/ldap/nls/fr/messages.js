@@ -43,7 +43,7 @@ define({
 	'service:id:ldap:self-search': 'Utilisateurs peuvent rechercher',
     'service:id:ldap:self-search-description': 'Lorsque coché, au moment de l\'authentification le DN est récupéré par une recherche en utilisant les secrets de l\'utilisateur. Sinon, le DN est calculé à partir du cache de données et seule une authentification est effectuée.',
 	'service:id:ldap:uid-attribute': 'Attribut UID',
-	'service:id:ldap:url': 'URL de connexion',
+	'service:id:ldap:url': 'URLs de connexion séparées par une virgule. Mode failover supporté uniquement, la première URL étant utilisée en priorité',
 	'service:id:ldap:user-dn': 'Utilisateur de connexion',
 	'service:id:ldap:clear-password': 'Mot de passe non-crypté'
 });

@@ -44,6 +44,7 @@ define({
 		'service:id:ldap:self-search-description': 'When checked, at authentication time the DN is retrieved from the LDAP server with a search using the provided user\'s credentials. Otherwise, the DN is computed from the cache database and a single bind is executed.',
 		'service:id:ldap:uid-attribute': 'UID attribute',
 		'service:id:ldap:url': 'Connection URL',
+        'service:id:ldap:url': 'Connection URLs, comma separated. Failover mode only, where the first one is used in priority',
 		'service:id:ldap:user-dn': 'Connection user',
 		'service:id:ldap:clear-password': 'Clear password'
 	},

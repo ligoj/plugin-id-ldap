@@ -260,7 +260,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		final var contextSource = new LdapContextSource();
 		contextSource.setReferral(parameters.get(PARAMETER_REFERRAL));
 		contextSource.setPassword(parameters.get(PARAMETER_PASSWORD));
-		contextSource.setUrl(parameters.get(PARAMETER_URL));
+		contextSource.setUrls(parameters.get(PARAMETER_URL).split(","));
 		contextSource.setUserDn(parameters.get(PARAMETER_USER));
 		contextSource.setBase(parameters.get(PARAMETER_BASE_BN));
 		contextSource.afterPropertiesSet();
