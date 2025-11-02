@@ -217,6 +217,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 	private CompanyLdapRepository companyRepository;
 
 	@Autowired
+	@Setter
 	protected CacheLdapRepository cacheRepository;
 
 	/**
@@ -741,7 +742,14 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 		return authResult ? user : null;
 	}
 
-	private UserOrg findBy(final String property, final String value) {
+	/**
+	 * Return an user from a property.
+	 *
+	 * @param property The property to match.
+	 * @param value    The property value to match.
+	 * @return The found user or null.
+	 */
+	UserOrg findBy(final String property, final String value) {
 		final UserOrg user;
 		if (MAIL_ATTRIBUTE.equals(property)) {
 			user = findAll().values().stream().filter(u -> CollectionUtils.emptyIfNull(u.getMails()).stream()
@@ -885,4 +893,27 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 				});
 	}
 
+	@Override
+	public UserOrg toUser(final String login) {
+		if (login == null) {
+			return null;
+		}
+
+		// Non null user name
+		var result = findById(login);
+		if (result != null) {
+			return result;
+		}
+		for (var user : findAll().values()) {
+			for (var attribute : loginAttributes) {
+				if ("mail".equals(attribute) && user.getMails() != null && user.getMails().contains(login)
+						|| user.getCustomAttributes() != null && login.equals(user.getCustomAttributes().get(attribute))) {
+					return user;
+				}
+			}
+		}
+		result = new UserOrg();
+		result.setId(login);
+		return result;
+	}
 }

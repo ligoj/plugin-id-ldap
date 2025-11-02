@@ -139,20 +139,6 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 		}
 	}
 
-	private void removeFromJavaCache(final GroupOrg group) {
-		// Remove the subgroups from LDAP
-		new ArrayList<>(group.getSubGroups()).stream().map(this::findById).filter(Objects::nonNull)
-				.forEach(child -> removeGroup(child, group.getId()));
-
-		// Remove from the parent LDAP groups
-		if (group.getParent() != null) {
-			removeGroup(group, group.getParent());
-		}
-
-		// Also, update the raw cache
-		findAll().remove(group.getId());
-	}
-
 	/**
 	 * Delete the given group. There is no synchronized block, so error could occur; this is assumed for performance
 	 * purpose.

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.ligoj.app.iam.CompanyOrg;
 import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.iam.UserOrg;
+import org.ligoj.app.plugin.id.dao.AbstractMemCacheRepository;
 import org.ligoj.bootstrap.MatcherUtil;
 import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
@@ -39,6 +40,7 @@ import java.util.Map;
 class UserLdapRepositoryTest {
 	private static final long LOCKED_DATE = 1517908964000L;
 	private static final long ONE_HOUR_MS = 60 * 60 * 1000;
+	private static final String TEST_USER = "user1";
 
 	private UserLdapRepository repository;
 
@@ -143,8 +145,8 @@ class UserLdapRepositoryTest {
 			}
 
 		};
-		Assertions.assertEquals("user1", repository.toUser("user1").getId());
-		Assertions.assertEquals("First", repository.toUser("user1").getFirstName());
+		Assertions.assertEquals(TEST_USER, repository.toUser(TEST_USER).getId());
+		Assertions.assertEquals("First", repository.toUser(TEST_USER).getFirstName());
 	}
 
 	@Test
@@ -155,14 +157,59 @@ class UserLdapRepositoryTest {
 				return null;
 			}
 
+			@Override
+			public Map<String, UserOrg> findAll() {
+				return Collections.emptyMap();
+			}
 		};
-		Assertions.assertEquals("user1", repository.toUser("user1").getId());
-		Assertions.assertNull(repository.toUser("user1").getFirstName());
+		Assertions.assertEquals(TEST_USER, repository.toUser(TEST_USER).getId());
+		Assertions.assertNull(repository.toUser(TEST_USER).getFirstName());
 	}
 
 	@Test
 	void toUserNull() {
 		Assertions.assertNull(repository.toUser(null));
+	}
+
+	@Test
+	void toUserByMail() {
+		final var user1Alias = new UserOrg();
+		user1Alias.setMails(List.of("personal@sample.com", "user1@sample.com"));
+		user1Alias.setId(TEST_USER);
+		var repository = new UserLdapRepository() {
+			@Override
+			public UserOrg findById(final String login) {
+				return null;
+			}
+
+			@Override
+			public Map<String, UserOrg> findAll() {
+				return Map.of("user2", new UserOrg(), TEST_USER, user1Alias);
+			}
+
+		};
+		Assertions.assertEquals(TEST_USER, repository.toUser("user1@sample.com").getId());
+	}
+
+
+	@Test
+	void toUserByCustomAttribute() {
+		final var user1Alias = new UserOrg();
+		user1Alias.setCustomAttributes(Map.of("mail", "user1@sample.com"));
+		user1Alias.setId(TEST_USER);
+		var repository = new UserLdapRepository() {
+			@Override
+			public UserOrg findById(final String login) {
+				return null;
+			}
+
+			@Override
+			public Map<String, UserOrg> findAll() {
+				return Map.of("user2", new UserOrg(), TEST_USER, user1Alias);
+			}
+
+		};
+		Assertions.assertEquals(TEST_USER, repository.toUser("user1@sample.com").getId());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -176,7 +223,7 @@ class UserLdapRepositoryTest {
 			return Collections.singletonList("token");
 		});
 		repository.setTemplate(mock);
-		Assertions.assertEquals("token", repository.getToken("user1"));
+		Assertions.assertEquals("token", repository.getToken(TEST_USER));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -201,7 +248,7 @@ class UserLdapRepositoryTest {
 		};
 		repository.setCompanyRepository(Mockito.mock(CompanyLdapRepository.class));
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
-						() -> repository.findByIdExpected("user1", "user2")),
+						() -> repository.findByIdExpected(TEST_USER, "user2")),
 				"id", "unknown-id");
 	}
 
@@ -217,9 +264,9 @@ class UserLdapRepositoryTest {
 			}
 		};
 		var mock = Mockito.mock(CompanyLdapRepository.class);
-		Mockito.when(mock.findById("user1", "company")).thenReturn(new CompanyOrg("", ""));
+		Mockito.when(mock.findById(TEST_USER, "company")).thenReturn(new CompanyOrg("", ""));
 		repository.setCompanyRepository(mock);
-		repository.findByIdExpected("user1", "user2");
+		repository.findByIdExpected(TEST_USER, "user2");
 	}
 
 	@Test
@@ -276,6 +323,7 @@ class UserLdapRepositoryTest {
 		var user = new UserOrg();
 		final var lastContext = new ThreadLocal<DirContextOperations>();
 		user.setDn("uid=sample,dc=com");
+		user.setCustomAttributes(Map.of("mail", "any.sample.com"));
 		final var repository = new UserLdapRepository() {
 			@Override
 			public Name buildDn(final UserOrg entry) {
@@ -298,9 +346,11 @@ class UserLdapRepositoryTest {
 		repository.classNamesCreate = repository.classNames;
 		repository.setTemplate(Mockito.mock(LdapTemplate.class));
 		repository.cacheRepository = Mockito.mock(CacheLdapRepository.class);
+		repository.setCustomAttributes(new String[]{"mail"});
 		repository.create(user);
 		Assertions.assertEquals("200", lastContext.get().getObjectAttribute("gidNumber"));
 		Assertions.assertEquals("200", lastContext.get().getObjectAttribute("uidNumber"));
+		Assertions.assertEquals("any.sample.com", lastContext.get().getObjectAttribute("mail"));
 		Assertions.assertEquals("/dev/null", lastContext.get().getObjectAttribute("homeDirectory"));
 	}
 
@@ -353,6 +403,7 @@ class UserLdapRepositoryTest {
 	@Test
 	void blockedUserByPPolicy() {
 		final var user = new UserOrg();
+		user.setCustomAttributes(Map.of("mail","locked@sample.com"));
 		final var mock = Mockito.mock(LdapTemplate.class);
 		final var dirCtx = Mockito.mock(DirContextOperations.class);
 		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
@@ -365,8 +416,16 @@ class UserLdapRepositoryTest {
 
 		Mockito.when(dirCtx.getDn()).thenReturn(org.springframework.ldap.support.LdapUtils.newLdapName("cn=Any"));
 		Mockito.when(dirCtx.attributeExists(ArgumentMatchers.any())).thenReturn(true);
-		Mockito.when(dirCtx.getStringAttribute(ArgumentMatchers.any())).thenReturn("20180206102244Z");
+		Mockito.when(dirCtx.getStringAttribute(ArgumentMatchers.any())).then((invocation) -> {
+			var arg0 = (String) invocation.getArgument(0);
+			if ("not-existing".equals(arg0)) {
+				return null;
+			}
+			return "20180206102244Z";
+		});
+
 		repository.setTemplate(mock);
+		repository.setCustomAttributes(new String[]{"mail","not-existing"});
 		final Map<String, GroupOrg> groups = MapUtils.EMPTY_SORTED_MAP;
 		repository.findAllNoCache(groups);
 
@@ -424,4 +483,28 @@ class UserLdapRepositoryTest {
 		repository.findAllNoCache(Collections.emptyMap());
 	}
 
+	@Test
+	void mapToContext() {
+		final var repository = new UserLdapRepository();
+		repository.setCustomAttributes(new String[]{"foo"});
+		var context = Mockito.mock(DirContextOperations.class);
+		var user = new UserOrg();
+		user.setCustomAttributes(Map.of("foo", "bar"));
+		repository.mapToContext(user, context);
+	}
+
+	@Test
+	void findBy() {
+		final var repository = new UserLdapRepository();
+		final var cacheLdapRepository = Mockito.mock(CacheLdapRepository.class);
+		final var user1 = new UserOrg();
+		user1.setMails(List.of("foo@sample.com"));
+		user1.setId(TEST_USER);
+		final var users = Map.of(TEST_USER, user1);
+		Mockito.when(cacheLdapRepository.getData()).thenReturn(Map.of(AbstractMemCacheRepository.CacheDataType.USER, users));
+		repository.setCacheRepository(cacheLdapRepository);
+		Assertions.assertEquals(TEST_USER, repository.findBy("mail", "foo@sample.com").getId());
+		Assertions.assertNull(repository.findBy("mail", "any"));
+		Assertions.assertEquals(TEST_USER, repository.findBy("id", TEST_USER).getId());
+	}
 }
