@@ -189,6 +189,7 @@ class UserLdapRepositoryTest {
 
 		};
 		Assertions.assertEquals(TEST_USER, repository.toUser("user1@sample.com").getId());
+		Assertions.assertEquals("jdoe", repository.toUser("jdoe").getId());
 	}
 
 
@@ -210,6 +211,7 @@ class UserLdapRepositoryTest {
 
 		};
 		Assertions.assertEquals(TEST_USER, repository.toUser("user1@sample.com").getId());
+		Assertions.assertEquals("not_found", repository.toUser("not_found").getId());
 	}
 
 	@SuppressWarnings("unchecked")
