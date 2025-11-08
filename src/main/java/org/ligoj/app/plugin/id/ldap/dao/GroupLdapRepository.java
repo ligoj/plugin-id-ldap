@@ -152,27 +152,29 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 		 * Remove from this group, all groups within (sub LDAP DN) this group. This operation is needed since we are not
 		 * rebuilding the cache from the LDAP. This save a lot of computations.
 		 */
-		findAll().values().stream().filter(g -> DnUtils.equalsOrParentOf(group.getDn(), g.getDn())).toList()
-				.forEach(g -> {
-					// Remove the subgroups from LDAP
-					new ArrayList<>(g.getSubGroups()).forEach(child -> {
-						var checkedGroup = findById(child);
-						if (checkedGroup != null && findById(g.getId()) != null) {
-							removeGroup(checkedGroup, g.getId());
-						}
-					});
-
-					// Remove from the parent LDAP groups
-					if (g.getParent() != null && findById(g.getParent()) != null) {
-						removeGroup(g, g.getParent());
+		for (var g : findAll().values().stream().filter(g -> DnUtils.equalsOrParentOf(group.getDn(), g.getDn())).toList()) {
+			// Remove the subgroups from LDAP
+			final var thisGroup = findById(g.getId());
+			if (thisGroup != null) {
+				for (var child : new ArrayList<>(g.getSubGroups())) {
+					final var subGroup = findById(child);
+					if (subGroup != null) {
+						removeGroup(subGroup, g.getId());
 					}
+				}
+			}
 
-					// Remove recursively from LDAP the group. Anything that was not nicely cleaned will be deleted there.
-					super.unbind(group.getDn());
+			// Remove from the parent LDAP groups
+			if (g.getParent() != null && findById(g.getParent()) != null) {
+				removeGroup(g, g.getParent());
+			}
 
-					// Also, update the cache
-					cacheRepository.delete(group);
-				});
+			// Remove recursively from LDAP the group. Anything that was not nicely cleaned will be deleted there.
+			unbind(group.getDn());
+
+			// Also, update the cache
+			cacheRepository.delete(group);
+		}
 	}
 
 	@Override
