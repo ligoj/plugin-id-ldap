@@ -349,7 +349,6 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		group.setDescription("cn=g,dc=sample,dc=com");
 		group.setId("ligoj-jupiter");
 		group.setName("ligoj-jupiter");
-		// em.persist(group);
 
 		final var membership = new CacheMembership();
 		membership.setUser(user);

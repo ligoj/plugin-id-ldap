@@ -361,7 +361,7 @@ class UserLdapRepositoryTest {
 
 		final var mockCtx = Mockito.mock(LdapContext.class);
 		Mockito.when(mock.executeReadWrite((ContextExecutor<Object>) ArgumentMatchers.any(ContextExecutor.class)))
-				.then((invocation) -> ((ContextExecutor<Object>) invocation.getArgument(0)).executeWithContext(mockCtx));
+				.then(invocation -> ((ContextExecutor<Object>) invocation.getArgument(0)).executeWithContext(mockCtx));
 		return mockCtx;
 	}
 
@@ -403,7 +403,7 @@ class UserLdapRepositoryTest {
 	@Test
 	void blockedUserByPPolicy() {
 		final var user = new UserOrg();
-		user.setCustomAttributes(Map.of("mail","locked@sample.com"));
+		user.setCustomAttributes(Map.of("mail", "locked@sample.com"));
 		final var mock = Mockito.mock(LdapTemplate.class);
 		final var dirCtx = Mockito.mock(DirContextOperations.class);
 		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
@@ -416,7 +416,7 @@ class UserLdapRepositoryTest {
 
 		Mockito.when(dirCtx.getDn()).thenReturn(org.springframework.ldap.support.LdapUtils.newLdapName("cn=Any"));
 		Mockito.when(dirCtx.attributeExists(ArgumentMatchers.any())).thenReturn(true);
-		Mockito.when(dirCtx.getStringAttribute(ArgumentMatchers.any())).then((invocation) -> {
+		Mockito.when(dirCtx.getStringAttribute(ArgumentMatchers.any())).then(invocation -> {
 			var arg0 = (String) invocation.getArgument(0);
 			if ("not-existing".equals(arg0)) {
 				return null;
@@ -425,7 +425,7 @@ class UserLdapRepositoryTest {
 		});
 
 		repository.setTemplate(mock);
-		repository.setCustomAttributes(new String[]{"mail","not-existing"});
+		repository.setCustomAttributes(new String[]{"mail", "not-existing"});
 		final Map<String, GroupOrg> groups = MapUtils.EMPTY_SORTED_MAP;
 		repository.findAllNoCache(groups);
 

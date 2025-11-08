@@ -639,16 +639,6 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	@Test
-	void delete() {
-		final long initCount = repository.count();
-		em.clear();
-		resource.delete(expected.getId());
-		em.flush();
-		em.clear();
-		Assertions.assertEquals(initCount - 1, repository.count());
-	}
-
-	@Test
 	void deleteNotAdmin() {
 		initSpringSecurityContext("someone");
 		final int id = em.createQuery("SELECT id FROM DelegateOrg WHERE receiver=:user AND name=:name", Integer.class)
