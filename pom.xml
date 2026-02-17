@@ -21,7 +21,7 @@
         <spring-ldap.version>3.3.4</spring-ldap.version>
         <spring-ldap-tiger.version>2.4.4</spring-ldap-tiger.version>
         <mina.version>2.0.27</mina.version>
-        <bcprov.version>1.82</bcprov.version>
+        <bcprov.version>1.83</bcprov.version>
         <plugin.sonar>5.2.0.4988</plugin.sonar>
     </properties>
     <scm>
