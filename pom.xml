@@ -18,7 +18,7 @@
 
     <properties>
         <shared-ldap.version>0.9.15</shared-ldap.version>
-        <spring-ldap.version>3.3.4</spring-ldap.version>
+        <spring-ldap.version>3.3.6</spring-ldap.version>
         <spring-ldap-tiger.version>2.4.4</spring-ldap-tiger.version>
         <mina.version>2.0.27</mina.version>
         <bcprov.version>1.83</bcprov.version>
