@@ -18,10 +18,7 @@ import org.ligoj.app.iam.Activity;
 import org.ligoj.app.iam.IamConfiguration;
 import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.iam.UserOrg;
-import org.ligoj.app.model.CacheProjectGroup;
-import org.ligoj.app.model.ContainerType;
-import org.ligoj.app.model.Node;
-import org.ligoj.app.model.Subscription;
+import org.ligoj.app.model.*;
 import org.ligoj.app.plugin.id.dao.CacheProjectGroupRepository;
 import org.ligoj.app.plugin.id.ldap.dao.*;
 import org.ligoj.app.plugin.id.model.ContainerScope;
@@ -382,7 +379,6 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 */
 	@Override
 	public void create(final int subscription) {
-
 		final var parameters = subscriptionResource.getParameters(subscription);
 		final var group = parameters.get(IdentityResource.PARAMETER_GROUP);
 		final var parentGroup = parameters.get(IdentityResource.PARAMETER_PARENT_GROUP);
@@ -409,9 +405,17 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		}
 
 		// Associate the project with this group in the cache
+		associateProject(project, groupLdap.getId());
+	}
+
+	/**
+	 * Associate the project with this group in the cache
+	 */
+	private void associateProject(Project project, final String group) {
+		final var repository = getGroup();
 		final var projectGroup = new CacheProjectGroup();
 		projectGroup.setProject(project);
-		projectGroup.setGroup(repository.getCacheRepository().findOneExpected(groupLdap.getId()));
+		projectGroup.setGroup(repository.getCacheRepository().findOneExpected(group));
 		cacheProjectGroupRepository.saveAndFlush(projectGroup);
 	}
 
@@ -491,12 +495,11 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	@Override
 	public void link(final int subscription) {
 		final var parameters = subscriptionResource.getParameters(subscription);
+		final var project = subscriptionRepository.findOne(subscription).getProject();
 
 		// Validate the job settings
-		validateGroup(parameters);
-
-		// There is no additional step since the group is already created in
-		// LDAP
+		final var group = validateGroup(parameters).getId();
+		associateProject(project, group);
 	}
 
 	@Override
