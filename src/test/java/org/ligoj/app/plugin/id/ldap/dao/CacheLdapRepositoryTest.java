@@ -240,9 +240,20 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	}
 
 	@Test
-	void refreshData() {
+	void refreshDataSequential() {
+		final var conflictDate = new AtomicLong(1);
+		Mockito.when(cache.getCacheRefreshTime()).thenAnswer(a -> conflictDate.get());
+		var data = repository.refreshData();
+		var refreshData = repository.refreshData();
+		Assertions.assertNotSame(data, refreshData);
+	}
+
+	@Test
+	void refreshDataWithConflict() {
 		final var conflictDate = new AtomicLong(0);
 		Mockito.when(cache.getCacheRefreshTime()).thenAnswer(a -> conflictDate.incrementAndGet());
-		repository.refreshData();
+		var data = repository.refreshData();
+		var refreshData = repository.refreshData();
+		Assertions.assertSame(data, refreshData);
 	}
 }

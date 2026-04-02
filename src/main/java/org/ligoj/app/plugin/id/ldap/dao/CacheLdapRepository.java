@@ -32,7 +32,7 @@ public class CacheLdapRepository extends AbstractMemCacheRepository {
 	 * Reset the database cache with the LDAP data. Note there is no synchronization for this method. Initial first
 	 * concurrent calls may not involve the cache.
 	 *
-	 * @return The cached LDAP data..
+	 * @return The cached LDAP data.
 	 */
 	@Override
 	public Map<CacheDataType, Map<String, ? extends ResourceOrg>> getData() {
@@ -56,21 +56,26 @@ public class CacheLdapRepository extends AbstractMemCacheRepository {
 	@SuppressWarnings("unchecked")
 	@Override
 	protected Map<CacheDataType, Map<String, ? extends ResourceOrg>> refreshData() {
-		final var result = super.refreshData();
 		final var refreshTime = cache.getCacheRefreshTime();
-		log.info("Refresh cache requested, age is {}",
-				DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - refreshTime));
 		synchronized (cacheLock) {
-			if (refreshTime < cache.getCacheRefreshTime()) {
+			final var currentRefreshTime = cache.getCacheRefreshTime();
+			final var now = System.currentTimeMillis();
+			if (refreshTime != currentRefreshTime) {
 				// Ignore subsequent refresh
-				log.info("Another refresh just finished, new age is {}",
-						DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - cache.getCacheRefreshTime()));
-			} else {
-				cache.reset((Map<String, CompanyOrg>) result.get(CacheDataType.COMPANY),
-						(Map<String, GroupOrg>) result.get(CacheDataType.GROUP),
-						(Map<String, UserOrg>) result.get(CacheDataType.USER));
+				log.info("Another refresh just finished, new age is {}", DurationFormatUtils.formatDurationHMS(now - cache.getCacheRefreshTime()));
+				return this.data;
 			}
+			if (refreshTime == 0) {
+				log.info("Refresh cache requested, first time load");
+			} else {
+				log.info("Refresh cache requested, age is {}", DurationFormatUtils.formatDurationHMS(now - refreshTime));
+			}
+			final var data = super.refreshData();
+			cache.reset((Map<String, CompanyOrg>) data.get(CacheDataType.COMPANY),
+					(Map<String, GroupOrg>) data.get(CacheDataType.GROUP),
+					(Map<String, UserOrg>) data.get(CacheDataType.USER));
+			log.info("Complete refresh took {}", DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - now));
+			return data;
 		}
-		return result;
 	}
 }
