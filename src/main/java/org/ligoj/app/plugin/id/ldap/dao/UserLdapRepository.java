@@ -348,6 +348,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 	public Map<String, UserOrg> findAllNoCache(final Map<String, GroupOrg> groups) {
 
 		// List of attributes to retrieve from LDAP.
+		log.info("Fetch LDAP users ...");
 		final var returnAttrs = ArrayUtils.addAll(new String[]{SN_ATTRIBUTE, GIVEN_NAME_ATTRIBUTE, PASSWORD_ATTRIBUTE, MAIL_ATTRIBUTE,
 				uidAttribute, departmentAttribute, localIdAttribute, lockedAttribute, PWD_ACCOUNT_LOCKED_ATTRIBUTE}, customAttributes);
 
