@@ -133,14 +133,14 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String PARAMETER_LOCKED_VALUE = KEY + ":locked-value";
 
 	/**
-	 * LDAP object classes of users for search. Comma or space separated values: organizationalPerson, inetOrgPerson.
-	 * The first one is used for the creation unless {@link #PARAMETER_PEOPLE_CLASS_CREATE} is defined.
+	 * LDAP object classes of users for search. Comma or space separated values: organizationalPerson, inetOrgPerson. The first one is used for
+	 * the creation unless {@link #PARAMETER_PEOPLE_CLASS_CREATE} is defined.
 	 */
 	public static final String PARAMETER_PEOPLE_CLASS = KEY + ":people-class";
 
 	/**
-	 * LDAP object classes of users for the creation. Comma or space separated values.
-	 * When empty, use the {@link #PARAMETER_PEOPLE_CLASS} classes.
+	 * LDAP object classes of users for the creation. Comma or space separated values. When empty, use the {@link #PARAMETER_PEOPLE_CLASS}
+	 * classes.
 	 */
 	public static final String PARAMETER_PEOPLE_CLASS_CREATE = KEY + ":people-class-create";
 
@@ -155,14 +155,14 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String PARAMETER_GROUPS_DN = KEY + ":groups-dn";
 
 	/**
-	 * LDAP object classes of groups for search. Comma or space separated values.
-	 * The first one is used for the creation unless {@link #PARAMETER_GROUPS_CLASS_CREATE} is defined.
+	 * LDAP object classes of groups for search. Comma or space separated values. The first one is used for the creation unless
+	 * {@link #PARAMETER_GROUPS_CLASS_CREATE} is defined.
 	 */
 	public static final String PARAMETER_GROUPS_CLASS = KEY + ":groups-class";
 
 	/**
-	 * LDAP object classes of groups for the creation. Comma or space separated values.
-	 * When empty, use the {@link #PARAMETER_GROUPS_CLASS} classes.
+	 * LDAP object classes of groups for the creation. Comma or space separated values. When empty, use the {@link #PARAMETER_GROUPS_CLASS}
+	 * classes.
 	 */
 	public static final String PARAMETER_GROUPS_CLASS_CREATE = KEY + ":groups-class-create";
 
@@ -177,14 +177,14 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String PARAMETER_COMPANIES_DN = KEY + ":companies-dn";
 
 	/**
-	 * LDAP object classes of companies for search. Comma or space separated values.
-	 * The first one is used for the creation unless {@link #PARAMETER_COMPANIES_CLASS_CREATE} is defined.
+	 * LDAP object classes of companies for search. Comma or space separated values. The first one is used for the creation unless
+	 * {@link #PARAMETER_COMPANIES_CLASS_CREATE} is defined.
 	 */
 	public static final String PARAMETER_COMPANIES_CLASS = KEY + ":companies-class";
 
 	/**
-	 * LDAP object classes of groups for the creation. Comma or space separated values.
-	 * When empty, use the {@link #PARAMETER_COMPANIES_CLASS} classes.
+	 * LDAP object classes of groups for the creation. Comma or space separated values. When empty, use the {@link #PARAMETER_COMPANIES_CLASS}
+	 * classes.
 	 */
 	public static final String PARAMETER_COMPANIES_CLASS_CREATE = KEY + ":companies-class-create";
 
@@ -204,11 +204,10 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public static final String PARAMETER_CLEAR_PASSWORD = KEY + ":clear-password";
 
 	/**
-	 * Value used as a flag for user bind technique for single LDAP operations at bind time to retrieve user attributes.
-	 * When <code>false</code>, admin credentials are used to find user details.
+	 * Value used as a flag for user bind technique for single LDAP operations at bind time to retrieve user attributes. When
+	 * <code>false</code>, admin credentials are used to find user details.
 	 */
 	public static final String PARAMETER_SELF_SEARCH = KEY + ":self-search";
-
 
 	@Autowired
 	protected ProjectCustomerLdapRepository projectCustomerLdapRepository;
@@ -232,7 +231,6 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	@Getter
 	protected LdapPluginResource self;
 
-
 	/**
 	 * Convert a string to a list using Comma or space separator.
 	 */
@@ -241,10 +239,11 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	}
 
 	/**
-	 * Read main parameter from the provided list with {@link #getParameter(Map, String, String)}.
-	 * Then do the same for the given parameter name with "-create" suffix. The last step uses the first value as the default value.
+	 * Read main parameter from the provided list with {@link #getParameter(Map, String, String)}. Then do the same for the given parameter name
+	 * with "-create" suffix. The last step uses the first value as the default value.
 	 */
-	private void setParameterClassValues(final AbstractManagedLdapRepository<?> repository, final Map<String, String> parameters, final String name, final String defaultValue) {
+	private void setParameterClassValues(final AbstractManagedLdapRepository<?> repository, final Map<String, String> parameters, final String name,
+			final String defaultValue) {
 		final var classValues = toParameterList(getParameter(parameters, name, defaultValue));
 		repository.setClassNames(classValues);
 		repository.setClassNamesCreate(toParameterList(getParameter(parameters, name + "-create", classValues[0])));
@@ -335,8 +334,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	@Override
 	public boolean accept(final Authentication authentication, final String node) {
 		final var parameters = pvResource.getNodeParameters(node);
-		return !parameters.isEmpty() && authentication.getName()
-				.matches(getParameter(parameters, IdentityResource.PARAMETER_UID_PATTERN, ".*"));
+		return !parameters.isEmpty() && authentication.getName().matches(getParameter(parameters, IdentityResource.PARAMETER_UID_PATTERN, ".*"));
 	}
 
 	/**
@@ -347,15 +345,16 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * <li>{@code ou} is <code>project1</code></li>
 	 * <li>{@code group} is <code>project1-dev</code></li>
 	 * <li>{@code subscription} is related to project's pKey is <code>project1</code></li>
-	 * <li><code>ou=projects, ou=groups, dc=sample</code> is configured as {@link ContainerScope#TYPE_PROJECT}</li>
+	 * <li><code>ou=project, ou=groups, dc=sample</code> is configured as {@link ContainerScope#TYPE_PROJECT}</li>
 	 * </ul>
 	 * <h2>Result</h2>
 	 * <ul>
 	 * <li>{@code group} is checked to start with its ou <code>project1-</code></li>
 	 * <li>{@code group} is checked to start with the project's pKey <code>project1-</code></li>
 	 * <li>{@code project1} must be visible by the current user</li>
-	 * <li>DN <code>ou=project1, ou=projects, ou=groups, dc=sample</code> is created as needed directly inside the configured DN of {@link ContainerScope#TYPE_PROJECT}</li>
-	 * <li>DN <code>cn=project1-dev, ou=project1, ou=projects, ou=groups, dc=sample</code> must not exist and is created</li>
+	 * <li>DN <code>ou=project1, ou=project, ou=groups, dc=sample</code> is created as needed directly inside the configured DN of
+	 * {@link ContainerScope#TYPE_PROJECT}</li>
+	 * <li>DN <code>cn=project1-dev, ou=project1, ou=project, ou=groups, dc=sample</code> must not exist and is created</li>
 	 * </ul>
 	 *
 	 * <h1>Situation #2</h1>
@@ -365,7 +364,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * <li>{@code group} is <code>project1-dev-team1</code></li>
 	 * <li>{@code parentGroup} is <code>project1-dev</code></li>
 	 * <li>{@code subscription} is related to project's pKey is <code>project1</code></li>
-	 * <li><code>ou=projects, ou=groups, dc=sample</code> is configured as {@link ContainerScope#TYPE_PROJECT}</li>
+	 * <li><code>ou=project, ou=groups, dc=sample</code> is configured as {@link ContainerScope#TYPE_PROJECT}</li>
 	 * </ul>
 	 * <h2>Result</h2>
 	 * <ul>
@@ -374,7 +373,8 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * <li>{@code group} is checked to start with the project's pKey <code>project1-</code></li>
 	 * <li>{@code parentGroup} must be an existing visible by the current user</li>
 	 * <li>{@code project1} must be visible by the current user</li>
-	 * <li>DN <code>cn=project1-dev-team1, cn=project1-dev, ou=project1, ou=projects, ou=groups, dc=sample</code> must not exist and is created</li>
+	 * <li>DN <code>cn=project1-dev-team1, cn=project1-dev, ou=project1, ou=project, ou=groups, dc=sample</code> must not exist and is
+	 * created</li>
 	 * </ul>
 	 */
 	@Override
@@ -426,8 +426,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	/**
 	 * Validate the parent and return its DN. OU must be normalized.
 	 */
-	private String validateAndCreateParent(final String group, final String parentGroup, final String ou,
-			final String pkey, final int subscription) {
+	private String validateAndCreateParent(final String group, final String parentGroup, final String ou, final String pkey, final int subscription) {
 		// Check the creation mode
 		if (StringUtils.isBlank(parentGroup)) {
 			// Parent has not been defined, so it will be the specified OU.
@@ -478,8 +477,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		final var parentGroupLdap = groupLdapResource.findById(parentGroup);
 		if (parentGroupLdap == null) {
 			// The parent group does not exist
-			throw new ValidationJsonException(IdentityResource.PARAMETER_PARENT_GROUP, BusinessException.KEY_UNKNOWN_ID,
-					parentGroup);
+			throw new ValidationJsonException(IdentityResource.PARAMETER_PARENT_GROUP, BusinessException.KEY_UNKNOWN_ID, parentGroup);
 		}
 
 		// Compare the group and its parent
@@ -519,16 +517,14 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	@GET
 	@Path("activity/{subscription:\\d+}/{file:group-.*.csv}")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response getGroupActivitiesCsv(@PathParam("subscription") final int subscription,
-			@PathParam("file") final String file) throws Exception {
-		log.info("Group activities report requested by '{}' for subscription '{}'",
-				SecurityContextHolder.getContext().getAuthentication().getName(), subscription);
+	public Response getGroupActivitiesCsv(@PathParam("subscription") final int subscription, @PathParam("file") final String file) throws Exception {
+		log.info("Group activities report requested by '{}' for subscription '{}'", SecurityContextHolder.getContext().getAuthentication().getName(),
+				subscription);
 		return download(new CsvStreamingOutput(getActivities(subscription, false)), file).build();
 	}
 
 	/**
-	 * Return activities of all users in any group subscribed by the same project of this subscription as CSV input
-	 * stream.
+	 * Return activities of all users in any group subscribed by the same project of this subscription as CSV input stream.
 	 *
 	 * @param subscription The subscription identifier.
 	 * @param file         The target file name.
@@ -538,10 +534,9 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	@GET
 	@Path("activity/{subscription:\\d+}/{file:project-.*.csv}")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response getProjectActivitiesCsv(@PathParam("subscription") final int subscription,
-			@PathParam("file") final String file) throws Exception {
-		log.info("Project activities report requested by '{}' for subscription '{}'",
-				SecurityContextHolder.getContext().getAuthentication().getName(), subscription);
+	public Response getProjectActivitiesCsv(@PathParam("subscription") final int subscription, @PathParam("file") final String file) throws Exception {
+		log.info("Project activities report requested by '{}' for subscription '{}'", SecurityContextHolder.getContext().getAuthentication().getName(),
+				subscription);
 		return download(new CsvStreamingOutput(getActivities(subscription, true)), file).build();
 	}
 
@@ -573,8 +568,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * Return members of all LDAP subscriptions
 	 */
 	private Set<UserOrg> getMembersOfAllSubscriptions(final Collection<Subscription> projectSubscriptions) {
-		return projectSubscriptions.stream().flatMap(s -> getMembersOfSubscription(s).stream())
-				.collect(Collectors.toSet());
+		return projectSubscriptions.stream().flatMap(s -> getMembersOfSubscription(s).stream()).collect(Collectors.toSet());
 	}
 
 	/**
@@ -612,9 +606,8 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * @param nodes        The nodes that have already been processed. This set will be updated by this function.
 	 * @throws Exception When any technical error occurs. Caught at the upper level for the right mapping.
 	 */
-	protected void addSubscriptionActivities(final Map<String, Map<String, Activity>> activities,
-			final Collection<String> users, final Subscription subscription, final ServicePlugin plugin,
-			final Set<INamableBean<String>> nodes) throws Exception {
+	protected void addSubscriptionActivities(final Map<String, Map<String, Activity>> activities, final Collection<String> users,
+			final Subscription subscription, final ServicePlugin plugin, final Set<INamableBean<String>> nodes) throws Exception {
 
 		// Collect subscription's activities of each of unique node
 		if (plugin instanceof ActivitiesProvider p && nodes.add(subscription.getNode())) {
@@ -628,8 +621,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	/**
 	 * Add activities related to a single node.
 	 */
-	private void addUserActivities(final Map<String, Map<String, Activity>> activities, final Node node,
-			final Entry<String, Activity> userActivity) {
+	private void addUserActivities(final Map<String, Map<String, Activity>> activities, final Node node, final Entry<String, Activity> userActivity) {
 		final var user = userActivity.getKey();
 		activities.computeIfAbsent(user, e -> new HashMap<>()).put(node.getId(), userActivity.getValue());
 	}
@@ -647,8 +639,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 
 		// Check the group exists
 		if (groupLdap == null) {
-			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOWN_ID,
-					group);
+			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, BusinessException.KEY_UNKNOWN_ID, group);
 		}
 
 		// Check the group has the type 'TYPE_PROJECT'
@@ -671,8 +662,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		// Check the group does not exist
 		if (groupLdapResource.findById(group) != null) {
 			// This group already exists
-			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, "already-exist", "0",
-					GroupResource.GROUP_ATTRIBUTE, "1", group);
+			throw new ValidationJsonException(IdentityResource.PARAMETER_GROUP, "already-exist", "0", GroupResource.GROUP_ATTRIBUTE, "1", group);
 		}
 
 		// Compare the project's key with the OU, and the name of the group
@@ -709,8 +699,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 			final var scope = groupLdapResource.toScope(types, group);
 
 			// Check type and criteria
-			if (scope != null && ContainerScope.TYPE_PROJECT.equals(scope.getName())
-					&& group.getId().contains(criteriaClean)) {
+			if (scope != null && ContainerScope.TYPE_PROJECT.equals(scope.getName()) && group.getId().contains(criteriaClean)) {
 				// Return the nice name
 				final var bean = new NamedBean<String>();
 				NamedBean.copy(group, bean);
@@ -722,8 +711,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	}
 
 	/**
-	 * Search the LDAP Customers matching to the given criteria and for type "Project". Node identifier is ignored for
-	 * now.
+	 * Search the LDAP Customers matching to the given criteria and for type "Project". Node identifier is ignored for now.
 	 *
 	 * @param criteria the search criteria.
 	 * @return LDAP Customers matching the criteria.
@@ -756,7 +744,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		final var projectId = project.getId();
 		final var parameters = subscriptionResource.getParameters(subscription);
 		final var group = parameters.get(IdentityResource.PARAMETER_GROUP);
-		cacheProjectGroupRepository.deleteAll(cacheProjectGroupRepository.findAllBy("group.id", group, new String[]{"project.id"}, projectId));
+		cacheProjectGroupRepository.deleteAll(cacheProjectGroupRepository.findAllBy("group.id", group, new String[] { "project.id" }, projectId));
 
 		if (deleteRemoteData) {
 			// Check the group exists but is not required to continue the process
@@ -776,7 +764,8 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 					log.info("OU {} has been cleaned, after deleting group {}, project {} and subscription {}", ou, group, project.getPkey(), subscription);
 				} catch (Exception e) {
 					// Ignore this failure, this OU might not be empty
-					log.info("OU {} could not be deleted while deleting group {}, project {} and subscription {}: {}", ou, group, project.getPkey(), subscription, e.getMessage());
+					log.info("OU {} could not be deleted while deleting group {}, project {} and subscription {}: {}", ou, group, project.getPkey(),
+							subscription, e.getMessage());
 				}
 			}
 		}
