@@ -27,6 +27,14 @@ const features = {
 export default {
   id: 'id-ldap',
   label: 'Identity LDAP',
+  // Declared dependency: the parent service-level plugin contributes the
+  // inherited parameter labels (`service:id:ou`, `service:id:group`, …),
+  // the delegation hook that pulls our `renderFeatures` VNodes into the
+  // subscription row, and the `/id/*` routes referenced from our nav.
+  // The loader awaits these before calling our install(), so by the
+  // time we merge our LDAP-specific i18n the parent's bundle is already
+  // in the store — labels resolve correctly on the first render.
+  requires: ['id'],
   // No routes — LDAP-specific screens (the legacy `ldap.html` was empty)
   // and parameter forms come from the parent's wizard.
   install() {

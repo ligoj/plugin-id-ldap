@@ -121,6 +121,7 @@ var l = { renderFeatures(a) {
 } }, u = { renderFeatures: l.renderFeatures }, d = {
 	id: "id-ldap",
 	label: "Identity LDAP",
+	requires: ["id"],
 	install() {
 		let e = r();
 		e.merge(a, "en"), e.merge(o, "fr");
