@@ -1,5 +1,19 @@
 import { h } from 'vue'
 import { APP_BASE, VBtn, VIcon, useI18nStore } from '@ligoj/host'
+import IdParentGroupField from './fields/IdParentGroupField.vue'
+import IdOuField from './fields/IdOuField.vue'
+import IdGroupField from './fields/IdGroupField.vue'
+
+// Parameter ids the LDAP plugin owns a custom input for. Subscribe-mode
+// only: in `edit-node` / `create-node` the wizard edits tool config
+// (where the OU/group fields don't apply) and we let the default
+// renderer handle them. The `service:id:group` field stays composite-or-
+// autocomplete depending on the subscription mode — see IdGroupField.vue.
+const PARAMETER_FIELDS = {
+  'service:id:parent-group': IdParentGroupField,
+  'service:id:ou': IdOuField,
+  'service:id:group': IdGroupField,
+}
 
 /** Pull the group identifier out of a subscription. Mirrors the legacy
  *  `subscription.parameters['service:id:group']` lookup. */
@@ -67,6 +81,23 @@ const service = {
         () => h(VIcon, { size: 'small' }, () => 'mdi-file-chart-outline'),
       ),
     ]
+  },
+
+  /**
+   * Wizard hook: replace the default parameter input for the LDAP
+   * "shape" inputs (OU, parent-group, group) with rich autocompletes /
+   * a composite simple-name + computed full-name editor. Returns null
+   * for every other parameter so the wizard falls back to its default
+   * type-based rendering.
+   *
+   * Active only in subscription mode (not when editing a node directly):
+   * those fields drive subscription creation against the LDAP backend,
+   * but in node-config screens they have no useful meaning.
+   */
+  parameterField({ parameter, isNode } = {}) {
+    if (isNode) return null
+    const comp = PARAMETER_FIELDS[parameter?.id]
+    return comp || null
   },
 }
 
