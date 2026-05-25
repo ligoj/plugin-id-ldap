@@ -1,8 +1,33 @@
 {
-  "name": "ligoj-plugin-id-ldap-ui",
+  "name": "ligoj-plugin-id-ldap",
   "version": "0.1.0",
+  "description": "LDAP backend for the Ligoj identity plugin — connection parameters, OU / group autocompletes, activity exports.",
   "private": true,
   "type": "module",
+  "license": "MIT",
+  "author": "kloudy.io",
+  "contributors": [
+    "Fabrice Daugan <fabrice.daugan@gmail.com>"
+  ],
+  "homepage": "https://github.com/ligoj/plugin-id-ldap#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ligoj/plugin-id-ldap.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ligoj/plugin-id-ldap/issues"
+  },
+  "keywords": [
+    "ligoj",
+    "plugin",
+    "identity",
+    "ldap",
+    "vue",
+    "vite"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
