@@ -5,8 +5,14 @@
        (LdapPluginResource.findCustomersByName). The route requires a
        non-empty `{criteria}` path segment, so unlike the group fields
        this picker does NOT fire on dropdown open — the user must type
-       at least one character before a request is issued. -->
-  <v-autocomplete
+       at least one character before a request is issued.
+
+       `v-combobox` (not `v-autocomplete`) so free-form text typed by
+       the user becomes the field's value when no LDAP OU matches.
+       The OU parameter is a plain string upstream, so an org name
+       the LDAP search doesn't yet know about (a new customer that
+       admin will declare) is still a legitimate value. -->
+  <v-combobox
     :model-value="modelValue"
     :label="t('service:id:ou')"
     :hint="hint"
@@ -21,12 +27,12 @@
     no-filter
     :rules="rules"
     @update:search="onSearch"
-    @update:model-value="(v) => emit('update:modelValue', v ?? '')"
+    @update:model-value="onModelUpdate"
   />
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useApi, useI18nStore } from '@ligoj/host'
 
 const props = defineProps({
@@ -93,4 +99,42 @@ async function onSearch(term) {
     loading.value = false
   }
 }
+
+/**
+ * Combobox emits one of: the picked item's `item-value` (the OU id
+ * string), the raw typed value (when the user enters free text and
+ * blurs / hits Enter), or `null` after the clear button. Normalise
+ * everything to a string so the wizard's paramValues map stores a
+ * consistent type. The "object" branch is defensive — Vuetify can
+ * surface the whole item under some focus-timing edge cases.
+ */
+function onModelUpdate(v) {
+  if (v == null) {
+    emit('update:modelValue', '')
+    return
+  }
+  if (typeof v === 'object') {
+    emit('update:modelValue', v.id ?? v.name ?? '')
+    return
+  }
+  emit('update:modelValue', String(v))
+}
+
+/**
+ * Subscribe mode defaults the OU to the project's `pkey`. Users keep
+ * it as-is (combobox accepts free text — that's why this field is a
+ * combobox and not an autocomplete) or change it via the dropdown
+ * once they start typing to trigger the LDAP lookup.
+ *
+ * Skipped when: the field already has a value (saved subscription /
+ * `parameter.defaultValue`), in edit-node / create-node mode (no
+ * project prop), or when the project hasn't loaded yet (the wizard
+ * gates parameter rendering on a loaded project, so in practice
+ * this last guard is just belt-and-suspenders).
+ */
+onMounted(() => {
+  if ((props.modelValue == null || props.modelValue === '') && props.project?.pkey) {
+    emit('update:modelValue', String(props.project.pkey))
+  }
+})
 </script>
