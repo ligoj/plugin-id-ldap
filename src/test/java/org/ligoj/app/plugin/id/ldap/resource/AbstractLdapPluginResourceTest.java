@@ -3,7 +3,9 @@
  */
 package org.ligoj.app.plugin.id.ldap.resource;
 
-import jakarta.transaction.Transactional;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,9 +13,17 @@ import org.ligoj.app.dao.NodeRepository;
 import org.ligoj.app.dao.ParameterRepository;
 import org.ligoj.app.dao.ParameterValueRepository;
 import org.ligoj.app.dao.ProjectRepository;
-import org.ligoj.app.iam.GroupOrg;
-import org.ligoj.app.iam.model.*;
-import org.ligoj.app.model.*;
+import org.ligoj.app.iam.model.CacheCompany;
+import org.ligoj.app.iam.model.CacheGroup;
+import org.ligoj.app.iam.model.CacheMembership;
+import org.ligoj.app.iam.model.CacheUser;
+import org.ligoj.app.iam.model.DelegateOrg;
+import org.ligoj.app.model.CacheProjectGroup;
+import org.ligoj.app.model.Node;
+import org.ligoj.app.model.Parameter;
+import org.ligoj.app.model.ParameterValue;
+import org.ligoj.app.model.Project;
+import org.ligoj.app.model.Subscription;
 import org.ligoj.app.plugin.id.ldap.dao.CacheLdapRepository;
 import org.ligoj.app.plugin.id.ldap.dao.ProjectCustomerLdapRepository;
 import org.ligoj.app.plugin.id.model.ContainerScope;
@@ -28,8 +38,7 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import jakarta.transaction.Transactional;
 
 /**
  * Test class of {@link LdapPluginResource}
@@ -77,9 +86,8 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 	@BeforeEach
 	public void prepareData() throws IOException {
 		persistEntities("csv",
-				new Class<?>[]{DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class,
-						CacheGroup.class, CacheMembership.class, Project.class, Node.class, Parameter.class,
-						Subscription.class, ParameterValue.class, CacheProjectGroup.class},
+				new Class<?>[] { DelegateOrg.class, ContainerScope.class, CacheCompany.class, CacheUser.class, CacheGroup.class, CacheMembership.class,
+						Project.class, Node.class, Parameter.class, Subscription.class, ParameterValue.class, CacheProjectGroup.class },
 				StandardCharsets.UTF_8);
 		cacheManager.getCache("container-scopes").clear();
 
@@ -156,8 +164,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 
 	protected ParameterValue setData(final Subscription subscription, final String parameter, String data) {
 		final var groupParameter = parameterRepository.findOneExpected(parameter);
-		ParameterValue value = parameterValueRepository
-				.findAllBy("subscription.id", subscription.isNew() ? 0 : subscription.getId()).stream()
+		ParameterValue value = parameterValueRepository.findAllBy("subscription.id", subscription.isNew() ? 0 : subscription.getId()).stream()
 				.filter(v -> v.getParameter().getId().equals(parameter)).findFirst().orElseGet(() -> {
 					final ParameterValue pv = new ParameterValue();
 					pv.setParameter(groupParameter);
@@ -225,8 +232,7 @@ public abstract class AbstractLdapPluginResourceTest extends AbstractPluginIdTes
 		final var groupLdap = getGroup().findById(subGroup);
 		Assertions.assertNotNull(groupLdap);
 		Assertions.assertEquals(subGroup, groupLdap.getName());
-		Assertions.assertEquals("cn=" + subGroup + ",cn=" + parentGroup + ",ou=sea,ou=project,dc=sample,dc=com",
-				groupLdap.getDn());
+		Assertions.assertEquals("cn=" + subGroup + ",cn=" + parentGroup + ",ou=sea,ou=project,dc=sample,dc=com", groupLdap.getDn());
 		Assertions.assertEquals(subGroup, groupLdap.getId());
 		Assertions.assertEquals(parentGroup, groupLdap.getParent());
 		final var groupLdapParent = getGroup().findById(parentGroup);

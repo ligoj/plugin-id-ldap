@@ -192,7 +192,6 @@ class UserLdapRepositoryTest {
 		Assertions.assertEquals("jdoe", repository.toUser("jdoe").getId());
 	}
 
-
 	@Test
 	void toUserByCustomAttribute() {
 		final var user1Alias = new UserOrg();
@@ -219,8 +218,7 @@ class UserLdapRepositoryTest {
 	void getToken() {
 		final var mock = Mockito.mock(LdapTemplate.class);
 		final var dirCtx = Mockito.mock(DirContextOperations.class);
-		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(),
-				(ContextMapper<String>) ArgumentMatchers.any())).thenAnswer(i -> {
+		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), (ContextMapper<String>) ArgumentMatchers.any())).thenAnswer(i -> {
 			((AbstractContextMapper<DirContextOperations>) i.getArgument(2)).mapFromContext(dirCtx);
 			return Collections.singletonList("token");
 		});
@@ -232,8 +230,8 @@ class UserLdapRepositoryTest {
 	@Test
 	void getTokenNotExists() {
 		final var mock = Mockito.mock(LdapTemplate.class);
-		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(),
-				ArgumentMatchers.any(ContextMapper.class))).thenReturn(Collections.emptyList());
+		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(ContextMapper.class)))
+				.thenReturn(Collections.emptyList());
 		repository.setTemplate(mock);
 		Assertions.assertNull(repository.getToken("any"));
 	}
@@ -249,9 +247,8 @@ class UserLdapRepositoryTest {
 			}
 		};
 		repository.setCompanyRepository(Mockito.mock(CompanyLdapRepository.class));
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
-						() -> repository.findByIdExpected(TEST_USER, "user2")),
-				"id", "unknown-id");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> repository.findByIdExpected(TEST_USER, "user2")), "id",
+				"unknown-id");
 	}
 
 	@Test
@@ -274,8 +271,7 @@ class UserLdapRepositoryTest {
 	@Test
 	void setPassword() throws NamingException {
 		final var mockCtx = setPassword("old-password", "new-password");
-		Mockito.verify(mockCtx).modifyAttributes(ArgumentMatchers.eq("cn=Any"),
-				ArgumentMatchers.any(ModificationItem[].class));
+		Mockito.verify(mockCtx).modifyAttributes(ArgumentMatchers.eq("cn=Any"), ArgumentMatchers.any(ModificationItem[].class));
 		Mockito.verify(mockCtx).addToEnvironment("java.naming.security.credentials", "old-password");
 	}
 
@@ -290,10 +286,8 @@ class UserLdapRepositoryTest {
 	@Test
 	void setPasswordNullOldPassword() throws NamingException {
 		final var mockCtx = setPassword(null, "new-password");
-		Mockito.verify(mockCtx).modifyAttributes(ArgumentMatchers.eq("cn=Any"),
-				ArgumentMatchers.any(ModificationItem[].class));
-		Mockito.verify(mockCtx).addToEnvironment(ArgumentMatchers.eq("java.naming.security.credentials"),
-				ArgumentMatchers.anyString());
+		Mockito.verify(mockCtx).modifyAttributes(ArgumentMatchers.eq("cn=Any"), ArgumentMatchers.any(ModificationItem[].class));
+		Mockito.verify(mockCtx).addToEnvironment(ArgumentMatchers.eq("java.naming.security.credentials"), ArgumentMatchers.anyString());
 	}
 
 	@Test
@@ -303,8 +297,9 @@ class UserLdapRepositoryTest {
 		final var mockCtx = newLdapContext();
 		Mockito.doThrow(new AuthenticationException()).when(mockCtx).modifyAttributes(ArgumentMatchers.eq("cn=Any"),
 				ArgumentMatchers.any(ModificationItem[].class));
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class,
-				() -> repository.setPassword(user, "wrong-old-password", "new-password")), "password", "login");
+		MatcherUtil.assertThrows(
+				Assertions.assertThrows(ValidationJsonException.class, () -> repository.setPassword(user, "wrong-old-password", "new-password")), "password",
+				"login");
 	}
 
 	@Test
@@ -312,11 +307,9 @@ class UserLdapRepositoryTest {
 		final var user = new UserOrg();
 		user.setDn("cn=Any");
 		final var mockCtx = newLdapContext();
-		Mockito.doThrow(new InvalidAttributeValueException()).when(mockCtx)
-				.modifyAttributes(ArgumentMatchers.eq("cn=Any"), ArgumentMatchers.any(ModificationItem[].class));
-		MatcherUtil.assertThrows(
-				Assertions.assertThrows(ValidationJsonException.class,
-						() -> repository.setPassword(user, "old-password", "weak-password")),
+		Mockito.doThrow(new InvalidAttributeValueException()).when(mockCtx).modifyAttributes(ArgumentMatchers.eq("cn=Any"),
+				ArgumentMatchers.any(ModificationItem[].class));
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> repository.setPassword(user, "old-password", "weak-password")),
 				"password", "password-policy");
 	}
 
@@ -344,11 +337,11 @@ class UserLdapRepositoryTest {
 			}
 
 		};
-		repository.classNames = new String[]{"posixAccount"};
+		repository.classNames = new String[] { "posixAccount" };
 		repository.classNamesCreate = repository.classNames;
 		repository.setTemplate(Mockito.mock(LdapTemplate.class));
 		repository.cacheRepository = Mockito.mock(CacheLdapRepository.class);
-		repository.setCustomAttributes(new String[]{"mail"});
+		repository.setCustomAttributes(new String[] { "mail" });
 		repository.create(user);
 		Assertions.assertEquals("200", lastContext.get().getObjectAttribute("gidNumber"));
 		Assertions.assertEquals("200", lastContext.get().getObjectAttribute("uidNumber"));
@@ -386,13 +379,13 @@ class UserLdapRepositoryTest {
 		final var user = new UserOrg();
 		final var mock = Mockito.mock(LdapTemplate.class);
 		final var dirCtx = Mockito.mock(DirContextOperations.class);
-		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.eq(2),
-				ArgumentMatchers.any(), (ContextMapper<UserOrg>) ArgumentMatchers.any())).thenAnswer(i -> {
-			((AbstractContextMapper<DirContextOperations>) i.getArgument(4)).mapFromContext(dirCtx);
-			user.setLocked(Instant.ofEpochMilli(LOCKED_DATE));
-			user.setLockedBy("_password_policy");
-			return null;
-		});
+		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.eq(2), ArgumentMatchers.any(),
+				(ContextMapper<UserOrg>) ArgumentMatchers.any())).thenAnswer(i -> {
+					((AbstractContextMapper<DirContextOperations>) i.getArgument(4)).mapFromContext(dirCtx);
+					user.setLocked(Instant.ofEpochMilli(LOCKED_DATE));
+					user.setLockedBy("_password_policy");
+					return null;
+				});
 		Mockito.when(dirCtx.attributeExists(ArgumentMatchers.any())).thenReturn(true);
 		Mockito.when(dirCtx.getStringAttribute(ArgumentMatchers.any())).thenReturn("20180206102244Z");
 		repository.setTemplate(mock);
@@ -410,11 +403,11 @@ class UserLdapRepositoryTest {
 		final var dirCtx = Mockito.mock(DirContextOperations.class);
 		Mockito.when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
 				(ContextMapper<UserOrg>) ArgumentMatchers.any(), ArgumentMatchers.any())).thenAnswer(i -> {
-			((AbstractContextMapper<DirContextOperations>) i.getArgument(3)).mapFromContext(dirCtx);
-			user.setLocked(Instant.ofEpochMilli(LOCKED_DATE));
-			user.setLockedBy("_password_policy");
-			return Collections.singletonList(user);
-		});
+					((AbstractContextMapper<DirContextOperations>) i.getArgument(3)).mapFromContext(dirCtx);
+					user.setLocked(Instant.ofEpochMilli(LOCKED_DATE));
+					user.setLockedBy("_password_policy");
+					return Collections.singletonList(user);
+				});
 
 		Mockito.when(dirCtx.getDn()).thenReturn(org.springframework.ldap.support.LdapUtils.newLdapName("cn=Any"));
 		Mockito.when(dirCtx.attributeExists(ArgumentMatchers.any())).thenReturn(true);
@@ -427,7 +420,7 @@ class UserLdapRepositoryTest {
 		});
 
 		repository.setTemplate(mock);
-		repository.setCustomAttributes(new String[]{"mail", "not-existing"});
+		repository.setCustomAttributes(new String[] { "mail", "not-existing" });
 		final Map<String, GroupOrg> groups = MapUtils.EMPTY_SORTED_MAP;
 		repository.findAllNoCache(groups);
 
@@ -452,43 +445,35 @@ class UserLdapRepositoryTest {
 		repository.unbind("cn=Any");
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	void findAllNoCacheOperationNotSupportedException() {
 		final var repository = new UserLdapRepository();
 		final var template = Mockito.mock(LdapTemplate.class);
 		repository.setTemplate(template);
-		//noinspection unchecked
-		Mockito.when(template.search(
-						ArgumentMatchers.nullable(String.class),
-						Mockito.anyString(),
-						Mockito.any(SearchControls.class),
-						Mockito.any(ContextMapper.class),
-						Mockito.any(DirContextProcessor.class)))
-				.thenThrow(new OperationNotSupportedException(null))
+		// noinspection unchecked
+		Mockito.when(template.search(ArgumentMatchers.nullable(String.class), Mockito.anyString(), Mockito.any(SearchControls.class),
+				Mockito.any(ContextMapper.class), Mockito.any(DirContextProcessor.class))).thenThrow(new OperationNotSupportedException(null))
 				.thenReturn(List.of(new UserOrg()));
 		repository.findAllNoCache(Collections.emptyMap());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	void findAllNoCache() {
 		final var repository = new UserLdapRepository();
 		final var template = Mockito.mock(LdapTemplate.class);
 		repository.setTemplate(template);
-		//noinspection unchecked
-		Mockito.when(template.search(
-						ArgumentMatchers.nullable(String.class),
-						Mockito.anyString(),
-						Mockito.any(SearchControls.class),
-						Mockito.any(ContextMapper.class),
-						Mockito.any(DirContextProcessor.class)))
-				.thenReturn(Collections.emptyList());
+		// noinspection unchecked
+		Mockito.when(template.search(ArgumentMatchers.nullable(String.class), Mockito.anyString(), Mockito.any(SearchControls.class),
+				Mockito.any(ContextMapper.class), Mockito.any(DirContextProcessor.class))).thenReturn(Collections.emptyList());
 		repository.findAllNoCache(Collections.emptyMap());
 	}
 
 	@Test
 	void mapToContext() {
 		final var repository = new UserLdapRepository();
-		repository.setCustomAttributes(new String[]{"foo"});
+		repository.setCustomAttributes(new String[] { "foo" });
 		var context = Mockito.mock(DirContextOperations.class);
 		var user = new UserOrg();
 		user.setCustomAttributes(Map.of("foo", "bar"));
