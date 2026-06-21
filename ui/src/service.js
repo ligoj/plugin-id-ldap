@@ -1,5 +1,4 @@
-import { h } from 'vue'
-import { APP_BASE, VBtn, VIcon, useI18nStore } from '@ligoj/host'
+import { APP_BASE, renderServiceLink, useI18nStore } from '@ligoj/host'
 import IdParentGroupField from './fields/IdParentGroupField.vue'
 import IdOuField from './fields/IdOuField.vue'
 import IdGroupField from './fields/IdGroupField.vue'
@@ -54,32 +53,20 @@ const service = {
     const date = today()
     const base = `${APP_BASE}rest/service/id/ldap/activity/${subscription.id}`
     return [
-      h(
-        VBtn,
-        {
-          icon: true,
-          size: 'small',
-          variant: 'text',
-          href: `${base}/group-${encodeURIComponent(group)}-${date}.csv`,
-          download: '',
-          title: t('id.renderFeatures.activityGroup'),
-          rel: 'noopener',
-        },
-        () => h(VIcon, { size: 'small' }, () => 'mdi-file-table-outline'),
-      ),
-      h(
-        VBtn,
-        {
-          icon: true,
-          size: 'small',
-          variant: 'text',
-          href: `${base}/project-${encodeURIComponent(group)}-${date}.csv`,
-          download: '',
-          title: t('id.renderFeatures.activityProject'),
-          rel: 'noopener',
-        },
-        () => h(VIcon, { size: 'small' }, () => 'mdi-file-chart-outline'),
-      ),
+      renderServiceLink({
+        icon: 'mdi-file-table-outline',
+        href: `${base}/group-${encodeURIComponent(group)}-${date}.csv`,
+        download: '',
+        title: t('id.renderFeatures.activityGroup'),
+        rel: 'noopener',
+      }),
+      renderServiceLink({
+        icon: 'mdi-file-chart-outline',
+        href: `${base}/project-${encodeURIComponent(group)}-${date}.csv`,
+        download: '',
+        title: t('id.renderFeatures.activityProject'),
+        rel: 'noopener',
+      }),
     ]
   },
 
