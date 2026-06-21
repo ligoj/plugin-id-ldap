@@ -6,8 +6,5 @@
 **/.classpath
 **/dependency-reduced-pom.xml
 /*.exec
-**/node_modules
-**/*.iml
-/package-lock.json
-/.init.sh
 /bench.ldiff
+src/main/resources/META-INF/resources/webjars/id-ldap/vue/*
