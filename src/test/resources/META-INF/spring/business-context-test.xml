@@ -6,7 +6,7 @@
 			http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
 	
 	<security:ldap-server ldif="classpath:ldif/test/sample.ldif" root="dc=sample,dc=com" port="34389"/>
-	<bean class="org.ligoj.app.plugin.id.resource.LdapIamProvider" />
+	<bean class="org.ligoj.app.plugin.ldap.resource.LdapIamProvider" />
 	<bean class="org.ligoj.app.resource.node.sample.BugTrackerResource" />
 	<bean class="org.ligoj.app.resource.node.sample.JiraPluginResource" />
 </beans>
