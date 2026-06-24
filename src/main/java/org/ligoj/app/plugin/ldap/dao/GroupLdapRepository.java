@@ -270,6 +270,12 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 				// Even if the membership update failed, the user does not exist anymore. A broken reference can remain
 				// in LDAP, but this case is well managed.
 				log.info("Unable to remove user {} from the group {} : {}", uniqueMember.getDn(), group, inUseEx);
+			} catch (final org.springframework.ldap.NoSuchAttributeException noAttrEx) { // NOSONAR - benign, logged
+				// The exact member value is not present on this group (e.g. stored under a different/legacy DN than
+				// the canonical one). Removal is idempotent: UnboundID rejects deleting an absent value (LDAP error
+				// 16, noSuchAttribute) whereas the previous ApacheDS server silently ignored it — so we no-op here.
+				log.info("Member {} not present on group {}; removal treated as a no-op: {}", uniqueMember.getDn(),
+						group, noAttrEx.getMessage());
 			} catch (final org.springframework.ldap.SchemaViolationException sve) { // NOSONAR - Exception is logged
 				// Occurs when there is an LDAP schema violation such as last member removed
 				log.warn("Unable to remove user {} from the group {}", uniqueMember.getDn(), group, sve);

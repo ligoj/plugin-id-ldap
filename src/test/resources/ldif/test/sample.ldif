@@ -1,8 +1,3 @@
-dn: dc=sample,dc=com
-dc: sample
-objectClass: dcObject
-objectClass: organization
-
 dn: ou=groups,dc=sample,dc=com
 ou: groups
 objectClass: organizationalUnit
@@ -20,7 +15,7 @@ ou:quarantine
 objectClass: organizationalUnit
 
 dn: ou=project,dc=sample,dc=com
-ou : project
+ou: project
 objectClass: organizationalUnit
 
 dn: ou=france,ou=people,dc=sample,dc=com
@@ -36,7 +31,7 @@ ou: ligoj
 objectClass: organizationalUnit
 
 dn: ou=fonction,ou=groups,dc=sample,dc=com
-ou : fonction
+ou: fonction
 objectClass: organizationalUnit
 
 dn: ou=branche,ou=groups,dc=sample,dc=com
@@ -77,25 +72,25 @@ objectClass: groupOfUniqueNames
 uniqueMember: uid=fdaugan,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 
 dn: cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DIG
+cn: DIG
 objectClass: groupOfUniqueNames
 uniqueMember: cn=DIG Production,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 uniqueMember: cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 uniqueMember: cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 
 dn: cn=DIG Production,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DIG Production
+cn: DIG Production
 objectClass: groupOfUniqueNames
 uniqueMember: uid=mmartin,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 
 dn: cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DIG AS
+cn: DIG AS
 objectClass: groupOfUniqueNames
 uniqueMember: uid=mmartin,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 businessCategory: 456987
 
 dn: cn=DIG RHA,cn=DIG AS,cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
-cn : DIG RHA
+cn: DIG RHA
 objectClass: groupOfUniqueNames
 uniqueMember: uid=fdoe2,ou=ing,ou=semi-broken,ou=external,ou=people,dc=sample,dc=com
 uniqueMember: uid=jlast3,ou=ing,ou=external,ou=people,dc=sample,dc=com
@@ -105,19 +100,19 @@ uniqueMember: uid=none
 businessCategory: 123890
 
 dn: cn=Jira,ou=tools,dc=sample,dc=com
-cn : Jira
+cn: Jira
 objectClass: groupOfUniqueNames
 uniqueMember: cn=Production,ou=branche,ou=groups,dc=sample,dc=com
 uniqueMember: cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 
 dn: cn=VigiReport,ou=tools,dc=sample,dc=com
-cn : VigiReport
+cn: VigiReport
 objectClass: groupOfUniqueNames
 uniqueMember: cn=Production,ou=branche,ou=groups,dc=sample,dc=com
 uniqueMember: cn=DIG,ou=fonction,ou=groups,dc=sample,dc=com
 
 dn: cn=Biz Agency,ou=tools,dc=sample,dc=com
-cn : Biz Agency
+cn: Biz Agency
 objectClass: groupOfUniqueNames
 uniqueMember: uid=fdoe2,ou=ing,ou=external,ou=people,dc=sample,dc=com
 uniqueMember: cn=Biz Agency Manager,cn=Biz Agency,ou=tools,dc=sample,dc=com
@@ -125,7 +120,7 @@ uniqueMember: uid=broken,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 uniqueMember: cn=broken,ou=ligoj,ou=france,ou=people,dc=sample,dc=com
 
 dn: cn=Biz Agency Manager,cn=Biz Agency,ou=tools,dc=sample,dc=com
-cn : Biz Agency Manager
+cn: Biz Agency Manager
 objectClass: groupOfUniqueNames
 uniqueMember: uid=wuser,ou=ing,ou=external,ou=people,dc=ligoj,dc=fr
 

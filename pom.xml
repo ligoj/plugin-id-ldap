@@ -10,18 +10,15 @@
 
     <groupId>org.ligoj.plugin</groupId>
     <artifactId>plugin-id-ldap</artifactId>
-    <version>3.0.1</version>
+    <version>3.0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Ligoj - Plugin ID - LDAP</name>
     <description>LDAP implementation for IAM</description>
     <url>https://github.com/ligoj/plugin-id-ldap</url>
 
     <properties>
-        <shared-ldap.version>0.9.15</shared-ldap.version>
-        <spring-ldap.version>4.1.0</spring-ldap.version>
-        <spring-ldap-tiger.version>2.4.4</spring-ldap-tiger.version>
-        <mina.version>2.0.27</mina.version>
-        <bcprov.version>1.84</bcprov.version>
+        <spring-ldap.version>4.0.4</spring-ldap.version>
+        <unboundid.version>7.0.5</unboundid.version>
     </properties>
     <scm>
         <connection>scm:git:https://github.com/ligoj/plugin-id-ldap</connection>
@@ -45,44 +42,9 @@
                 <version>${spring-security.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.apache.directory.shared</groupId>
-                <artifactId>shared-ldap</artifactId>
-                <version>${shared-ldap.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.directory.server</groupId>
-                <artifactId>apacheds-protocol-ldap</artifactId>
-                <version>${apacheds.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>bouncycastle</groupId>
-                        <artifactId>bcprov-jdk15</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
                 <groupId>org.springframework.ldap</groupId>
                 <artifactId>spring-ldap-core</artifactId>
                 <version>${spring-ldap.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.ldap</groupId>
-                <artifactId>spring-ldap-core-tiger</artifactId>
-                <version>${spring-ldap-tiger.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk18on</artifactId>
-                <version>${bcprov.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.mina</groupId>
-                <artifactId>mina-core</artifactId>
-                <version>${mina.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -111,19 +73,14 @@
             <artifactId>spring-security-ldap</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Spring Security 6+/7 embeds the test LDAP server (<security:ldap-server>)
+             via UnboundID only; ApacheDS embedded support was removed in 6.0. Without
+             this on the classpath the parser fails with "Embedded LDAP server is not
+             provided". -->
         <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk18on</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.directory.shared</groupId>
-            <artifactId>shared-ldap</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-protocol-ldap</artifactId>
+            <groupId>com.unboundid</groupId>
+            <artifactId>unboundid-ldapsdk</artifactId>
+            <version>${unboundid.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -135,10 +92,6 @@
                     <artifactId>spring-data-commons</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.ldap</groupId>
-            <artifactId>spring-ldap-core-tiger</artifactId>
         </dependency>
     </dependencies>
     <build>
@@ -167,7 +120,6 @@
                             <artifactSet>
                                 <includes>
                                     <include>org.springframework.ldap:spring-ldap-core</include>
-                                    <include>org.springframework.ldap:spring-ldap-core-tiger</include>
                                 </includes>
                             </artifactSet>
                         </configuration>
