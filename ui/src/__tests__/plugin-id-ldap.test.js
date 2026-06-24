@@ -125,10 +125,11 @@ describe('plugin-id delegation to plugin-id-ldap', () => {
       node: { id: 'service:id:ldap:local' },
       parameters: { 'service:id:group': 'engineering' },
     })
-    // plugin-id contributes one base button (manage) + 0..1 help, plus the
-    // two LDAP-contributed activity buttons. With no `help` parameter set
-    // we expect 1 (manage) + 2 (LDAP) = 3 VNodes.
-    expect(result.length).toBe(3)
+    // plugin-id no longer contributes a base "manage" button (group management
+    // moved onto the clickable chip in renderDetailsKey); with no `help`
+    // parameter it contributes 0, plus the two LDAP-contributed activity
+    // buttons = 2 VNodes.
+    expect(result.length).toBe(2)
     for (const node of result) expect(node.__v_isVNode).toBe(true)
   })
 
@@ -140,6 +141,8 @@ describe('plugin-id delegation to plugin-id-ldap', () => {
       node: { id: 'service:id:other:local' },
       parameters: { 'service:id:group': 'engineering' },
     })
-    expect(result.length).toBe(1)
+    // No base button anymore (manage moved to the chip) and `id-other` is not
+    // registered → no delegation → empty output.
+    expect(result.length).toBe(0)
   })
 })
