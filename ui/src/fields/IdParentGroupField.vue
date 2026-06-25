@@ -3,7 +3,7 @@
        the prefix for the new group, or leave it blank to let the OU drive
        the prefix. Mirrors the legacy `registerIdParentGroupSelect2` REST
        suggestion against `service/id/group?search[value]=…`. -->
-  <v-autocomplete
+  <LigojAutocomplete
     :model-value="modelValue"
     :label="t('service:id:parent-group')"
     :hint="t('service:id:parent-group-description')"
@@ -24,7 +24,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useApi, useI18nStore } from '@ligoj/host'
+import { useApi, useI18nStore, LigojAutocomplete } from '@ligoj/host'
 
 defineProps({
   modelValue: { type: [String, Number, null], default: null },

@@ -37,7 +37,7 @@
     />
   </div>
 
-  <v-autocomplete
+  <LigojAutocomplete
     v-else
     :model-value="modelValue"
     :label="t('service:id:group')"
@@ -58,7 +58,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { useApi, useI18nStore } from '@ligoj/host'
+import { useApi, useI18nStore, LigojAutocomplete } from '@ligoj/host'
 
 const props = defineProps({
   modelValue: { type: [String, Number, null], default: null },
