@@ -57,4 +57,7 @@ export default {
 
   // Divers
   'service:id:ldap:group-create': 'Nom du groupe (calculé)',
+
+  // En-têtes de groupes de paramètres de l'assistant d'abonnement
+  'id.wizard.group.connection': 'Paramètres de connexion',
 }

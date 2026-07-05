@@ -86,6 +86,26 @@ const service = {
     const comp = PARAMETER_FIELDS[parameter?.id]
     return comp || null
   },
+
+  /**
+   * Subscribe-wizard parameter layout: group the LDAP connection parameters
+   * together, in the given order, under a "Connection Settings" header (the
+   * label is an i18n key). Every other parameter keeps the wizard's default
+   * name-ascending order in a trailing unlabeled group.
+   */
+  parameterLayout() {
+    return [{
+      label: 'id.wizard.group.connection',
+      parameters: [
+        'service:id:ldap:url',
+        'service:id:ldap:user-dn',
+        'service:id:ldap:password',
+        'service:id:ldap:clear-password',
+        'service:id:ldap:login-attributes',
+        'service:id:ldap:local-id-attribute',
+      ],
+    }]
+  },
 }
 
 export default service

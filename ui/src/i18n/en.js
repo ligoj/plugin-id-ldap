@@ -63,4 +63,7 @@ export default {
 
   // Misc
   'service:id:ldap:group-create': 'Group name (computed)',
+
+  // Subscribe-wizard parameter group headers
+  'id.wizard.group.connection': 'Connection Settings',
 }

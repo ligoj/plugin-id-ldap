@@ -23,6 +23,7 @@ import service from './service.js'
 const features = {
   renderFeatures: service.renderFeatures,
   parameterField: service.parameterField,
+  parameterLayout: service.parameterLayout,
 }
 
 export default {

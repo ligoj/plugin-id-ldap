@@ -107,6 +107,21 @@ describe('plugin-id-ldap contract', () => {
     })
     expect(result).toBeNull()
   })
+
+  it('parameterLayout() groups the connection parameters under one header, in order', () => {
+    const layout = pluginIdLdapDef.feature('parameterLayout', { mode: 'link', isNode: false })
+    expect(layout).toEqual([{
+      label: 'id.wizard.group.connection',
+      parameters: [
+        'service:id:ldap:url',
+        'service:id:ldap:user-dn',
+        'service:id:ldap:password',
+        'service:id:ldap:clear-password',
+        'service:id:ldap:login-attributes',
+        'service:id:ldap:local-id-attribute',
+      ],
+    }])
+  })
 })
 
 describe('plugin-id delegation to plugin-id-ldap', () => {
