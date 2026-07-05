@@ -88,23 +88,32 @@ const service = {
   },
 
   /**
-   * Subscribe-wizard parameter layout: group the LDAP connection parameters
-   * together, in the given order, under a "Connection Settings" header (the
-   * label is an i18n key). Every other parameter keeps the wizard's default
-   * name-ascending order in a trailing unlabeled group.
+   * Parameter layout for the node/subscription forms: cluster the LDAP
+   * parameters into labelled groups (labels are i18n keys). The connection
+   * group lists its parameters explicitly to fix their order; the others use
+   * `*` globs so every matching parameter (name-ordered) is captured without
+   * enumerating each id. Groups apply in both node and subscription context —
+   * parameters absent from the current context (e.g. `clear-password`, a
+   * node-only parameter) are simply skipped. Anything unmatched keeps the
+   * default name-ascending order in a trailing unlabeled group.
    */
   parameterLayout() {
-    return [{
-      label: 'id.wizard.group.connection',
-      parameters: [
-        'service:id:ldap:url',
-        'service:id:ldap:user-dn',
-        'service:id:ldap:password',
-        'service:id:ldap:clear-password',
-        'service:id:ldap:login-attributes',
-        'service:id:ldap:local-id-attribute',
-      ],
-    }]
+    return [
+      {
+        label: 'id.wizard.group.connection',
+        parameters: [
+          'service:id:ldap:url',
+          'service:id:ldap:user-dn',
+          'service:id:ldap:password',
+          'service:id:ldap:clear-password',
+          'service:id:ldap:login-attributes',
+          'service:id:ldap:local-id-attribute',
+        ],
+      },
+      { label: 'id.wizard.group.groups', parameters: ['service:id:ldap:groups-*'] },
+      { label: 'id.wizard.group.people', parameters: ['service:id:ldap:people-*', 'service:id:ldap:quarantine-dn', 'service:id:ldap:department-attribute'] },
+      { label: 'id.wizard.group.companies', parameters: ['service:id:ldap:compan*'] },
+    ]
   },
 }
 

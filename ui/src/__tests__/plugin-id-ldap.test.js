@@ -108,19 +108,24 @@ describe('plugin-id-ldap contract', () => {
     expect(result).toBeNull()
   })
 
-  it('parameterLayout() groups the connection parameters under one header, in order', () => {
+  it('parameterLayout() declares the connection, groups, users and companies groups', () => {
     const layout = pluginIdLdapDef.feature('parameterLayout', { mode: 'link', isNode: false })
-    expect(layout).toEqual([{
-      label: 'id.wizard.group.connection',
-      parameters: [
-        'service:id:ldap:url',
-        'service:id:ldap:user-dn',
-        'service:id:ldap:password',
-        'service:id:ldap:clear-password',
-        'service:id:ldap:login-attributes',
-        'service:id:ldap:local-id-attribute',
-      ],
-    }])
+    expect(layout).toEqual([
+      {
+        label: 'id.wizard.group.connection',
+        parameters: [
+          'service:id:ldap:url',
+          'service:id:ldap:user-dn',
+          'service:id:ldap:password',
+          'service:id:ldap:clear-password',
+          'service:id:ldap:login-attributes',
+          'service:id:ldap:local-id-attribute',
+        ],
+      },
+      { label: 'id.wizard.group.groups', parameters: ['service:id:ldap:groups-*'] },
+      { label: 'id.wizard.group.people', parameters: ['service:id:ldap:people-*', 'service:id:ldap:quarantine-dn', 'service:id:ldap:department-attribute'] },
+      { label: 'id.wizard.group.companies', parameters: ['service:id:ldap:compan*'] },
+    ])
   })
 })
 
