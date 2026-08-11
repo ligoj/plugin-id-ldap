@@ -3,13 +3,9 @@
  */
 package org.ligoj.app.plugin.ldap.resource;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriInfo;
-
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,12 +23,17 @@ import org.ligoj.bootstrap.MatcherUtil;
 import org.ligoj.bootstrap.core.json.TableItem;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectRetrievalFailureException;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Test class of {@link DelegateOrgResource} with LDAP back-end.
@@ -258,8 +259,8 @@ class DelegateLdapResourceTest extends AbstractLdapTest {
 	}
 
 	private UriInfo newFindAllParameters() {
-		final UriInfo uriInfo = Mockito.mock(UriInfo.class);
-		Mockito.when(uriInfo.getQueryParameters()).thenReturn(new MetadataMap<>());
+		final UriInfo uriInfo = mock(UriInfo.class);
+		when(uriInfo.getQueryParameters()).thenReturn(new MetadataMap<>());
 		uriInfo.getQueryParameters().add("draw", "1");
 		uriInfo.getQueryParameters().add("start", "0");
 		uriInfo.getQueryParameters().add("length", "10");

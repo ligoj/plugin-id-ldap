@@ -19,17 +19,16 @@ import org.ligoj.app.iam.model.CacheUser;
 import org.ligoj.app.model.Node;
 import org.ligoj.app.model.ParameterValue;
 import org.ligoj.app.model.Subscription;
-import org.ligoj.app.plugin.ldap.dao.UserLdapRepository;
 import org.ligoj.app.plugin.id.resource.IdentityResource;
 import org.ligoj.app.plugin.id.resource.UserOrgEditionVo;
 import org.ligoj.app.plugin.id.resource.UserOrgResource;
+import org.ligoj.app.plugin.ldap.dao.UserLdapRepository;
 import org.ligoj.app.resource.ServicePluginLocator;
 import org.ligoj.bootstrap.MatcherUtil;
 import org.ligoj.bootstrap.core.INamableBean;
 import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.springframework.ldap.UncategorizedLdapException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -39,6 +38,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+
+import static org.mockito.Mockito.*;
 
 /**
  * Test class of {@link LdapPluginResource}
@@ -427,17 +428,17 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		reloadLdapCache();
 
 		// Stub JIRA
-		final var activitiesProvider = Mockito.mock(SampleActivityProvider.class);
+		final var activitiesProvider = mock(SampleActivityProvider.class);
 		final var activities = new HashMap<String, Activity>();
 		final var activity = new Activity();
 		activity.setLastConnection(getDate(2015, 1, 1));
 		activities.put("admin-test", activity);
-		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any())).thenReturn(activities);
+		when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any())).thenReturn(activities);
 
 		// Stub service locator
-		final var servicePluginLocator = Mockito.mock(ServicePluginLocator.class);
+		final var servicePluginLocator = mock(ServicePluginLocator.class);
 		final var realServicePluginLocator = this.servicePluginLocator;
-		Mockito.when(servicePluginLocator.getResource(ArgumentMatchers.anyString())).then(invocation -> {
+		when(servicePluginLocator.getResource(ArgumentMatchers.anyString())).then(invocation -> {
 			final var resource = (String) invocation.getArguments()[0];
 			if (resource.equals("service:bt:jira:6")) {
 				return activitiesProvider;
@@ -465,17 +466,17 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		reloadLdapCache();
 
 		// Stub JIRA
-		final var activitiesProvider = Mockito.mock(SampleActivityProvider.class);
+		final var activitiesProvider = mock(SampleActivityProvider.class);
 		final var activities = new HashMap<String, Activity>();
 		final var activity = new Activity();
 		activity.setLastConnection(getDate(2015, 1, 1));
 		activities.put("admin-test", activity);
-		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any())).thenReturn(activities);
+		when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any())).thenReturn(activities);
 
 		// Stub service locator
-		final var servicePluginLocator = Mockito.mock(ServicePluginLocator.class);
+		final var servicePluginLocator = mock(ServicePluginLocator.class);
 		final var realServicePluginLocator = this.servicePluginLocator;
-		Mockito.when(servicePluginLocator.getResource(ArgumentMatchers.anyString())).then(invocation -> {
+		when(servicePluginLocator.getResource(ArgumentMatchers.anyString())).then(invocation -> {
 			final var resource = (String) invocation.getArguments()[0];
 			if (resource.equals("service:bt:jira:6")) {
 				return activitiesProvider;
@@ -503,17 +504,17 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		reloadLdapCache();
 
 		// Stub JIRA
-		final var activitiesProvider = Mockito.mock(SampleActivityProvider.class);
+		final var activitiesProvider = mock(SampleActivityProvider.class);
 		final var activities = new HashMap<String, Activity>();
 		final var activity = new Activity();
 		activity.setLastConnection(getDate(2015, 1, 1));
 		activities.put("admin-test", activity);
-		Mockito.when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any())).thenReturn(activities);
+		when(activitiesProvider.getActivities(ArgumentMatchers.anyInt(), ArgumentMatchers.any())).thenReturn(activities);
 
 		// Stub service locator
-		final var servicePluginLocator = Mockito.mock(ServicePluginLocator.class);
+		final var servicePluginLocator = mock(ServicePluginLocator.class);
 		final var realServicePluginLocator = this.servicePluginLocator;
-		Mockito.when(servicePluginLocator.getResource(ArgumentMatchers.anyString())).then(invocation -> {
+		when(servicePluginLocator.getResource(ArgumentMatchers.anyString())).then(invocation -> {
 			final var resource = (String) invocation.getArguments()[0];
 			if (resource.equals("service:bt:jira:6")) {
 				return activitiesProvider;
@@ -550,7 +551,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		final var service = new Node();
 		service.setId("J");
 		subscription.setNode(service);
-		final var plugin = Mockito.mock(SampleActivityProvider.class);
+		final var plugin = mock(SampleActivityProvider.class);
 		final var nodes = new HashSet<INamableBean<String>>();
 		nodes.add(service);
 		resource.addSubscriptionActivities(activities, null, subscription, plugin, nodes);
@@ -566,11 +567,11 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		service.setId("J1");
 		subscription.setNode(service);
 		subscription.setId(1);
-		final var plugin = Mockito.mock(SampleActivityProvider.class);
+		final var plugin = mock(SampleActivityProvider.class);
 		final var activities1 = new HashMap<String, Activity>();
 		final var activity2 = new Activity();
 		activities1.put(DEFAULT_USER, activity2);
-		Mockito.when(plugin.getActivities(1, null)).thenReturn(activities1);
+		when(plugin.getActivities(1, null)).thenReturn(activities1);
 		final Set<INamableBean<String>> nodes = new HashSet<>();
 		resource.addSubscriptionActivities(activities, null, subscription, plugin, nodes);
 		Assertions.assertEquals(1, activities.size());
@@ -592,11 +593,11 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		service.setId("J1");
 		subscription.setNode(service);
 		subscription.setId(1);
-		final var plugin = Mockito.mock(SampleActivityProvider.class);
+		final var plugin = mock(SampleActivityProvider.class);
 		final var activities1 = new HashMap<String, Activity>();
 		final var activity2 = new Activity();
 		activities1.put(DEFAULT_USER, activity2);
-		Mockito.when(plugin.getActivities(1, null)).thenReturn(activities1);
+		when(plugin.getActivities(1, null)).thenReturn(activities1);
 		final Set<INamableBean<String>> nodes = new HashSet<>();
 		resource.addSubscriptionActivities(activities, null, subscription, plugin, nodes);
 		Assertions.assertEquals(1, activities.size());
@@ -811,10 +812,10 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	@Test
 	void newApplicationUserSaveFail() {
 		final var resource = new LdapPluginResource();
-		final var userResource = Mockito.mock(UserOrgResource.class);
+		final var userResource = mock(UserOrgResource.class);
 		setUserResource(resource, userResource);
-		Mockito.when(userResource.findByIdNoCache("flast123")).thenReturn(null);
-		Mockito.doThrow(new UncategorizedLdapException("")).when(userResource).saveOrUpdate(ArgumentMatchers.any(UserOrgEditionVo.class), ArgumentMatchers.eq(true));
+		when(userResource.findByIdNoCache("flast123")).thenReturn(null);
+		doThrow(new UncategorizedLdapException("")).when(userResource).saveOrUpdate(ArgumentMatchers.any(UserOrgEditionVo.class), ArgumentMatchers.eq(true));
 
 		final var user = new UserOrg();
 		user.setMails(Collections.singletonList("fabrice.daugan@sample.com"));
@@ -828,9 +829,9 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	@Test
 	void newApplicationUserNextLoginFail() {
 		final var resource = new LdapPluginResource();
-		final var userResource = Mockito.mock(UserOrgResource.class);
+		final var userResource = mock(UserOrgResource.class);
 		setUserResource(resource, userResource);
-		Mockito.doThrow(new RuntimeException()).when(userResource).findByIdNoCache("flast123");
+		doThrow(new RuntimeException()).when(userResource).findByIdNoCache("flast123");
 
 		final var user = new UserOrg();
 		user.setMails(Collections.singletonList("fabrice.daugan@sample.com"));

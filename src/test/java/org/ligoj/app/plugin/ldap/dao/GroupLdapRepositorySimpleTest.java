@@ -6,11 +6,13 @@ package org.ligoj.app.plugin.ldap.dao;
 import org.junit.jupiter.api.Test;
 import org.ligoj.app.iam.GroupOrg;
 import org.ligoj.app.plugin.id.dao.AbstractMemCacheRepository;
-import org.mockito.Mockito;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 /**
  * Test class of {@link GroupLdapRepository}
@@ -27,8 +29,8 @@ class GroupLdapRepositorySimpleTest {
 		sub1.setParent(group.getName());
 		broken.setParent("broken");
 		var cachedData = Map.of(AbstractMemCacheRepository.CacheDataType.GROUP, Map.of(group.getName(), group, sub1.getName(), sub1, broken.getName(), broken));
-		groupRepository.cacheRepository = Mockito.mock(CacheLdapRepository.class);
-		Mockito.doReturn(cachedData).when(groupRepository.cacheRepository).getData();
+		groupRepository.cacheRepository = mock(CacheLdapRepository.class);
+		doReturn(cachedData).when(groupRepository.cacheRepository).getData();
 		groupRepository.delete(sub1);
 		groupRepository.delete(group);
 		groupRepository.delete(broken);

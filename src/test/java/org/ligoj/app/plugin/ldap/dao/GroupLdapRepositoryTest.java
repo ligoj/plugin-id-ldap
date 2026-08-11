@@ -13,7 +13,6 @@ import org.ligoj.bootstrap.AbstractDataGeneratorTest;
 import org.ligoj.bootstrap.MatcherUtil;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.mockito.internal.verification.VerificationModeFactory;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.ldap.core.LdapTemplate;
@@ -26,6 +25,8 @@ import javax.naming.directory.SchemaViolationException;
 import javax.naming.ldap.LdapName;
 import java.util.Collections;
 import java.util.HashSet;
+
+import static org.mockito.Mockito.*;
 
 /**
  * Test class of {@link GroupLdapRepository}
@@ -46,13 +47,13 @@ class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 			}
 
 		};
-		final var cacheRepository = Mockito.mock(CacheLdapRepository.class);
+		final var cacheRepository = mock(CacheLdapRepository.class);
 		groupRepository.setCacheRepository(cacheRepository);
-		final var ldapTemplate = Mockito.mock(LdapTemplate.class);
+		final var ldapTemplate = mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
 		addUser(groupRepository);
 
-		Mockito.verify(cacheRepository, VerificationModeFactory.times(1)).addUserToGroup(ArgumentMatchers.any(UserOrg.class),
+		verify(cacheRepository, VerificationModeFactory.times(1)).addUserToGroup(ArgumentMatchers.any(UserOrg.class),
 				ArgumentMatchers.any(GroupOrg.class));
 	}
 
@@ -75,9 +76,9 @@ class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 			}
 
 		};
-		final var cacheRepository = Mockito.mock(CacheLdapRepository.class);
+		final var cacheRepository = mock(CacheLdapRepository.class);
 		groupRepository.setCacheRepository(cacheRepository);
-		final var ldapTemplate = Mockito.mock(LdapTemplate.class);
+		final var ldapTemplate = mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
 		addUser(groupRepository);
 
@@ -91,9 +92,9 @@ class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	@Test
 	void addUserSyncError() {
 		final var groupRepository = newGroupLdapRepository();
-		final var ldapTemplate = Mockito.mock(LdapTemplate.class);
+		final var ldapTemplate = mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
-		Mockito.doThrow(new org.springframework.ldap.AttributeInUseException(new AttributeInUseException("any"))).when(ldapTemplate)
+		doThrow(new org.springframework.ldap.AttributeInUseException(new AttributeInUseException("any"))).when(ldapTemplate)
 				.modifyAttributes(ArgumentMatchers.any(LdapName.class), ArgumentMatchers.any());
 
 		Assertions.assertThrows(org.springframework.ldap.AttributeInUseException.class, () -> addUser(groupRepository));
@@ -105,9 +106,9 @@ class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	@Test
 	void addUserSync1() {
 		final var groupRepository = newGroupLdapRepository();
-		final var ldapTemplate = Mockito.mock(LdapTemplate.class);
+		final var ldapTemplate = mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
-		Mockito.doThrow(new org.springframework.ldap.AttributeInUseException(new AttributeInUseException("value #0 already exists")))
+		doThrow(new org.springframework.ldap.AttributeInUseException(new AttributeInUseException("value #0 already exists")))
 				.when(ldapTemplate).modifyAttributes(ArgumentMatchers.any(LdapName.class), ArgumentMatchers.any());
 
 		addUser(groupRepository);
@@ -119,9 +120,9 @@ class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	@Test
 	void addUserSync2() {
 		final var groupRepository = newGroupLdapRepository();
-		final var ldapTemplate = Mockito.mock(LdapTemplate.class);
+		final var ldapTemplate = mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
-		Mockito.doThrow(new org.springframework.ldap.AttributeInUseException(new AttributeInUseException("ATTRIBUTE_OR_VALUE_EXISTS")))
+		doThrow(new org.springframework.ldap.AttributeInUseException(new AttributeInUseException("ATTRIBUTE_OR_VALUE_EXISTS")))
 				.when(ldapTemplate).modifyAttributes(ArgumentMatchers.any(LdapName.class), ArgumentMatchers.any());
 
 		addUser(groupRepository);
@@ -130,7 +131,7 @@ class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	@Test
 	void removeUser() {
 		final var groupRepository = newGroupLdapRepository();
-		final var ldapTemplate = Mockito.mock(LdapTemplate.class);
+		final var ldapTemplate = mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
 		removeUser(groupRepository);
 	}
@@ -149,9 +150,9 @@ class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	@Test
 	void removeUserNotMember() {
 		final var groupRepository = newGroupLdapRepository();
-		final var ldapTemplate = Mockito.mock(LdapTemplate.class);
+		final var ldapTemplate = mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
-		Mockito.doThrow(new org.springframework.ldap.SchemaViolationException(new SchemaViolationException("any"))).when(ldapTemplate)
+		doThrow(new org.springframework.ldap.SchemaViolationException(new SchemaViolationException("any"))).when(ldapTemplate)
 				.modifyAttributes(ArgumentMatchers.any(LdapName.class), ArgumentMatchers.any());
 		removeUser(groupRepository);
 	}
@@ -169,11 +170,11 @@ class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 			}
 
 		};
-		groupRepository.setCacheRepository(Mockito.mock(CacheLdapRepository.class));
+		groupRepository.setCacheRepository(mock(CacheLdapRepository.class));
 
-		final var ldapTemplate = Mockito.mock(LdapTemplate.class);
+		final var ldapTemplate = mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
-		Mockito.doThrow(new org.springframework.ldap.SchemaViolationException(new SchemaViolationException("any"))).when(ldapTemplate)
+		doThrow(new org.springframework.ldap.SchemaViolationException(new SchemaViolationException("any"))).when(ldapTemplate)
 				.modifyAttributes(ArgumentMatchers.any(LdapName.class), ArgumentMatchers.any());
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> removeUser(groupRepository)), "groups", "last-member-of-group");
 	}
@@ -181,7 +182,7 @@ class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	@Test
 	void removeGroup() {
 		final var groupRepository = newGroupLdapRepository();
-		final var ldapTemplate = Mockito.mock(LdapTemplate.class);
+		final var ldapTemplate = mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
 		groupRepository.removeGroup(new GroupOrg("any", "any", null), "DIG RHA");
 	}
@@ -189,7 +190,7 @@ class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 	@Test
 	void addGroup() {
 		final var groupRepository = newGroupLdapRepository();
-		final var ldapTemplate = Mockito.mock(LdapTemplate.class);
+		final var ldapTemplate = mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
 		groupRepository.addGroup(new GroupOrg("dc=any", "any", null), "DIG RHA");
 	}
@@ -199,9 +200,9 @@ class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 		final var groupRepository = newGroupLdapRepository();
 		groupRepository.classNames = new String[]{"posixGroup"};
 		groupRepository.classNamesCreate = groupRepository.classNames;
-		final var context = Mockito.mock(DirContextOperations.class);
+		final var context = mock(DirContextOperations.class);
 		groupRepository.mapToContext(new GroupOrg("dc=any", "any", null), context);
-		Mockito.verify(context, Mockito.atLeastOnce()).setAttributeValue("gidNumber", 200);
+		verify(context, atLeastOnce()).setAttributeValue("gidNumber", 200);
 	}
 
 	/**
@@ -217,10 +218,10 @@ class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 			}
 
 		};
-		groupRepository.setCacheRepository(Mockito.mock(CacheLdapRepository.class));
-		final var ldapTemplate = Mockito.mock(LdapTemplate.class);
+		groupRepository.setCacheRepository(mock(CacheLdapRepository.class));
+		final var ldapTemplate = mock(LdapTemplate.class);
 		groupRepository.setTemplate(ldapTemplate);
-		Mockito.doThrow(new org.springframework.ldap.AttributeInUseException(new AttributeInUseException("any"))).when(ldapTemplate)
+		doThrow(new org.springframework.ldap.AttributeInUseException(new AttributeInUseException("any"))).when(ldapTemplate)
 				.modifyAttributes(ArgumentMatchers.any(LdapName.class), ArgumentMatchers.any());
 		removeUser(groupRepository);
 	}
@@ -233,7 +234,7 @@ class GroupLdapRepositoryTest extends AbstractDataGeneratorTest {
 			}
 
 		};
-		groupRepository.setCacheRepository(Mockito.mock(CacheLdapRepository.class));
+		groupRepository.setCacheRepository(mock(CacheLdapRepository.class));
 		return groupRepository;
 	}
 

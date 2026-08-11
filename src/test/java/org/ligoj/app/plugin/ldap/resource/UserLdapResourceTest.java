@@ -19,13 +19,14 @@ import org.ligoj.bootstrap.MatcherUtil;
 import org.ligoj.bootstrap.core.json.datatable.DataTableAttributes;
 import org.ligoj.bootstrap.core.resource.BusinessException;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
-import org.mockito.Mockito;
 import org.springframework.test.annotation.Rollback;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
+import static org.mockito.Mockito.mock;
 
 /**
  * Test of {@link UserOrgResource}<br>
@@ -947,8 +948,8 @@ class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 		user2.setMail("wuser.wuser@ing.fr");
 		final List<String> groups2 = new ArrayList<>();
 		groups2.add("Biz Agency Manager");
-		user.setGroups(groups2);
-		resource.update(user);
+		user2.setGroups(groups2);
+		resource.update(user2);
 		final var initialResultsFromUpdater2 = resource.findAll(null, null, "wuser", newUriInfoAsc("id"));
 		Assertions.assertEquals(1, initialResultsFromUpdater2.getRecordsTotal());
 		Assertions.assertEquals(1, initialResultsFromUpdater2.getData().getFirst().getGroups().size());
@@ -987,7 +988,7 @@ class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	@Test
 	void updateMembership() {
 		final UserLdapRepository repository = new UserLdapRepository();
-		repository.setGroupLdapRepository(Mockito.mock(GroupLdapRepository.class));
+		repository.setGroupLdapRepository(mock(GroupLdapRepository.class));
 		final List<String> groups = new ArrayList<>();
 		groups.add("dig rha");
 		final UserOrg user = new UserOrg();
@@ -1048,6 +1049,6 @@ class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	@Test
 	void setIamProviderForTest() {
 		// There, for test by other plugin/application
-		new UserOrgResource().setIamProvider(new IamProvider[] { Mockito.mock(IamProvider.class) });
+		new UserOrgResource().setIamProvider(new IamProvider[] { mock(IamProvider.class) });
 	}
 }
