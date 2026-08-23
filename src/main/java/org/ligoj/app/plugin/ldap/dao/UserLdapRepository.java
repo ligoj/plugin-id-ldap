@@ -26,7 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.ldap.OperationNotSupportedException;
-import org.springframework.ldap.control.PagedResultsDirContextProcessor;
+import org.springframework.ldap.control.PagedResultsControlExchangeDirContextProcessor;
 import org.springframework.ldap.core.*;
 import org.springframework.ldap.core.support.AbstractContextMapper;
 import org.springframework.ldap.filter.AndFilter;
@@ -361,7 +361,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 		searchControls.setReturningObjFlag(false);
 		List<UserOrg> users;
 		try {
-			final var processor = new PagedResultsDirContextProcessor(LDAP_SEARCH_PAGE_SIZE, null);
+			final var processor = new PagedResultsControlExchangeDirContextProcessor(LDAP_SEARCH_PAGE_SIZE);
 			users = template.search(baseDn, classFilter, searchControls, mapper, processor);
 		} catch (final OperationNotSupportedException e) {
 			log.info("Pagination is not supported, regular search ({}) ...", e.getMessage());
@@ -716,7 +716,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 				reason = "self-search";
 				final var loginFilter = loginAttributes.stream()
 						.filter(a -> !a.equalsIgnoreCase(property))
-						.reduce(new OrFilter().or(new EqualsFilter(property, name)), (f, a) -> f.or(new EqualsFilter(a, name)), (f, a) -> a);
+						.reduce(new OrFilter().or(new EqualsFilter(property, name)), (f, a) -> f.or(new EqualsFilter(a, name)), (_, a) -> a);
 				final var filter = new AndFilter().and(loginFilter).and(newClassesFilter());
 				final var userCaptureCallback = new CaptureAuthenticatedLdapEntryContextCallback();
 				authResult = template.authenticate(LdapUtils.newLdapName(baseDn), filter.encode(), password, userCaptureCallback, LDAP_NULL_ERROR_CALLBACK);
@@ -744,7 +744,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 	}
 
 	/**
-	 * Return an user from a property.
+	 * Return a user from a property.
 	 *
 	 * @param property The property to match.
 	 * @param value    The property value to match.
@@ -798,7 +798,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 	 * Digest with S-SHA the given clear password.
 	 *
 	 * @param password the clear password to digest.
-	 * @return a S-SHA digest.
+	 * @return S-SHA digest.
 	 */
 	@SuppressWarnings("deprecation")
 	private String digest(final String password) {
@@ -900,7 +900,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 			return null;
 		}
 
-		// Non null user name
+		// Non-null username
 		var result = findById(login);
 		if (result != null) {
 			return result;
