@@ -1,17 +1,21 @@
-import { APP_BASE, renderServiceLink, useI18nStore } from '@ligoj/host'
-import IdParentGroupField from './fields/IdParentGroupField.vue'
+import { APP_BASE, renderServiceLink, useI18nStore, pluginRegistry } from '@ligoj/host'
 import IdOuField from './fields/IdOuField.vue'
-import IdGroupField from './fields/IdGroupField.vue'
 
 // Parameter ids the LDAP plugin owns a custom input for. Subscribe-mode
 // only: in `edit-node` / `create-node` the wizard edits tool config
 // (where the OU/group fields don't apply) and we let the default
-// renderer handle them. The `service:id:group` field stays composite-or-
-// autocomplete depending on the subscription mode — see IdGroupField.vue.
+// renderer handle them. The parent-group / group fields moved to the
+// PARENT plugin (they only hit `rest/service/id/...` endpoints and are
+// shared with the other id tools); a sibling bundle cannot be imported,
+// so they are resolved at call time through the runtime registry — the
+// parent is guaranteed loaded by `requires: ['id']`. Only the OU field
+// (LDAP-specific `service/id/ldap/customer` endpoint) stays here.
 const PARAMETER_FIELDS = {
-  'service:id:parent-group': IdParentGroupField,
   'service:id:ou': IdOuField,
-  'service:id:group': IdGroupField,
+}
+
+function sharedIdFields() {
+  return pluginRegistry.get('id')?.service?.parameterFields || {}
 }
 
 /** Pull the group identifier out of a subscription. Mirrors the legacy
@@ -83,8 +87,7 @@ const service = {
    */
   parameterField({ parameter, isNode } = {}) {
     if (isNode) return null
-    const comp = PARAMETER_FIELDS[parameter?.id]
-    return comp || null
+    return PARAMETER_FIELDS[parameter?.id] || sharedIdFields()[parameter?.id] || null
   },
 
   /**

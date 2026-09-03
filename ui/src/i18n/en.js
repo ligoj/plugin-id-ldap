@@ -62,7 +62,6 @@ export default {
   'service:id:ldap:company-pattern': 'Company pattern capture id from DN',
 
   // Misc
-  'service:id:ldap:group-create': 'Group name (computed)',
 
   // Subscribe-wizard / node-editor parameter group headers
   'id.wizard.group.connection': 'Connection Settings',

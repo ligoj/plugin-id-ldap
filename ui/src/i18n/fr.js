@@ -56,7 +56,6 @@ export default {
   'service:id:ldap:company-pattern': 'Pattern de capture de l\'identifiant de société dans un DN',
 
   // Divers
-  'service:id:ldap:group-create': 'Nom du groupe (calculé)',
 
   // En-têtes de groupes de paramètres (assistant d'abonnement / éditeur de nœud)
   'id.wizard.group.connection': 'Paramètres de connexion',

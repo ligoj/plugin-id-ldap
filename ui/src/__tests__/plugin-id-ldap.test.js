@@ -68,6 +68,10 @@ describe('plugin-id-ldap contract', () => {
 
   it('parameterField() returns custom components for OU / parent-group / group in subscribe mode', () => {
     setActivePinia(createPinia())
+    // The parent-group / group fields belong to the PARENT plugin and are
+    // resolved through the runtime registry: register plugin-id the way the
+    // loader does (guaranteed before us by `requires: ['id']`).
+    pluginRegistry.register('id', pluginIdDef)
     const ouComp = pluginIdLdapDef.feature('parameterField', {
       parameter: { id: 'service:id:ou' },
       mode: 'create',
