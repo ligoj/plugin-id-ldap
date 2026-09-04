@@ -12,7 +12,7 @@
        The OU parameter is a plain string upstream, so an org name
        the LDAP search doesn't yet know about (a new customer that
        admin will declare) is still a legitimate value. -->
-  <v-combobox
+  <LigojCombobox
     :model-value="modelValue"
     :label="t('service:id:ou')"
     :hint="hint"
@@ -33,7 +33,7 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue'
-import { useApi, useI18nStore } from '@ligoj/host'
+import { LigojCombobox, useApi, useI18nStore } from '@ligoj/host'
 
 const props = defineProps({
   modelValue: { type: [String, Number, null], default: null },
