@@ -309,7 +309,14 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 				.toList(ObjectUtils.getIfNull(pageable.getSort(), new ArrayList<Sort.Order>()).iterator());
 		orders.add(DEFAULT_ORDER);
 		final var order = orders.getFirst();
-		var comparator = ObjectUtils.getIfNull(COMPARATORS.get(order.getProperty()), DEFAULT_COMPARATOR);
+		var comparator = COMPARATORS.get(order.getProperty());
+		if (comparator == null) {
+			// 'customAttributes.<name>' sorts on that custom attribute, id fallback for absent/equal values
+			comparator = order.getProperty().startsWith("customAttributes.")
+					? new org.ligoj.app.plugin.id.model.CustomAttributeComparator(
+							order.getProperty().substring("customAttributes.".length()))
+					: DEFAULT_COMPARATOR;
+		}
 		if (order.getDirection() == Direction.DESC) {
 			comparator = Collections.reverseOrder(comparator);
 		}

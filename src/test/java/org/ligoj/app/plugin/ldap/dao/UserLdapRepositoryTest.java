@@ -51,6 +51,45 @@ class UserLdapRepositoryTest {
 	}
 
 	@Test
+	void findAllPagedSortByCustomAttribute() {
+		// Users in one company, sorted by a custom attribute, id fallback for the absent value
+		final var company = new org.ligoj.app.iam.CompanyOrg("ou=c,dc=s", "c");
+		final var users = new java.util.LinkedHashMap<String, UserOrg>();
+		for (final var e : new String[][] { { "u-c", "A2" }, { "u-a", "B1" }, { "u-b", null } }) {
+			final var user = new UserOrg();
+			user.setId(e[0]);
+			user.setCompany("c");
+			if (e[1] != null) {
+				user.setCustomAttributes(java.util.Map.of("badge", e[1]));
+			}
+			users.put(e[0], user);
+		}
+		final var localRepository = new UserLdapRepository() {
+			@Override
+			public Map<String, UserOrg> findAll() {
+				return users;
+			}
+		};
+		final var companyRepository = org.mockito.Mockito.mock(CompanyLdapRepository.class);
+		org.mockito.Mockito.when(companyRepository.findAll()).thenReturn(java.util.Map.of("c", company));
+		org.springframework.test.util.ReflectionTestUtils.setField(localRepository, "companyRepository", companyRepository);
+		org.springframework.test.util.ReflectionTestUtils.setField(localRepository, "inMemoryPagination",
+				new org.ligoj.bootstrap.core.json.InMemoryPagination());
+
+		final var page = localRepository.findAll(null, java.util.Set.of("c"), null, org.springframework.data.domain.PageRequest.of(0, 10,
+				org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "customAttributes.badge")));
+		// Absent value sorts first (empty), then A2, then B1
+		Assertions.assertEquals(java.util.List.of("u-b", "u-c", "u-a"),
+				page.getContent().stream().map(UserOrg::getId).toList());
+
+		// Unknown non-custom property falls back to the login comparator
+		final var byLogin = localRepository.findAll(null, java.util.Set.of("c"), null, org.springframework.data.domain.PageRequest.of(0, 10,
+				org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.ASC, "unknown")));
+		Assertions.assertEquals(java.util.List.of("u-a", "u-b", "u-c"),
+				byLogin.getContent().stream().map(UserOrg::getId).toList());
+	}
+
+	@Test
 	void toCompanyNoMatch() {
 		repository.setCompanyPattern("[^,]+,ou=([^,]+),.*");
 		Assertions.assertNull(repository.toCompany("any"));
