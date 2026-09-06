@@ -17,7 +17,7 @@
     <url>https://github.com/ligoj/plugin-id-ldap</url>
 
     <properties>
-        <spring-ldap.version>4.1.0</spring-ldap.version>
+        <spring-ldap.version>4.1.1</spring-ldap.version>
         <unboundid.version>7.0.5</unboundid.version>
     </properties>
     <scm>
@@ -31,7 +31,7 @@
             <dependency>
                 <groupId>org.ligoj.plugin</groupId>
                 <artifactId>plugin-id</artifactId>
-                <version>[5.0.0-SNAPSHOT,5.1.0)</version>
+                <version>[5.0.1,5.1.0)</version>
                 <scope>provided</scope>
             </dependency>
 
