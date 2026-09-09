@@ -55,3 +55,5 @@ Cache resources TTL can be overridden from Configuration API with `cache.$name.t
 | service:id:ldap:uid-attribute            | uid                                    | LDAP attribute name user identifier.                                                                                                   |    
 | service:id:ldap:url                      | ldap://localhost:389                   | One or several comma separated URLs. The first one is the primary, the next ones are for failover. Encrypted in database.              |            
 | service:id:ldap:user-dn                  | cn=Manager,dc=sample,dc=com            | DN of administrator.                                                                                                                   |
+
+> Node parameters are read once and kept in the `id-configuration` cache, and the directory data in the `id-ldap-data` cache (refreshed on its own after `cache.id-ldap-data.ttl`). After changing node parameters, invalidate both caches from the cache administration page or with `ligoj cache invalidate`, or restart the API.

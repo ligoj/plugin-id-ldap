@@ -233,6 +233,28 @@ class UserLdapRepositoryTest {
 	}
 
 	@Test
+	void toUserByCustomAttributeCaseSensitive() {
+		// The login attribute must be declared exactly as the custom attribute: no case-insensitive lookup
+		final var user1Alias = new UserOrg();
+		user1Alias.setCustomAttributes(Map.of("uidFonctionnel", "F123"));
+		user1Alias.setId(TEST_USER);
+		var repository = new UserLdapRepository() {
+			@Override
+			public UserOrg findById(final String login) {
+				return null;
+			}
+			@Override
+			public Map<String, UserOrg> findAll() {
+				return Map.of("user2", new UserOrg(), TEST_USER, user1Alias);
+			}
+		};
+		repository.setLoginAttributes(List.of("uid", "uidfonctionnel"));
+		Assertions.assertEquals("F123", repository.toUser("F123").getId());
+		repository.setLoginAttributes(List.of("uid", "uidFonctionnel"));
+		Assertions.assertEquals(TEST_USER, repository.toUser("F123").getId());
+	}
+
+	@Test
 	void toUserByCustomAttribute() {
 		final var user1Alias = new UserOrg();
 		user1Alias.setCustomAttributes(Map.of("mail", "user1@sample.com"));
