@@ -17,7 +17,6 @@ service:id:ldap:login-attributes;;FALSE;FALSE;TEXT;service:id:ldap;uid,mail;;FAL
 service:id:ldap:password;;FALSE;TRUE;TEXT;service:id:ldap;secret;;FALSE
 service:id:ldap:people-class;;FALSE;FALSE;TEXT;service:id:ldap;inetOrgPerson;;FALSE
 service:id:ldap:people-class-create;;FALSE;FALSE;TEXT;service:id:ldap;;;FALSE
-service:id:ldap:people-custom-attributes;;FALSE;FALSE;TEXT;service:id:ldap;;;FALSE
 service:id:ldap:people-dn;;FALSE;FALSE;TEXT;service:id:ldap;dc=sample,dc=com;;FALSE
 service:id:ldap:people-internal-dn;;FALSE;FALSE;TEXT;service:id:ldap;;;FALSE
 service:id:ldap:quarantine-dn;;FALSE;FALSE;TEXT;service:id:ldap;ou=quarantine,dc=sample,dc=com;;FALSE

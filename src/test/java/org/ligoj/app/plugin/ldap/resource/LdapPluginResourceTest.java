@@ -8,6 +8,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.core.StreamingOutput;
 import org.apache.commons.io.IOUtils;
+import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.ligoj.app.iam.Activity;
@@ -400,6 +401,34 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	@Test
 	void checkStatus() {
 		Assertions.assertTrue(resource.checkStatus("service:id:ldap:dig", subscriptionResource.getParametersNoCheck(subscription)));
+	}
+
+	@Test
+	void customAttributesFromServiceParameter() {
+		// The generic identity parameter wins over the deprecated LDAP one, both set on the node
+		Assertions.assertArrayEquals(new String[] { "uidFonctionnel", "badge" }, resource.getUserRepository("service:id:ldap:dig").getCustomAttributes());
+	}
+
+	@Test
+	void toCustomAttributesFallsBackToDeprecatedParameter() {
+		// Only the deprecated LDAP parameter set: still honored
+		Assertions.assertArrayEquals(new String[] { "legacyAttr" }, resource.toCustomAttributes("service:id:ldap:any",
+				Map.of(LdapPluginResource.PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES, "legacyAttr")));
+		// Neither: none
+		Assertions.assertArrayEquals(new String[0], resource.toCustomAttributes("service:id:ldap:any", Map.of()));
+		// Generic set: the deprecated one is ignored
+		Assertions.assertArrayEquals(new String[] { "a", "b" }, resource.toCustomAttributes("service:id:ldap:any",
+				Map.of(IdentityResource.PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES, "a, b", LdapPluginResource.PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES, "legacyAttr")));
+	}
+
+	@Test
+	@SuppressWarnings("deprecation")
+	void deprecatedLdapParameterNotShipped() throws java.io.IOException {
+		// The LDAP-level declaration is gone from the shipped definitions (the service parameter replaces it); a value
+		// stored by an existing instance is still read, see toCustomAttributes
+		final var lines = java.nio.file.Files.readAllLines(java.nio.file.Paths.get("src/main/resources/csv/parameter.csv"), java.nio.charset.StandardCharsets.UTF_8);
+		Assertions.assertTrue(lines.stream().noneMatch(l -> l.startsWith(LdapPluginResource.PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES + ";")));
+		Assertions.assertFalse(lines.getFirst().contains("deprecated"));
 	}
 
 	@Test

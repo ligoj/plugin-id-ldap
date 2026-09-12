@@ -9,6 +9,8 @@ service:id:ldap:company-pattern;[^,]+,ou=([^,]+),.*;service:id:ldap:dig
 service:id:ldap:groups-dn;dc=sample,dc=com;service:id:ldap:dig
 service:id:ldap:local-id-attribute;employeeNumber;service:id:ldap:dig
 service:id:ldap:login-attributes;uid,mail;service:id:ldap:dig
+service:id:people-custom-attributes;uidFonctionnel,badge;service:id:ldap:dig
+service:id:ldap:people-custom-attributes;legacyAttr;service:id:ldap:dig
 service:id:ldap:locked-attribute;employeeType;service:id:ldap:dig
 service:id:ldap:locked-value;LOCKED;service:id:ldap:dig
 service:id:ldap:password;secret;service:id:ldap:dig

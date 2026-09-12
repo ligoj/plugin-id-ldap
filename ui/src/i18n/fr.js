@@ -38,6 +38,7 @@ export default {
   'service:id:ldap:people-class-create-description': 'Classes LDAP des personnes à créer. Séparées par des espaces ou virgules. Si vide, la première des classes de recherche est utilisée.',
   'service:id:ldap:people-custom-attributes': 'Attributs personnalisés',
   'service:id:ldap:people-custom-attributes-description': 'Liste d\'attributs LDAP obligatoires pour les utilisateurs. Séparés par des espaces ou virgules.',
+  'service:id:ldap:people-custom-attributes-deprecated': 'Obsolète : renseignez le paramètre du service d\'identité « Attributs personnalisés » (service:id:people-custom-attributes) ; cette valeur n\'est lue que si le paramètre du service est vide.',
 
   // Groupes
   'service:id:ldap:groups-dn': 'DN des groupes',

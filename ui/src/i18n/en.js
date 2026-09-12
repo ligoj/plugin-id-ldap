@@ -44,6 +44,7 @@ export default {
   'service:id:ldap:people-class-create-description': 'LDAP object classes of users for the creation. Comma or space separated values. When empty, use the first of search classes.',
   'service:id:ldap:people-custom-attributes': 'Custom attributes',
   'service:id:ldap:people-custom-attributes-description': 'List of custom user LDAP attribute names. Comma or space separated values',
+  'service:id:ldap:people-custom-attributes-deprecated': 'Deprecated: set the identity service parameter "Custom attributes" (service:id:people-custom-attributes) instead; this value is only read when the service parameter is empty.',
 
   // Groups
   'service:id:ldap:groups-dn': 'Groups DN',

@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.api.ServicePlugin;
@@ -196,6 +197,14 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	/**
 	 * List of mandatory custom user LDAP attribute names. Comma or space separated values.
 	 */
+	/**
+	 * Custom user attribute names, LDAP-level declaration.
+	 *
+	 * @deprecated Superseded by the identity service parameter
+	 *             {@link IdentityResource#PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES}. No longer declared by this plugin; a
+	 *             value stored by an instance installed before is still read as a fallback.
+	 */
+	@Deprecated(since = "5.0.3")
 	public static final String PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES = KEY + ":people-custom-attributes";
 
 	/**
@@ -234,6 +243,29 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	/**
 	 * Convert a string to a list using Comma or space separator.
 	 */
+	/**
+	 * Custom attribute names of a node: the identity service parameter first, else the deprecated LDAP-level one
+	 * (with a warning inviting to move the value), else none.
+	 *
+	 * @param node       The node identifier, for the log.
+	 * @param parameters The node parameters.
+	 * @return The custom attribute names, never <code>null</code>.
+	 */
+	@SuppressWarnings("deprecation")
+	String[] toCustomAttributes(final String node, final Map<String, String> parameters) {
+		final var generic = getParameter(parameters, IdentityResource.PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES, "");
+		if (StringUtils.isNotBlank(generic)) {
+			return toParameterList(generic);
+		}
+		final var legacy = getParameter(parameters, PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES, "");
+		if (StringUtils.isNotBlank(legacy)) {
+			log.warn("Node {} still uses the deprecated parameter {}: move the value to {}", node, PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES,
+					IdentityResource.PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES);
+			return toParameterList(legacy);
+		}
+		return ArrayUtils.EMPTY_STRING_ARRAY;
+	}
+
 	private String[] toParameterList(final String rawParameterValue) {
 		return StringUtils.split(rawParameterValue, ", ");
 	}
@@ -279,7 +311,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		repository.setLockedValue(getParameter(parameters, PARAMETER_LOCKED_VALUE, "LOCKED"));
 		repository.setCompanyPattern(getParameter(parameters, PARAMETER_COMPANY_PATTERN, "[^,]+,ou=([^,]+),.*"));
 		repository.setClearPassword(Boolean.parseBoolean(parameters.get(PARAMETER_CLEAR_PASSWORD)));
-		repository.setCustomAttributes(toParameterList(getParameter(parameters, PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES, "")));
+		repository.setCustomAttributes(toCustomAttributes(node, parameters));
 
 		// Complete the bean
 		SpringUtils.getApplicationContext().getAutowireCapableBeanFactory().autowireBean(repository);

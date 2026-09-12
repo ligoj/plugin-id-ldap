@@ -3,6 +3,7 @@ service:id:group;true;;false;TEXT;service:id
 service:id:ou;true;CREATE;false;TEXT;service:id
 service:id:parent-group;false;CREATE;false;TEXT;service:id
 service:id:uid-pattern;false;;false;TEXT;service:id
+service:id:people-custom-attributes;false;;false;TEXT;service:id
 service:id:ldap:base-dn;false;;false;TEXT;service:id:ldap
 service:id:ldap:companies-class;false;;false;TEXT;service:id:ldap
 service:id:ldap:companies-class-create;false;;false;TEXT;service:id:ldap
