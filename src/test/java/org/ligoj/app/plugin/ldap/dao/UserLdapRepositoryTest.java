@@ -89,6 +89,48 @@ class UserLdapRepositoryTest {
 				byLogin.getContent().stream().map(UserOrg::getId).toList());
 	}
 
+	/**
+	 * The free-text criterion also matches the custom attribute values: the visual identifier
+	 * ({@code service:id:visual-id-name = customAttributes.<x>}) shown by the UI is searchable.
+	 */
+	@Test
+	void findAllCriteriaCustomAttribute() {
+		final var company = new org.ligoj.app.iam.CompanyOrg("ou=c,dc=s", "c");
+		final var users = new java.util.LinkedHashMap<String, UserOrg>();
+		for (final var e : new String[][] { { "ragnar", "UID Ragnar" }, { "other", "UID Other" }, { "bare", null } }) {
+			final var user = new UserOrg();
+			user.setId(e[0]);
+			user.setFirstName(e[0]);
+			user.setCompany("c");
+			user.setMails(java.util.List.of(e[0] + "@sample.com"));
+			if (e[1] != null) {
+				user.setCustomAttributes(java.util.Map.of("uidFonctionnel", e[1]));
+			}
+			users.put(e[0], user);
+		}
+		final var localRepository = new UserLdapRepository() {
+			@Override
+			public Map<String, UserOrg> findAll() {
+				return users;
+			}
+		};
+		final var companyRepository = org.mockito.Mockito.mock(CompanyLdapRepository.class);
+		org.mockito.Mockito.when(companyRepository.findAll()).thenReturn(java.util.Map.of("c", company));
+		org.springframework.test.util.ReflectionTestUtils.setField(localRepository, "companyRepository", companyRepository);
+		org.springframework.test.util.ReflectionTestUtils.setField(localRepository, "inMemoryPagination",
+				new org.ligoj.bootstrap.core.json.InMemoryPagination());
+		final var pageable = org.springframework.data.domain.PageRequest.of(0, 10);
+
+		Assertions.assertEquals(java.util.List.of("ragnar"),
+				localRepository.findAll(null, java.util.Set.of("c"), "uid ragnar", pageable).getContent().stream().map(UserOrg::getId).toList());
+		Assertions.assertEquals(java.util.List.of("other", "ragnar"),
+				localRepository.findAll(null, java.util.Set.of("c"), "UID ", pageable).getContent().stream().map(UserOrg::getId).toList());
+		// The regular attributes still match, and a user without custom attributes is safe
+		Assertions.assertEquals(java.util.List.of("bare"),
+				localRepository.findAll(null, java.util.Set.of("c"), "bare@", pageable).getContent().stream().map(UserOrg::getId).toList());
+		Assertions.assertEquals(3, localRepository.findAll(null, java.util.Set.of("c"), null, pageable).getTotalElements());
+	}
+
 	@Test
 	void toCompanyNoMatch() {
 		repository.setCompanyPattern("[^,]+,ou=([^,]+),.*");

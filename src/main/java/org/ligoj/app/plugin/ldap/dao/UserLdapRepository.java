@@ -11,6 +11,7 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.*;
 import org.apache.commons.text.RandomStringGenerator;
 import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
+import org.ligoj.app.plugin.id.dao.UserCriteria;
 import org.ligoj.app.api.Normalizer;
 import org.ligoj.app.iam.*;
 import org.ligoj.app.plugin.id.DnUtils;
@@ -579,10 +580,8 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 	 * Indicates the given user match to the given pattern.
 	 */
 	private boolean matchPattern(final UserOrg userLdap, final String criteria) {
-		return Strings.CI.contains(userLdap.getFirstName(), criteria)
-				|| Strings.CI.contains(userLdap.getLastName(), criteria)
-				|| Strings.CI.contains(userLdap.getId(), criteria) || !userLdap.getMails().isEmpty()
-				&& Strings.CI.contains(userLdap.getMails().getFirst(), criteria);
+		// Shared rule of plugin-id: login, names, first mail and the custom attribute values
+		return UserCriteria.matches(userLdap, criteria);
 	}
 
 	@Override
