@@ -645,6 +645,20 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 		Assertions.assertEquals("sea", customers.iterator().next().getId());
 	}
 
+	/**
+	 * Without criteria (the picker just opened), every customer is suggested.
+	 */
+	@Test
+	void findCustomersByNameAll() {
+		final var all = resource.findCustomersByName();
+		Assertions.assertTrue(all.stream().anyMatch(c -> "sea".equals(c.getId())));
+		Assertions.assertTrue(all.size() >= resource.findCustomersByName("ea").size());
+		Assertions.assertEquals(all, resource.findCustomersByName(""));
+		// The scope container itself (ou=project) is not a customer
+		Assertions.assertTrue(all.stream().noneMatch(c -> "project".equals(c.getId())), all.toString());
+		Assertions.assertTrue(all.stream().anyMatch(c -> "ligoj".equals(c.getId())));
+	}
+
 	@Test
 	void acceptNoParameters() {
 		Assertions.assertFalse(resource.accept(null, "service:any"));

@@ -102,6 +102,10 @@ const service = {
    */
   parameterLayout() {
     return [
+      // Subscription parameters, in the order the user fills them: the organization (required,
+      // prefilled with the project key), the optional parent group, then the group (simple name
+      // + computed full name, rendered last by the group field itself)
+      { label: 'id.wizard.group.subscription', parameters: ['service:id:ou', 'service:id:parent-group', 'service:id:group'] },
       {
         label: 'id.wizard.group.connection',
         parameters: [

@@ -743,6 +743,20 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	}
 
 	/**
+	 * Every LDAP Customer of type "Project", for a picker opened before any input. Node identifier is ignored for now.
+	 *
+	 * @return All LDAP Customers.
+	 * @see ContainerScope#TYPE_PROJECT
+	 */
+	@GET
+	@Path("customer/{node}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Collection<INamableBean<String>> findCustomersByName() {
+		// No criteria: every customer, for the picker opened before any input
+		return findCustomersByName("");
+	}
+
+	/**
 	 * Search the LDAP Customers matching to the given criteria and for type "Project". Node identifier is ignored for now.
 	 *
 	 * @param criteria the search criteria.

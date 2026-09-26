@@ -112,9 +112,10 @@ describe('plugin-id-ldap contract', () => {
     expect(result).toBeNull()
   })
 
-  it('parameterLayout() declares the connection, groups, users and companies groups', () => {
+  it('parameterLayout() puts the project group parameters first, then the connection, groups, users and companies groups', () => {
     const layout = pluginIdLdapDef.feature('parameterLayout', { mode: 'link', isNode: false })
     expect(layout).toEqual([
+      { label: 'id.wizard.group.subscription', parameters: ['service:id:ou', 'service:id:parent-group', 'service:id:group'] },
       {
         label: 'id.wizard.group.connection',
         parameters: [

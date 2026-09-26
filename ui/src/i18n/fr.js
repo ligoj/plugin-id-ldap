@@ -59,6 +59,7 @@ export default {
   // Divers
 
   // En-têtes de groupes de paramètres (assistant d'abonnement / éditeur de nœud)
+  'id.wizard.group.subscription': 'Groupe du projet',
   'id.wizard.group.connection': 'Paramètres de connexion',
   'id.wizard.group.groups': 'Gestion des groupes',
   'id.wizard.group.people': 'Gestion des utilisateurs',

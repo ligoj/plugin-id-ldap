@@ -16,6 +16,8 @@ import org.springframework.stereotype.Component;
 
 import javax.cache.annotation.*;
 import java.util.Set;
+
+import javax.naming.directory.SearchControls;
 import java.util.stream.Collectors;
 
 import static org.ligoj.app.plugin.ldap.dao.AbstractManagedLdapRepository.OBJECT_CLASS;
@@ -45,8 +47,10 @@ public class ProjectCustomerLdapRepository {
 	 */
 	@CacheResult(cacheName = "customers")
 	public Set<String> findAll(@CacheKey final String baseDn) {
+		// Direct children only: a subtree search would also return the scope container itself (an
+		// organizationalUnit too), which is not a customer
 		return getUser().getTemplate()
-				.search(baseDn, new EqualsFilter(OBJECT_CLASS, CUSTOMER_OF_PROJECT).encode(),
+				.search(baseDn, new EqualsFilter(OBJECT_CLASS, CUSTOMER_OF_PROJECT).encode(), SearchControls.ONELEVEL_SCOPE,
 						(Object ctx) -> (DirContextAdapter) ctx)
 				.stream().map(g -> DnUtils.toRdn(g.getDn().toString())).collect(Collectors.toSet());
 	}

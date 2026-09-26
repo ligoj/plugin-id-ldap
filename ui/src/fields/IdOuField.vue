@@ -2,10 +2,12 @@
   <!-- Organisation / customer picker. Looks up existing OUs from the
        node-scoped backend route:
          GET rest/service/id/ldap/customer/<instanceNodeId>/<criteria>
-       (LdapPluginResource.findCustomersByName). The route requires a
-       non-empty `{criteria}` path segment, so unlike the group fields
-       this picker does NOT fire on dropdown open — the user must type
-       at least one character before a request is issued.
+       (LdapPluginResource.findCustomersByName). Opening the dropdown
+       lists every customer (`customer/<instanceNodeId>` without
+       criteria); typing narrows the list. `hide-no-data` is forced
+       off: a v-combobox keeps its menu DISABLED while it has no item,
+       so the first opening (list not fetched yet) would show nothing
+       even once the customers arrive.
 
        `v-combobox` (not `v-autocomplete`) so free-form text typed by
        the user becomes the field's value when no LDAP OU matches.
@@ -14,7 +16,7 @@
        admin will declare) is still a legitimate value. -->
   <LigojCombobox
     :model-value="modelValue"
-    :label="t('service:id:ou')"
+    :label="paramLabel"
     :hint="hint"
     :persistent-hint="!!hint"
     :items="items"
@@ -25,14 +27,17 @@
     density="compact"
     clearable
     no-filter
+    :hide-no-data="false"
+    :no-data-text="loading ? t('common.loading') : t('common.noData')"
     :rules="rules"
     @update:search="onSearch"
+    @update:menu="onMenuOpen"
     @update:model-value="onModelUpdate"
   />
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { LigojCombobox, useApi, useI18nStore } from '@ligoj/host'
 
 const props = defineProps({
@@ -63,32 +68,39 @@ let lastQuery = null
 
 const hint = computed(() => t('service:id:ou-description'))
 const required = computed(() => !!(props.parameter?.mandatory || props.parameter?.required))
+const paramLabel = computed(() => `${t('service:id:ou')}${required.value ? ' *' : ''}`)
+const createMode = computed(() => !props.isNode && String(props.mode).toLowerCase() === 'create')
+/**
+ * Prefill: the organization must be a prefix of the project key (the group is `<organization>-<name>` and must
+ * start with the key), so the key itself is the natural default for a new subscription. Only when nothing is
+ * set yet: a value chosen by the user, or restored by the form, is never overwritten.
+ */
+watch(() => props.project?.pkey, (pkey) => {
+  if (createMode.value && pkey && (props.modelValue == null || props.modelValue === '')) emit('update:modelValue', pkey)
+}, { immediate: true })
 const rules = computed(() => required.value
   ? [(v) => (v != null && v !== '') || 'Required']
   : [])
 
 /**
- * Trigger a lookup only once the user types at least one character —
- * the backend's `customer/{node}/{criteria}` route requires a
- * non-empty criteria segment, so an empty fetch would 404. No mount-
- * time fetch either: zero API calls until real input.
+ * Opening the dropdown before any input lists every customer (`customer/{node}`), so the
+ * user can pick without typing; typing then narrows the list (`customer/{node}/{criteria}`).
  */
+function onMenuOpen(open) {
+  if (open && !items.value.length) onSearch('')
+}
 async function onSearch(term) {
   const q = (term || '').trim()
   if (q === lastQuery) return
   lastQuery = q
-  if (q.length < 1) {
-    items.value = []
-    return
-  }
   loading.value = true
   try {
-    // `customer/{node}/{criteria}` — backend ignores the node value but
-    // the JAX-RS route requires the segment. Use the wizard-supplied
-    // instance id; fall back to the tool id, then to a sane default so
-    // the request still matches when the field mounts standalone.
+    // Backend ignores the node value but the JAX-RS route requires the
+    // segment. Use the wizard-supplied instance id; fall back to the tool
+    // id, then to a sane default so the request still matches when the
+    // field mounts standalone.
     const node = props.instanceNodeId || props.nodeId || 'service:id:ldap'
-    const url = `rest/service/id/ldap/customer/${encodeURIComponent(node)}/${encodeURIComponent(q)}`
+    const url = `rest/service/id/ldap/customer/${encodeURIComponent(node)}${q ? '/' + encodeURIComponent(q) : ''}`
     const data = await api.get(url)
     const list = Array.isArray(data) ? data : (data?.data || [])
     items.value = list.map((c) => ({ id: c.id ?? c.name, name: c.name ?? c.id }))
@@ -120,21 +132,4 @@ function onModelUpdate(v) {
   emit('update:modelValue', String(v))
 }
 
-/**
- * Subscribe mode defaults the OU to the project's `pkey`. Users keep
- * it as-is (combobox accepts free text — that's why this field is a
- * combobox and not an autocomplete) or change it via the dropdown
- * once they start typing to trigger the LDAP lookup.
- *
- * Skipped when: the field already has a value (saved subscription /
- * `parameter.defaultValue`), in edit-node / create-node mode (no
- * project prop), or when the project hasn't loaded yet (the wizard
- * gates parameter rendering on a loaded project, so in practice
- * this last guard is just belt-and-suspenders).
- */
-onMounted(() => {
-  if ((props.modelValue == null || props.modelValue === '') && props.project?.pkey) {
-    emit('update:modelValue', String(props.project.pkey))
-  }
-})
 </script>

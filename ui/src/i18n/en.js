@@ -65,6 +65,7 @@ export default {
   // Misc
 
   // Subscribe-wizard / node-editor parameter group headers
+  'id.wizard.group.subscription': 'Project group',
   'id.wizard.group.connection': 'Connection Settings',
   'id.wizard.group.groups': 'Groups management',
   'id.wizard.group.people': 'Users management',
