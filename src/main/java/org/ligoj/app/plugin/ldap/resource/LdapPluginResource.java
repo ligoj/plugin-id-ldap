@@ -196,13 +196,10 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 
 	/**
 	 * List of mandatory custom user LDAP attribute names. Comma or space separated values.
-	 */
-	/**
-	 * Custom user attribute names, LDAP-level declaration.
 	 *
 	 * @deprecated Superseded by the identity service parameter
-	 *             {@link IdentityResource#PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES}. No longer declared by this plugin; a
-	 *             value stored by an instance installed before is still read as a fallback.
+	 * {@link IdentityResource#PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES}. No longer declared by this plugin; a
+	 * value stored by an instance installed before is still read as a fallback.
 	 */
 	@Deprecated(since = "5.0.3")
 	public static final String PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES = KEY + ":people-custom-attributes";
@@ -242,8 +239,6 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 
 	/**
 	 * Convert a string to a list using Comma or space separator.
-	 */
-	/**
 	 * Custom attribute names of a node: the identity service parameter first, else the deprecated LDAP-level one
 	 * (with a warning inviting to move the value), else none.
 	 *
@@ -790,7 +785,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 		final var projectId = project.getId();
 		final var parameters = subscriptionResource.getParameters(subscription);
 		final var group = parameters.get(IdentityResource.PARAMETER_GROUP);
-		cacheProjectGroupRepository.deleteAll(cacheProjectGroupRepository.findAllBy("group.id", group, new String[] { "project.id" }, projectId));
+		cacheProjectGroupRepository.deleteAll(cacheProjectGroupRepository.findAllBy("group.id", group, new String[]{"project.id"}, projectId));
 
 		if (deleteRemoteData) {
 			// Check the group exists but is not required to continue the process
