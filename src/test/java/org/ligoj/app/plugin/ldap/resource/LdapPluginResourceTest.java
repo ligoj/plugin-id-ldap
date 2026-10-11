@@ -404,6 +404,49 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	@Test
+	void checkConnection() {
+		// Only the given parameters: the new node has no stored configuration
+		Assertions.assertTrue(resource.checkConnection("service:id:ldap:new", pvResource.getNodeParameters("service:id:ldap:dig")));
+	}
+
+	@Test
+	void checkConnectionUnreachable() {
+		// The given URL is used, not the working configuration stored for this node
+		final var parameters = new HashMap<>(pvResource.getNodeParameters("service:id:ldap:dig"));
+		parameters.put(LdapPluginResource.PARAMETER_URL, "ldap://localhost:1");
+		Assertions.assertThrows(org.springframework.ldap.CommunicationException.class,
+				() -> resource.checkConnection("service:id:ldap:dig", parameters));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	void checkConnectionTimeouts() {
+		// An unreachable host never holds the request for minutes: the check connects and reads within bounds
+		final var repository = resource.newCheckRepository("service:id:ldap:dig", pvResource.getNodeParameters("service:id:ldap:dig"));
+		final var template = (org.springframework.ldap.core.LdapTemplate) org.springframework.test.util.ReflectionTestUtils.getField(repository, "template");
+		final var environment = (Map<String, Object>) org.springframework.test.util.ReflectionTestUtils.getField(template.getContextSource(), "baseEnv");
+		Assertions.assertEquals("5000", environment.get("com.sun.jndi.ldap.connect.timeout"));
+		Assertions.assertEquals("20000", environment.get("com.sun.jndi.ldap.read.timeout"));
+		// The regular repositories keep their environment
+		final var regular = resource.getUserRepository("service:id:ldap:dig");
+		final var regularTemplate = (org.springframework.ldap.core.LdapTemplate) org.springframework.test.util.ReflectionTestUtils.getField(regular, "template");
+		Assertions.assertNull(((Map<String, Object>) org.springframework.test.util.ReflectionTestUtils.getField(regularTemplate.getContextSource(), "baseEnv")).get("com.sun.jndi.ldap.read.timeout"));
+	}
+
+	@Test
+	void checkConnectionThroughApi() throws Exception {
+		// Built against an API without this feature, the method overrides the API's one when it exists
+		final var method = Arrays.stream(org.ligoj.app.api.ToolPlugin.class.getMethods())
+				.filter(m -> "checkConnection".equals(m.getName())).findFirst();
+		org.junit.jupiter.api.Assumptions.assumeTrue(method.isPresent(), "API without the connection check");
+		final var parameters = new HashMap<>(pvResource.getNodeParameters("service:id:ldap:dig"));
+		parameters.put(LdapPluginResource.PARAMETER_URL, "ldap://localhost:1");
+		final var e = Assertions.assertThrows(java.lang.reflect.InvocationTargetException.class,
+				() -> method.get().invoke(resource, "service:id:ldap:dig", parameters));
+		Assertions.assertInstanceOf(org.springframework.ldap.CommunicationException.class, e.getCause());
+	}
+
+	@Test
 	void customAttributesFromServiceParameter() {
 		// The generic identity parameter wins over the deprecated LDAP one, both set on the node
 		Assertions.assertArrayEquals(new String[] { "uidFonctionnel", "badge" }, resource.getUserRepository("service:id:ldap:dig").getCustomAttributes());

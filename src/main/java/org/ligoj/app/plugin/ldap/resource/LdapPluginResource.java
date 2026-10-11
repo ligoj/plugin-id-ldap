@@ -279,8 +279,45 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	@Override
 	protected UserLdapRepository getUserRepository(final String node) {
 		log.info("Build ldap template for node {}", node);
-		final var parameters = pvResource.getNodeParameters(node);
+		return newUserRepository(node, pvResource.getNodeParameters(node));
+	}
+
+	/**
+	 * Build a user LDAP repository from the given parameters. Cache is not involved.
+	 *
+	 * @param node       The node identifier, it may not exist yet.
+	 * @param parameters The LDAP parameters.
+	 * @return The {@link UserLdapRepository} instance.
+	 */
+	protected UserLdapRepository newUserRepository(final String node, final Map<String, String> parameters) {
+		return newUserRepository(node, parameters, Map.of());
+	}
+
+	/**
+	 * Build a user LDAP repository for the connection check of a node configuration before it is saved: an unreachable
+	 * host fails within {@link #CHECK_ENVIRONMENT}'s bounds instead of holding the request for minutes. Cache is not
+	 * involved.
+	 *
+	 * @param node       The node identifier, it may not exist yet.
+	 * @param parameters The LDAP parameters.
+	 * @return The {@link UserLdapRepository} instance.
+	 */
+	protected UserLdapRepository newCheckRepository(final String node, final Map<String, String> parameters) {
+		return newUserRepository(node, parameters, CHECK_ENVIRONMENT);
+	}
+
+	/**
+	 * JNDI environment of the connection check: connect and read timeouts, in milliseconds.
+	 */
+	private static final Map<String, Object> CHECK_ENVIRONMENT = Map.of("com.sun.jndi.ldap.connect.timeout", "5000",
+			"com.sun.jndi.ldap.read.timeout", "20000");
+
+	private UserLdapRepository newUserRepository(final String node, final Map<String, String> parameters,
+			final Map<String, Object> environment) {
 		final var contextSource = new LdapContextSource();
+		if (!environment.isEmpty()) {
+			contextSource.setBaseEnvironmentProperties(environment);
+		}
 		contextSource.setReferral(parameters.get(PARAMETER_REFERRAL));
 		contextSource.setPassword(parameters.get(PARAMETER_PASSWORD));
 		contextSource.setUrls(parameters.get(PARAMETER_URL).split(","));
@@ -828,6 +865,21 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	public boolean checkStatus(final String node, final Map<String, String> parameters) {
 		// Query the LDAP, the user is not important, we expect no error, that's all
 		self.getConfiguration(node).getUserRepository().findByIdNoCache("-any-");
+		return true;
+	}
+
+	/**
+	 * Check the connection of a node configuration before it is saved. Overrides <code>ToolPlugin#checkConnection</code>
+	 * of an API having the connection check, without <code>@Override</code>: this plug-in still builds and runs on an
+	 * older API, which never calls it.
+	 *
+	 * @param node       The node identifier, it may not exist yet.
+	 * @param parameters The parameter values the node would have once saved.
+	 * @return <code>true</code> when the LDAP accepts the connection.
+	 */
+	public boolean checkConnection(final String node, final Map<String, String> parameters) {
+		// Query the LDAP with the given parameters only: the configuration of this node is neither read nor cached
+		newCheckRepository(node, parameters).findByIdNoCache("-any-");
 		return true;
 	}
 
