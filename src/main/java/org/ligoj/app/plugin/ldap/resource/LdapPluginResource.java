@@ -403,15 +403,15 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 
 	/**
 	 * {@inheritDoc}
-	 * <h1>Situation #1</h1>
-	 * <h2>Context</h2>
+	 * <h4>Situation #1</h4>
+	 * <h5>Context</h5>
 	 * <ul>
 	 * <li>{@code ou} is <code>project1</code></li>
 	 * <li>{@code group} is <code>project1-dev</code></li>
 	 * <li>{@code subscription} is related to project's pKey is <code>project1</code></li>
 	 * <li><code>ou=project, ou=groups, dc=sample</code> is configured as {@link ContainerScope#TYPE_PROJECT}</li>
 	 * </ul>
-	 * <h2>Result</h2>
+	 * <h5>Result</h5>
 	 * <ul>
 	 * <li>{@code group} is checked to start with its ou <code>project1-</code></li>
 	 * <li>{@code group} is checked to start with the project's pKey <code>project1-</code></li>
@@ -421,8 +421,8 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * <li>DN <code>cn=project1-dev, ou=project1, ou=project, ou=groups, dc=sample</code> must not exist and is created</li>
 	 * </ul>
 	 *
-	 * <h1>Situation #2</h1>
-	 * <h2>Context</h2>
+	 * <h4>Situation #2</h4>
+	 * <h5>Context</h5>
 	 * <ul>
 	 * <li>{@code ou} is <code>project1</code></li>
 	 * <li>{@code group} is <code>project1-dev-team1</code></li>
@@ -430,7 +430,7 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * <li>{@code subscription} is related to project's pKey is <code>project1</code></li>
 	 * <li><code>ou=project, ou=groups, dc=sample</code> is configured as {@link ContainerScope#TYPE_PROJECT}</li>
 	 * </ul>
-	 * <h2>Result</h2>
+	 * <h5>Result</h5>
 	 * <ul>
 	 * <li>{@code group} is checked to start with its ou <code>project1-</code></li>
 	 * <li>{@code group} is checked to start with its parent group <code>project1-dev-</code></li>
