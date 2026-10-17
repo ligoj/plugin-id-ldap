@@ -8,7 +8,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.core.StreamingOutput;
 import org.apache.commons.io.IOUtils;
-import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.ligoj.app.iam.Activity;
@@ -434,7 +433,7 @@ class LdapPluginResourceTest extends AbstractLdapPluginResourceTest {
 	}
 
 	@Test
-	void checkConnectionThroughApi() throws Exception {
+	void checkConnectionThroughApi() {
 		// Built against an API without this feature, the method overrides the API's one when it exists
 		final var method = Arrays.stream(org.ligoj.app.api.ToolPlugin.class.getMethods())
 				.filter(m -> "checkConnection".equals(m.getName())).findFirst();

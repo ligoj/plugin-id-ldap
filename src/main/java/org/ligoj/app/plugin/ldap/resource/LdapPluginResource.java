@@ -246,7 +246,6 @@ public class LdapPluginResource extends AbstractPluginIdResource<UserLdapReposit
 	 * @param parameters The node parameters.
 	 * @return The custom attribute names, never <code>null</code>.
 	 */
-	@SuppressWarnings("deprecation")
 	String[] toCustomAttributes(final String node, final Map<String, String> parameters) {
 		final var generic = getParameter(parameters, IdentityResource.PARAMETER_PEOPLE_CUSTOM_ATTRIBUTES, "");
 		if (StringUtils.isNotBlank(generic)) {
