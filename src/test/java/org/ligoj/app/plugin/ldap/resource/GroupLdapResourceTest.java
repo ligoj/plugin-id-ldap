@@ -284,7 +284,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 		userResource.addUserToGroup("wuser", "New-Ax-1-z:Z 0");
 
-		// Pre check
+		// Pre-check
 		final var groups = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
 		Assertions.assertEquals(1, groups.getRecordsTotal());
 		Assertions.assertEquals(1, groups.getData().getFirst().getCount());
@@ -310,7 +310,7 @@ class GroupLdapResourceTest extends AbstractContainerLdapResourceTest {
 
 		userResource.addUserToGroup("wuser", "New-Ax-1-z:Z 0");
 
-		// Pre check
+		// Pre-check
 		final var groups = resource.findAll(newUriInfoAscSearch("name", "New-Ax-1-z:Z 0"));
 		Assertions.assertEquals(1, groups.getRecordsTotal());
 		Assertions.assertEquals(1, groups.getData().getFirst().getCount());

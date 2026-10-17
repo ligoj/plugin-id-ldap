@@ -143,7 +143,7 @@ class UserLdapResourceZAddTest extends AbstractUserLdapResourceTest {
 	 */
 	@Test
 	void zaddRemoveUser() {
-		// Pre condition
+		// Pre-condition
 		Assertions.assertFalse(resource.findById("wuser").getGroups().contains("DIG RHA"));
 		Assertions.assertFalse(getGroup().findById("dig rha").getMembers().contains("wuser"));
 

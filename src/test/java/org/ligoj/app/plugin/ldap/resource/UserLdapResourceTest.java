@@ -961,7 +961,7 @@ class UserLdapResourceTest extends AbstractUserLdapResourceTest {
 	 */
 	@Test
 	void addUserToGroup() {
-		// Pre condition
+		// Pre-condition
 		Assertions.assertTrue(resource.findById("wuser").getGroups().contains("Biz Agency Manager"));
 
 		resource.addUserToGroup("wuser", "biz agency manager");
