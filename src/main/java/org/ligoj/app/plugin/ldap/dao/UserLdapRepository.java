@@ -27,12 +27,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.ldap.OperationNotSupportedException;
-import org.springframework.ldap.control.PagedResultsControlExchangeDirContextProcessor;
+import org.springframework.ldap.control.PagedResultsCookie;
+import org.springframework.ldap.control.PagedResultsDirContextProcessor;
 import org.springframework.ldap.core.*;
 import org.springframework.ldap.core.support.AbstractContextMapper;
+import org.springframework.ldap.core.support.SingleContextSource;
 import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.filter.OrFilter;
+import org.springframework.ldap.filter.PresentFilter;
 import org.springframework.ldap.support.LdapUtils;
 
 import javax.naming.AuthenticationException;
@@ -102,9 +105,6 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 	private static final String DEFAULT_HOME_DIRECTORY = "/dev/null";
 
 
-	private static final DirContextProcessor LDAP_NULL_PROCESSOR = new LdapTemplate.NullDirContextProcessor();
-
-
 	private static final class NullAuthenticationErrorCallback implements AuthenticationErrorCallback {
 		public void execute(Exception ex) {
 			// Ignore
@@ -121,7 +121,11 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 	public static final Comparator<UserOrg> DEFAULT_COMPARATOR = new LoginComparator();
 	private static final Sort.Order DEFAULT_ORDER = new Sort.Order(Direction.ASC, "id");
 
-	private static final int LDAP_SEARCH_PAGE_SIZE = 300_000;
+	/**
+	 * The page size of the full read, below the common server limits. All pages are read.
+	 */
+	@Setter
+	private int pageSize = 500;
 
 	/**
 	 * Shared random string generator used for temporary passwords.
@@ -241,6 +245,57 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 		super("user");
 	}
 
+	/**
+	 * Return the attributes requested by the full read of the users: never the password, whose presence is read alone.
+	 *
+	 * @return The attribute names.
+	 */
+	public String[] getFullReadAttributes() {
+		return ArrayUtils.addAll(new String[]{SN_ATTRIBUTE, GIVEN_NAME_ATTRIBUTE, MAIL_ATTRIBUTE,
+				uidAttribute, departmentAttribute, localIdAttribute, lockedAttribute, PWD_ACCOUNT_LOCKED_ATTRIBUTE}, customAttributes);
+	}
+
+	/**
+	 * Search all the entries of the base DN matching the filter, page after page on a single connection, which holds
+	 * the paging state. A server without paging gets one regular search.
+	 */
+	private <T> List<T> searchAll(final String filter, final SearchControls controls, final ContextMapper<T> mapper) {
+		try {
+			return SingleContextSource.doWithSingleContext(template.getContextSource(), operations -> {
+				final var processor = new PagedResultsDirContextProcessor(pageSize);
+				final var result = new ArrayList<T>();
+				PagedResultsCookie previous = null;
+				do {
+					result.addAll(operations.search(baseDn, filter, controls, mapper, processor));
+					final var cookie = processor.getCookie();
+					if (cookie == previous) {
+						// No paging response control: the server answered without paging, never ask the same page again
+						break;
+					}
+					previous = cookie;
+				} while (processor.hasMore());
+				return result;
+			}, true, true, false);
+		} catch (final OperationNotSupportedException e) {
+			log.info("Pagination is not supported, regular search ({}) ...", e.getMessage());
+			return template.search(baseDn, filter, controls, mapper);
+		}
+	}
+
+	@Override
+	public List<String> getSettings() {
+		final var settings = super.getSettings();
+		settings.add(peopleInternalBaseDn);
+		settings.add(uidAttribute);
+		settings.add(departmentAttribute);
+		settings.add(localIdAttribute);
+		settings.add(lockedAttribute);
+		settings.add(lockedValue);
+		settings.add(companyPattern.pattern());
+		settings.add(String.join(",", customAttributes));
+		return settings;
+	}
+
 	@Override
 	public UserOrg create(final UserOrg user) {
 		// Build the DN
@@ -355,30 +410,20 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 	@Override
 	public Map<String, UserOrg> findAllNoCache(final Map<String, GroupOrg> groups) {
 
-		// List of attributes to retrieve from LDAP.
-		log.info("Fetch LDAP users ...");
-		final var returnAttrs = ArrayUtils.addAll(new String[]{SN_ATTRIBUTE, GIVEN_NAME_ATTRIBUTE, PASSWORD_ATTRIBUTE, MAIL_ATTRIBUTE,
-				uidAttribute, departmentAttribute, localIdAttribute, lockedAttribute, PWD_ACCOUNT_LOCKED_ATTRIBUTE}, customAttributes);
-
 		// Fetch users and their direct attributes
-		final var result = new HashMap<String, UserOrg>();
-		final var classFilter = newClassesFilter().encode();
-		final var searchControls = new SearchControls();
-		searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-		searchControls.setReturningAttributes(returnAttrs);
-		searchControls.setReturningObjFlag(false);
-		List<UserOrg> users;
-		try {
-			final var processor = new PagedResultsControlExchangeDirContextProcessor(LDAP_SEARCH_PAGE_SIZE);
-			users = template.search(baseDn, classFilter, searchControls, mapper, processor);
-		} catch (final OperationNotSupportedException e) {
-			log.info("Pagination is not supported, regular search ({}) ...", e.getMessage());
-			users = template.search(baseDn, classFilter, searchControls, mapper, LDAP_NULL_PROCESSOR);
-		}
+		log.info("Fetch LDAP users ...");
+		final var classFilter = newClassesFilter();
+		final var users = searchAll(classFilter.encode(), newSearchControls(getFullReadAttributes()), mapper);
+
+		// The password presence, without reading the password hashes
+		final var secured = new HashSet<>(searchAll(new AndFilter().and(classFilter).and(new PresentFilter(PASSWORD_ATTRIBUTE)).encode(),
+				newSearchControls(NO_ATTRIBUTE), (Object ctx) -> ((DirContextAdapter) ctx).getDn().toString().toLowerCase(Locale.ENGLISH)));
 
 		// Index the users by the identifier
+		final var result = new HashMap<String, UserOrg>();
 		log.info("Prepare users {} for indexing ...", users.size());
 		for (final var user : users) {
+			user.setSecured(secured.contains(user.getDn().toLowerCase(Locale.ENGLISH)));
 			user.setGroups(new ArrayList<>());
 			result.put(user.getId(), user);
 		}
@@ -640,6 +685,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 			// Also update the disabled date
 			user.setLocked(Instant.ofEpochMilli(timeInMillis));
 			user.setLockedBy(principal);
+			cacheRepository.update(user);
 		}
 	}
 
@@ -651,6 +697,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 			final var previousCompany = user.getCompany();
 			move(user, companyRepository.findById(companyRepository.getQuarantineCompany()));
 			user.setIsolated(previousCompany);
+			cacheRepository.update(user);
 		}
 	}
 
@@ -660,6 +707,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 			move(user, companyRepository.findById(user.getIsolated()));
 			user.setIsolated(null);
 			unlock(user);
+			cacheRepository.update(user);
 		}
 	}
 
@@ -690,6 +738,7 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 			// Also clear the disabled state from cache
 			user.setLocked(null);
 			user.setLockedBy(null);
+			cacheRepository.update(user);
 		}
 	}
 
@@ -815,6 +864,11 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 	@Override
 	public void setPassword(final UserOrg userLdap, final String password) {
 		set(userLdap, PASSWORD_ATTRIBUTE, digest(password));
+
+		// This user is now secured, in memory and in the database copy
+		Optional.ofNullable(findById(userLdap.getId())).ifPresent(u -> u.setSecured(true));
+		userLdap.setSecured(true);
+		cacheRepository.update(userLdap);
 	}
 
 	@Override

@@ -17,13 +17,28 @@ Requires [IAM Node plugin](https://github.com/ligoj/plugin-iam-node) to select t
 
 # Cache resources
 
-Cache resources TTL can be overridden from Configuration API with `cache.$name.ttl` property:
+Cache resources TTL can be overridden from Configuration API with `cache.$name.ttl` property. A cache can also expire at fixed times with `cache.$name.cron`, a Spring CRON expression in the time zone of the server, such as `0 0 3 * * *` for every day at 03:00: it takes precedence over the TTL.
 
 | Cache           | Default TTL (S) | Note                                                  |
 |-----------------|-----------------|-------------------------------------------------------|
 | user-details    | Eternal (0)     | Assumes there is no LDAP update for other place       |
 | customers       | Eternal (0)     | Assumes there is no LDAP group update for other place |
 | customers-by-id | Eternal (0)     | Assumes there is no LDAP group update for other place |
+| id-ldap-data    | 1 day (86400)   | Period of the full read of the LDAP users, groups and companies, see below |
+
+## Database copy and restart
+
+Each full read of LDAP is also saved in the database, through the copy shared by the identity plugins (plugin-id): the shared cache tables (`LIGOJ_CACHE_*`), whose user table holds every attribute read (DN, all mails, password presence, lock state, department, local identifier, custom attributes), and the state of the copy (`LIGOJ_ID_CACHE_COPY`: node, time of the full read, fingerprint of the node configuration). Ligoj's own changes (user creation, update, deletion, lock, isolation, password, memberships) keep this copy current.
+
+After a restart of the API, the users, groups and companies are rebuilt from this copy, without reading LDAP, until the next full read is due: at "last full read + TTL" (`cache.id-ldap-data.ttl`), or at the next time of `cache.id-ldap-data.cron` when it is set, whatever the restarts in between. With `cache.id-ldap-data.cron`, the full reads also run at these times, in the background: with `0 0 3 * * *`, LDAP is read every night at 03:00, and nobody waits for it during the day. A full read happens instead when:
+
+- there is no copy yet, or a previous full read failed before saving its state;
+- the node configuration changed (another node, server, base DN, object class, attribute, custom attribute names);
+- the shared tables were reset by another identity provider or another plugin version since;
+- the next full read is due;
+- the `id-ldap-data` cache is invalidated from the cache administration page or with `ligoj cache invalidate`.
+
+The log tells which path was taken. A restart from the copy logs `Rebuilt identity data of <node> from the database copy in ..., without reading the server: users: ..., groups: ..., companies: ...; last full read ... ago, next one at ..., in ...`. A full read logs `Full read required: <reason>`, then `Complete refresh of <node> took ...: users: ..., groups: ..., companies: ...; next one at ..., in ...`.
 
 # Plugin parameters
 
@@ -56,4 +71,4 @@ Cache resources TTL can be overridden from Configuration API with `cache.$name.t
 | service:id:ldap:url                      | ldap://localhost:389                   | One or several comma separated URLs. The first one is the primary, the next ones are for failover. Encrypted in database.              |            
 | service:id:ldap:user-dn                  | cn=Manager,dc=sample,dc=com            | DN of administrator.                                                                                                                   |
 
-> Node parameters are read once and kept in the `id-configuration` cache, and the directory data in the `id-ldap-data` cache (refreshed on its own after `cache.id-ldap-data.ttl`). After changing node parameters, invalidate both caches from the cache administration page or with `ligoj cache invalidate`, or restart the API.
+> Node parameters are read once and kept in the `id-configuration` cache, and the directory data in the `id-ldap-data` cache (refreshed on its own after `cache.id-ldap-data.ttl`, or at the times of `cache.id-ldap-data.cron`). After changing node parameters, invalidate both caches from the cache administration page or with `ligoj cache invalidate`, or restart the API.

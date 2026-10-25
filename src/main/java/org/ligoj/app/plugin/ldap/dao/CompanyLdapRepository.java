@@ -18,10 +18,13 @@ import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.DirContextOperations;
 
 import javax.naming.ldap.LdapName;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -80,7 +83,7 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 		nameToDn.put(quarantine.getId(), quarantine);
 
 		// Complete with LDAP query result
-		template.search(baseDn, newClassesFilter().encode(), (Object ctx) -> (DirContextAdapter) ctx).stream()
+		template.search(baseDn, newClassesFilter().encode(), newSearchControls("ou"), (Object ctx) -> (DirContextAdapter) ctx).stream()
 				.map(ldap -> new CompanyOrg(ldap.getDn().toString(), ldap.getStringAttributes("ou")[0]))
 				.forEach(c -> {
 					if (nameToDn.containsKey(c.getId())) {
@@ -98,6 +101,32 @@ public class CompanyLdapRepository extends AbstractContainerLdapRepository<Compa
 		nameToDn.values().forEach(this::buildLdapName);
 		nameToDn.values().forEach(c -> this.buildHierarchy(nameToDn, c));
 		return nameToDn;
+	}
+
+	/**
+	 * Rebuild the companies from their database copy, as {@link #findAllNoCache()} builds them: the locked quarantine
+	 * company, the LDAP names and the hierarchy.
+	 *
+	 * @param rows The company rows, the quarantine company included.
+	 * @return the companies. Key is the normalized name.
+	 */
+	public Map<String, CompanyOrg> toCompanies(final Collection<CacheCompany> rows) {
+		final var result = new HashMap<String, CompanyOrg>();
+		for (final var row : rows) {
+			final var company = new CompanyOrg(row.getDescription(), row.getName());
+			result.put(company.getId(), company);
+		}
+		Optional.ofNullable(result.get(getQuarantineCompany())).ifPresent(q -> q.setLocked(true));
+		result.values().forEach(this::buildLdapName);
+		result.values().forEach(c -> this.buildHierarchy(result, c));
+		return result;
+	}
+
+	@Override
+	public List<String> getSettings() {
+		final var settings = super.getSettings();
+		settings.add(quarantineBaseDn);
+		return settings;
 	}
 
 	/**

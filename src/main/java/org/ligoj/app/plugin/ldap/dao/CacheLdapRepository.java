@@ -3,79 +3,97 @@
  */
 package org.ligoj.app.plugin.ldap.dao;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
+import javax.cache.annotation.CachePut;
 import javax.cache.annotation.CacheResult;
+import javax.cache.annotation.CacheValue;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.ligoj.app.iam.CompanyOrg;
-import org.ligoj.app.iam.GroupOrg;
-import org.ligoj.app.iam.ResourceOrg;
-import org.ligoj.app.iam.UserOrg;
-import org.ligoj.app.plugin.id.dao.AbstractMemCacheRepository;
+import org.ligoj.app.iam.IamConfiguration;
+import org.ligoj.app.iam.model.CacheCompany;
+import org.ligoj.app.plugin.id.dao.AbstractCopyMemCacheRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ldap.core.support.AbstractContextSource;
 import org.springframework.stereotype.Component;
 
 /**
- * LDAP in-memory cache with JPA back-end cache.
+ * LDAP in-memory cache with JPA back-end cache. After a restart, the memory is rebuilt from the database copy of the
+ * last full read while it is younger than the TTL of the {@value #CACHE} cache, without reading LDAP.
  */
 @Component
-@Slf4j
-public class CacheLdapRepository extends AbstractMemCacheRepository {
+public class CacheLdapRepository extends AbstractCopyMemCacheRepository {
+
+	/**
+	 * The cache whose single entry holds the time of the last full read, and whose TTL is the period of the full reads.
+	 */
+	public static final String CACHE = "id-ldap-data";
 
 	@Autowired
 	protected CacheLdapRepository self = this;
 
-	/**
-	 * Reset the database cache with the LDAP data. Note there is no synchronization for this method. Initial first
-	 * concurrent calls may not involve the cache.
-	 *
-	 * @return The cached LDAP data.
-	 */
 	@Override
-	public Map<CacheDataType, Map<String, ? extends ResourceOrg>> getData() {
-		self.ensureCachedData();
-		return Optional.ofNullable(data).orElseGet(this::refreshData);
+	@CacheResult(cacheName = CACHE)
+	public long ensureCachedData() {
+		return ensureData();
+	}
+
+	@Override
+	@CachePut(cacheName = CACHE)
+	public void arm(@CacheValue final long lastFullRead) {
+		// Only the cache entry is updated
+	}
+
+	@Override
+	protected AbstractCopyMemCacheRepository self() {
+		return self;
+	}
+
+	@Override
+	protected String getCacheName() {
+		return CACHE;
 	}
 
 	/**
-	 * Ensure the fresh data computed when there is no cached LDAP data.
-	 *
-	 * @return <code>true</code>, required by JSR-107.
+	 * Only an LDAP primary node has its copy here: another identity provider keeps its own cache.
 	 */
-	@CacheResult(cacheName = "id-ldap-data")
-	public boolean ensureCachedData() {
-		refreshData();
-		return true;
+	@Override
+	protected boolean isProvider(final IamConfiguration configuration) {
+		return configuration.getUserRepository() instanceof UserLdapRepository;
 	}
 
-	private final Object cacheLock = new Object();
-
-	@SuppressWarnings("unchecked")
+	/**
+	 * Return the fingerprint of the configuration shaping the data: the node, the LDAP server, and the settings of the
+	 * repositories.
+	 *
+	 * @return The SHA-256 of these values, in hexadecimal.
+	 */
 	@Override
-	protected Map<CacheDataType, Map<String, ? extends ResourceOrg>> refreshData() {
-		final var refreshTime = cache.getCacheRefreshTime();
-		synchronized (cacheLock) {
-			final var currentRefreshTime = cache.getCacheRefreshTime();
-			final var now = System.currentTimeMillis();
-			if (refreshTime != currentRefreshTime) {
-				// Ignore subsequent refresh
-				log.info("Another refresh just finished, new age is {}", DurationFormatUtils.formatDurationHMS(now - cache.getCacheRefreshTime()));
-				return this.data;
-			}
-			if (refreshTime == 0) {
-				log.info("Refresh cache requested, first time load");
-			} else {
-				log.info("Refresh cache requested, age is {}", DurationFormatUtils.formatDurationHMS(now - refreshTime));
-			}
-			final var data = super.refreshData();
-			cache.reset((Map<String, CompanyOrg>) data.get(CacheDataType.COMPANY),
-					(Map<String, GroupOrg>) data.get(CacheDataType.GROUP),
-					(Map<String, UserOrg>) data.get(CacheDataType.USER));
-			log.info("Complete refresh took {}", DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - now));
-			return data;
+	protected String fingerprint(final IamConfiguration configuration) {
+		final var users = (UserLdapRepository) configuration.getUserRepository();
+		final var values = new ArrayList<String>();
+		values.add(configuration.getNode());
+		if (users.getTemplate().getContextSource() instanceof AbstractContextSource source) {
+			values.add(String.join(",", source.getUrls()));
+			values.add(source.getBaseLdapPathAsString());
 		}
+		values.addAll(users.getSettings());
+		values.addAll(((GroupLdapRepository) configuration.getGroupRepository()).getSettings());
+		values.addAll(((CompanyLdapRepository) configuration.getCompanyRepository()).getSettings());
+		return DigestUtils.sha256Hex(values.stream().map(Objects::toString).collect(Collectors.joining("\n")));
+	}
+
+	/**
+	 * Rebuild the companies as the LDAP full read builds them: the locked quarantine company, the LDAP names and the
+	 * hierarchy.
+	 */
+	@Override
+	protected Map<String, CompanyOrg> toCompanies(final IamConfiguration configuration, final Collection<CacheCompany> rows) {
+		return ((CompanyLdapRepository) configuration.getCompanyRepository()).toCompanies(rows);
 	}
 }

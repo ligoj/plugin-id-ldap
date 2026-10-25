@@ -48,6 +48,16 @@ class UserLdapRepositoryTest {
 	@BeforeEach
 	void init() {
 		repository = new UserLdapRepository();
+		repository.setCacheRepository(newCacheRepository());
+	}
+
+	/**
+	 * A cache without users: a password write marks the in-memory user secured, when there is one.
+	 */
+	private static CacheLdapRepository newCacheRepository() {
+		final var cache = mock(CacheLdapRepository.class);
+		when(cache.getData()).thenReturn(Map.of(AbstractMemCacheRepository.CacheDataType.USER, new java.util.HashMap<>()));
+		return cache;
 	}
 
 	@Test
@@ -177,7 +187,7 @@ class UserLdapRepositoryTest {
 	void clearPassword() {
 		var user = new UserOrg();
 		user.setDn("dc=sample,dc=com");
-		new UserLdapRepository() {
+		final var passwords = new UserLdapRepository() {
 			@Override
 			public boolean isClearPassword() {
 				return true;
@@ -188,14 +198,16 @@ class UserLdapRepositoryTest {
 				Assertions.assertEquals("test", value);
 			}
 
-		}.setPassword(user, "test");
+		};
+		passwords.setCacheRepository(newCacheRepository());
+		passwords.setPassword(user, "test");
 	}
 
 	@Test
 	void digest() {
 		UserOrg user = new UserOrg();
 		user.setDn("dc=sample,dc=com");
-		new UserLdapRepository() {
+		final var passwords = new UserLdapRepository() {
 			@Override
 			public boolean isClearPassword() {
 				return false;
@@ -206,7 +218,9 @@ class UserLdapRepositoryTest {
 				Assertions.assertTrue(value.startsWith("{SSHA}"));
 			}
 
-		}.setPassword(user, "test");
+		};
+		passwords.setCacheRepository(newCacheRepository());
+		passwords.setPassword(user, "test");
 	}
 
 	@Test
@@ -481,6 +495,8 @@ class UserLdapRepositoryTest {
 	@Test
 	void checkUserStatus() {
 		final var user = new UserOrg();
+		// The lookup filters on the identifier, a null value is rejected by Spring LDAP
+		user.setId("fdaugan");
 		final var mock = mock(LdapTemplate.class);
 		final var dirCtx = mock(DirContextOperations.class);
 		when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.eq(2), ArgumentMatchers.any(),
@@ -502,16 +518,22 @@ class UserLdapRepositoryTest {
 	@Test
 	void blockedUserByPPolicy() {
 		final var user = new UserOrg();
+		user.setDn("cn=Any");
 		user.setCustomAttributes(Map.of("mail", "locked@sample.com"));
 		final var mock = mock(LdapTemplate.class);
 		final var dirCtx = mock(DirContextOperations.class);
-		when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
-				(ContextMapper<UserOrg>) ArgumentMatchers.any(), ArgumentMatchers.any())).thenAnswer(i -> {
+
+		// No paging: regular searches, the users then the password presence
+		final var contextSource = mock(org.springframework.ldap.core.ContextSource.class);
+		when(mock.getContextSource()).thenReturn(contextSource);
+		when(contextSource.getReadOnlyContext()).thenThrow(new OperationNotSupportedException(null));
+		when(mock.search((String) ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(SearchControls.class),
+				(ContextMapper<UserOrg>) ArgumentMatchers.any())).thenAnswer(i -> {
 					((AbstractContextMapper<DirContextOperations>) i.getArgument(3)).mapFromContext(dirCtx);
 					user.setLocked(Instant.ofEpochMilli(LOCKED_DATE));
 					user.setLockedBy("_password_policy");
 					return Collections.singletonList(user);
-				});
+				}).thenReturn(Collections.emptyList());
 
 		when(dirCtx.getDn()).thenReturn(org.springframework.ldap.support.LdapUtils.newLdapName("cn=Any"));
 		when(dirCtx.attributeExists(ArgumentMatchers.any())).thenReturn(true);
@@ -549,29 +571,46 @@ class UserLdapRepositoryTest {
 		repository.unbind("cn=Any");
 	}
 
+	/**
+	 * A server without paging: one regular search for the users, and one for the password presence.
+	 */
 	@SuppressWarnings("unchecked")
 	@Test
 	void findAllNoCacheOperationNotSupportedException() {
 		final var repository = new UserLdapRepository();
 		final var template = mock(LdapTemplate.class);
+		final var contextSource = mock(org.springframework.ldap.core.ContextSource.class);
+		when(template.getContextSource()).thenReturn(contextSource);
+		when(contextSource.getReadOnlyContext()).thenThrow(new OperationNotSupportedException(null));
 		repository.setTemplate(template);
-		// noinspection unchecked
-		when(template.search(ArgumentMatchers.nullable(String.class), anyString(), any(SearchControls.class),
-				any(ContextMapper.class), any(DirContextProcessor.class))).thenThrow(new OperationNotSupportedException(null))
-				.thenReturn(List.of(new UserOrg()));
-		repository.findAllNoCache(Collections.emptyMap());
+		final var user = new UserOrg();
+		user.setId(TEST_USER);
+		user.setDn("uid=user1,ou=c,dc=s");
+		when(template.search(ArgumentMatchers.nullable(String.class), anyString(), any(SearchControls.class), any(ContextMapper.class)))
+				.thenReturn(List.of(user)).thenReturn(List.of("uid=user1,ou=c,dc=s"));
+		final var users = repository.findAllNoCache(Collections.emptyMap());
+		Assertions.assertTrue(users.get(TEST_USER).isSecured());
 	}
 
-	@SuppressWarnings("unchecked")
+	/**
+	 * A server or a proxy answering without the paging response control: one page, never an endless loop.
+	 */
 	@Test
-	void findAllNoCache() {
+	void findAllNoCacheWithoutPagingResponse() throws javax.naming.NamingException {
 		final var repository = new UserLdapRepository();
+		repository.setBaseDn("ou=people,dc=sample,dc=com");
 		final var template = mock(LdapTemplate.class);
+		final var contextSource = mock(org.springframework.ldap.core.ContextSource.class);
+		final var context = mock(javax.naming.ldap.LdapContext.class);
+		when(template.getContextSource()).thenReturn(contextSource);
+		when(contextSource.getReadOnlyContext()).thenReturn(context);
+		when(context.search(any(javax.naming.Name.class), anyString(), any(SearchControls.class)))
+				.thenReturn(mock(javax.naming.NamingEnumeration.class));
+		when(context.search(anyString(), anyString(), any(SearchControls.class))).thenReturn(mock(javax.naming.NamingEnumeration.class));
 		repository.setTemplate(template);
-		// noinspection unchecked
-		when(template.search(ArgumentMatchers.nullable(String.class), anyString(), any(SearchControls.class),
-				any(ContextMapper.class), any(DirContextProcessor.class))).thenReturn(Collections.emptyList());
-		repository.findAllNoCache(Collections.emptyMap());
+		final var users = Assertions.assertTimeoutPreemptively(java.time.Duration.ofSeconds(10),
+				() -> repository.findAllNoCache(Collections.emptyMap()));
+		Assertions.assertTrue(users.isEmpty());
 	}
 
 	@Test

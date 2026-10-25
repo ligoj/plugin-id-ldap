@@ -93,7 +93,8 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 		final var dnToGroups = new HashMap<String, GroupOrg>();
 
 		// First pass, collect the groups and dirty relationships
-		for (final var ldap : template.search(baseDn, newClassesFilter().encode(), (Object ctx) -> (DirContextAdapter) ctx)) {
+		for (final var ldap : template.search(baseDn, newClassesFilter().encode(), newSearchControls("cn", memberAttribute),
+				(Object ctx) -> (DirContextAdapter) ctx)) {
 			final var members = new HashSet<String>();
 			final var dn = ldap.getDn().toString().toLowerCase(Locale.ENGLISH);
 			final var name = ldap.getStringAttribute("cn");
@@ -117,6 +118,13 @@ public class GroupLdapRepository extends AbstractContainerLdapRepository<GroupOr
 		updateSubGroups(groups, subGroupsDn, dnToGroups);
 
 		return groups;
+	}
+
+	@Override
+	public List<String> getSettings() {
+		final var settings = super.getSettings();
+		settings.add(memberAttribute);
+		return settings;
 	}
 
 	/**

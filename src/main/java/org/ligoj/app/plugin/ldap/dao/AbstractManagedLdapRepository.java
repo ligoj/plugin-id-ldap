@@ -17,6 +17,11 @@ import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.filter.OrFilter;
 
+import javax.naming.directory.SearchControls;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -61,6 +66,37 @@ public abstract class AbstractManagedLdapRepository<T extends ResourceOrg> {
 
 	protected AbstractManagedLdapRepository(final String typeName) {
 		this.typeName = typeName;
+	}
+
+	/**
+	 * The attribute list requesting no attribute, only the DN.
+	 */
+	protected static final String[] NO_ATTRIBUTE = { "1.1" };
+
+	/**
+	 * Return the controls of a subtree search returning only the given attributes.
+	 *
+	 * @param attributes The returned attributes.
+	 * @return The search controls.
+	 */
+	protected static SearchControls newSearchControls(final String... attributes) {
+		final var controls = new SearchControls();
+		controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+		controls.setReturningAttributes(attributes);
+		return controls;
+	}
+
+	/**
+	 * Return the settings shaping the data this repository reads: another value means another data set, so the
+	 * database copy of a previous read is not trusted.
+	 *
+	 * @return The settings, as strings, in a stable order.
+	 */
+	public List<String> getSettings() {
+		final var settings = new ArrayList<String>();
+		settings.add(Objects.toString(baseDn));
+		settings.add(String.join(",", classNames));
+		return settings;
 	}
 
 	/**

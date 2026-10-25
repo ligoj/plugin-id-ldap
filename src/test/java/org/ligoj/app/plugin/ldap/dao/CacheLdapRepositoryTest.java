@@ -12,9 +12,18 @@ import org.ligoj.app.plugin.id.dao.IdCacheDao;
 import org.ligoj.bootstrap.AbstractDataGeneratorTest;
 import org.ligoj.bootstrap.core.INamableBean;
 import org.ligoj.bootstrap.core.SpringUtils;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 
+import javax.cache.configuration.CompleteConfiguration;
+import javax.cache.configuration.MutableConfiguration;
+import javax.cache.expiry.Duration;
+import javax.cache.expiry.ModifiedExpiryPolicy;
+
 import java.util.*;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.mockito.Mockito.*;
@@ -31,6 +40,8 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 	private Map<String, UserOrg> users;
 	private CacheLdapRepository repository;
 	private IdCacheDao cache;
+	private org.ligoj.app.plugin.id.dao.IdCopy copy;
+	private javax.cache.Cache<Object, Object> nativeCache;
 
 	@BeforeEach
 	void init() {
@@ -84,7 +95,41 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 		repository.setIamProvider(new IamProvider[]{iamProvider});
 		cache = mock(IdCacheDao.class);
 		repository.setCache(cache);
+		copy = mock(org.ligoj.app.plugin.id.dao.IdCopy.class);
+		repository.setCopy(copy);
+		repository.setCacheManager(cacheManager(Duration.ONE_DAY));
 		repository.self = repository;
+	}
+
+	/**
+	 * A cache manager whose {@value CacheLdapRepository#CACHE} cache expires after the given TTL.
+	 */
+	@SuppressWarnings("unchecked")
+	private CacheManager cacheManager(final Duration ttl) {
+		final var configuration = new MutableConfiguration<>().setExpiryPolicyFactory(ModifiedExpiryPolicy.factoryOf(ttl));
+		nativeCache = mock(javax.cache.Cache.class);
+		when(nativeCache.getConfiguration(CompleteConfiguration.class)).thenReturn(configuration);
+		final var springCache = mock(org.springframework.cache.Cache.class);
+		when(springCache.getNativeCache()).thenReturn(nativeCache);
+		final var manager = mock(CacheManager.class);
+		when(manager.getCache(CacheLdapRepository.CACHE)).thenReturn(springCache);
+		return manager;
+	}
+
+	/**
+	 * Another identity provider as the primary one: no LDAP copy, as before.
+	 */
+	@Test
+	void getDataNotLdap() {
+		final var configuration = new IamConfiguration();
+		configuration.setUserRepository(mock(IUserRepository.class));
+		configuration.setGroupRepository(mock(IGroupRepository.class));
+		configuration.setCompanyRepository(mock(ICompanyRepository.class));
+		final var provider = mock(IamProvider.class);
+		when(provider.getConfiguration()).thenReturn(configuration);
+		repository.setIamProvider(new IamProvider[] { provider });
+		Assertions.assertNotNull(repository.getData());
+		verifyNoInteractions(copy);
 	}
 
 	@Test
@@ -240,21 +285,4 @@ class CacheLdapRepositoryTest extends AbstractDataGeneratorTest {
 		Assertions.assertFalse(users.containsKey("u"));
 	}
 
-	@Test
-	void refreshDataSequential() {
-		final var conflictDate = new AtomicLong(1);
-		when(cache.getCacheRefreshTime()).thenAnswer(a -> conflictDate.get());
-		var data = repository.refreshData();
-		var refreshData = repository.refreshData();
-		Assertions.assertNotSame(data, refreshData);
-	}
-
-	@Test
-	void refreshDataWithConflict() {
-		final var conflictDate = new AtomicLong(0);
-		when(cache.getCacheRefreshTime()).thenAnswer(a -> conflictDate.incrementAndGet());
-		var data = repository.refreshData();
-		var refreshData = repository.refreshData();
-		Assertions.assertSame(data, refreshData);
-	}
 }
