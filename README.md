@@ -40,6 +40,22 @@ After a restart of the API, the users, groups and companies are rebuilt from thi
 
 The log tells which path was taken. A restart from the copy logs `Rebuilt identity data of <node> from the database copy in ..., without reading the server: users: ..., groups: ..., companies: ...; last full read ... ago, next one at ..., in ...`. A full read logs `Full read required: <reason>`, then `Complete refresh of <node> took ...: users: ..., groups: ..., companies: ...; next one at ..., in ...`.
 
+## Refused full reads
+
+A full read is refused when LDAP returns no user while users are cached, or when the read fails, a size limit reached by the server included. The cached users, groups and companies are kept, in memory and in the database, and LDAP is read again later. This protects from a directory answering an empty or cut result during its own maintenance.
+
+The log tells it at `ERROR` level: `Full read of <node> refused, no user returned while <count> are cached: the cached data is kept, retry 1/2 at ...`.
+
+After the retries, LDAP is believed: an empty result is accepted and logged at `WARN` level, a failure is thrown to the caller. Invalidating the `id-ldap-data` cache reads LDAP at once, without waiting for the retry.
+
+These application properties, given as `-D` options of the API, tune it:
+
+| Property                       | Default | Note                                              |
+|--------------------------------|---------|---------------------------------------------------|
+| `id.cache.empty-read.guard`    | `true`  | Refuse these full reads                           |
+| `id.cache.empty-read.retries`  | `2`     | Retries before LDAP is believed                   |
+| `id.cache.empty-read.delay`    | `15`    | Minutes between a refused full read and its retry |
+
 # Plugin parameters
 
 | Parameter                                | Value                                  | Note                                                                                                                                   |                     

@@ -261,7 +261,13 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 	 */
 	private <T> List<T> searchAll(final String filter, final SearchControls controls, final ContextMapper<T> mapper) {
 		try {
-			return SingleContextSource.doWithSingleContext(template.getContextSource(), operations -> {
+			// The same connection for all the pages
+			final var single = new SingleContextSource(template.getContextSource().getReadOnlyContext());
+			try {
+				final var operations = new LdapTemplate(single);
+				operations.setIgnorePartialResultException(true);
+				// A size limit reached means missing entries: a failed read, never a shorter list
+				operations.setIgnoreSizeLimitExceededException(false);
 				final var processor = new PagedResultsDirContextProcessor(pageSize);
 				final var result = new ArrayList<T>();
 				PagedResultsCookie previous = null;
@@ -275,7 +281,9 @@ public class UserLdapRepository extends AbstractManagedLdapRepository<UserOrg> i
 					previous = cookie;
 				} while (processor.hasMore());
 				return result;
-			}, true, true, false);
+			} finally {
+				single.destroy();
+			}
 		} catch (final OperationNotSupportedException e) {
 			log.info("Pagination is not supported, regular search ({}) ...", e.getMessage());
 			return template.search(baseDn, filter, controls, mapper);

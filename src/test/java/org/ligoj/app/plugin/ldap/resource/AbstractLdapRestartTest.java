@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.ligoj.app.iam.IamConfiguration;
 import org.ligoj.app.iam.IamProvider;
 import org.ligoj.app.plugin.id.dao.CacheCopyStateRepository;
@@ -75,10 +76,20 @@ public abstract class AbstractLdapRestartTest extends AbstractLdapPluginResource
 		}
 	}
 
+	/**
+	 * Without the guard of the refused full reads: a failed LDAP read is an error, the proof of {@link #failLdap()}.
+	 */
+	@BeforeEach
+	protected void disableReadGuard() {
+		ReflectionTestUtils.setField(target(), "emptyReadGuard", false);
+	}
+
 	@AfterEach
 	protected void restoreLdap() {
 		templates.forEach(AbstractManagedLdapRepository::setTemplate);
 		templates.clear();
+		ReflectionTestUtils.setField(target(), "emptyReadGuard", true);
+		ReflectionTestUtils.setField(target(), "refusedReads", 0);
 	}
 
 	protected CacheCopyState state() {

@@ -110,6 +110,27 @@ class CacheLdapRestartTest extends AbstractLdapRestartTest {
 	}
 
 	/**
+	 * With the guard, a full read failing on LDAP is refused: the cached data is served, the copy stays, and the read
+	 * waits for its retry.
+	 */
+	@Test
+	void failedFullReadIsRefused() {
+		ReflectionTestUtils.setField(target(), "emptyReadGuard", true);
+		reloadLdapCache();
+		final var before = ReflectionTestUtils.getField(target(), "data");
+		final var lastFullRead = state().getLastFullRead();
+		failLdap();
+		cacheManager.getCache("id-ldap-data").clear();
+		Assertions.assertSame(before, cache.getData());
+		Assertions.assertEquals(1, ReflectionTestUtils.getField(target(), "refusedReads"));
+		Assertions.assertEquals(lastFullRead, state().getLastFullRead());
+
+		// Until the retry, LDAP is not read
+		Assertions.assertSame(before, cache.getData());
+		Assertions.assertEquals(1, ReflectionTestUtils.getField(target(), "refusedReads"));
+	}
+
+	/**
 	 * Without a CRON expression, the next full read is due one day, the TTL of the cache, after the last one.
 	 */
 	@Test

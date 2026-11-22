@@ -613,6 +613,28 @@ class UserLdapRepositoryTest {
 		Assertions.assertTrue(users.isEmpty());
 	}
 
+	/**
+	 * A size limit reached by the server means missing users: the full read fails, it never returns a shorter list.
+	 */
+	@Test
+	void findAllNoCacheSizeLimitExceeded() throws javax.naming.NamingException {
+		final var repository = new UserLdapRepository();
+		repository.setBaseDn("ou=people,dc=sample,dc=com");
+		final var template = mock(LdapTemplate.class);
+		final var contextSource = mock(org.springframework.ldap.core.ContextSource.class);
+		final var context = mock(javax.naming.ldap.LdapContext.class);
+		when(template.getContextSource()).thenReturn(contextSource);
+		when(contextSource.getReadOnlyContext()).thenReturn(context);
+		when(context.search(any(javax.naming.Name.class), anyString(), any(SearchControls.class)))
+				.thenThrow(new javax.naming.SizeLimitExceededException("size limit"));
+		when(context.search(anyString(), anyString(), any(SearchControls.class)))
+				.thenThrow(new javax.naming.SizeLimitExceededException("size limit"));
+		repository.setTemplate(template);
+		final Map<String, GroupOrg> groups = Collections.emptyMap();
+		Assertions.assertThrows(org.springframework.ldap.SizeLimitExceededException.class, () -> repository.findAllNoCache(groups));
+		verify(context).close();
+	}
+
 	@Test
 	void mapToContext() {
 		final var repository = new UserLdapRepository();
